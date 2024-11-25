@@ -15,6 +15,7 @@
 
 #include "externals/DirectXTex/DirectXTex.h"
 
+
 #include"externals/imgui/imgui.h"
 #include"externals/imgui/imgui_impl_dx12.h"
 #include"externals/imgui/imgui_impl_win32.h"
@@ -29,10 +30,15 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 //#include <dinput.h>
 
 #include "Input.h"
+#include "WinApp.h"
+
+#pragma comment(lib,"dinput8.lib")
+
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 
+#pragma comment(lib,"dxguid.lib")
 
 #pragma comment(lib,"dxcompiler.lib")
 
@@ -469,45 +475,53 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 #pragma region Windouの生成
-	WNDCLASS wc{};
 
-	//ウィンドウプロシージャ
-	wc.lpfnWndProc = WindowProc;
-	//ウィンドウクラス名
-	wc.lpszClassName = L"C62WindowClass";
-	//インスタンスハンドル
-	wc.hInstance = GetModuleHandle(nullptr);
-	//カーソル
-	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	// ポインタ
+	WinApp* winApp_ = nullptr;
 
-	//ウィンドウクラスの登録
-	RegisterClass(&wc);
+	// WindowsAPIの初期化
+	winApp_ = new WinApp();
+	winApp_->Initialize();
 
-	//クライアント領域のサイズ　横　縦
-	const int32_t kClientWidth = 1280;
-	const int32_t kClientHeight = 720;
-	//　ウィンドウサイズを表す構造体にクライアント領域を入れる
-	RECT wrc = { 0, 0,kClientWidth,kClientHeight };
+	//WNDCLASS wc{};
+
+	////ウィンドウプロシージャ
+	//wc.lpfnWndProc = WindowProc;
+	////ウィンドウクラス名
+	//wc.lpszClassName = L"C62WindowClass";
+	////インスタンスハンドル
+	//wc.hInstance = GetModuleHandle(nullptr);
+	////カーソル
+	//wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+
+	////ウィンドウクラスの登録
+	//RegisterClass(&wc);
+
+	////クライアント領域のサイズ　横　縦
+	//const int32_t kClientWidth = 1280;
+	//const int32_t kClientHeight = 720;
+	////　ウィンドウサイズを表す構造体にクライアント領域を入れる
+	//RECT wrc = { 0, 0,kClientWidth,kClientHeight };
 
 
-	//クライアント領域をもとに実際のサイズにwrcを変更してもらう
-	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
+	////クライアント領域をもとに実際のサイズにwrcを変更してもらう
+	//AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
 
-	HWND hwnd = CreateWindow(
-		wc.lpszClassName,
-		L"CG2",
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		wrc.right - wrc.left,
-		wrc.bottom - wrc.top,
-		nullptr,
-		nullptr,
-		wc.hInstance,
-		nullptr);
+	//HWND hwnd = CreateWindow(
+	//	wc.lpszClassName,
+	//	L"CG2",
+	//	WS_OVERLAPPEDWINDOW,
+	//	CW_USEDEFAULT,
+	//	CW_USEDEFAULT,
+	//	wrc.right - wrc.left,
+	//	wrc.bottom - wrc.top,
+	//	nullptr,
+	//	nullptr,
+	//	wc.hInstance,
+	//	nullptr);
 
-	ShowWindow(hwnd, SW_SHOW);
+	//ShowWindow(hwnd, SW_SHOW);
 
 #pragma endregion
 
@@ -1285,19 +1299,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// DirectXの毎フレームの処理
 			//==============================
 
+			//ゲームの処理
 			input->Update();
 
-			if (input->TriggerKey(DIK_0)) {
+			if (input->PushKey(DIK_0)) {
 				OutputDebugStringA("Hit 0\n");
 			}
-
-			//ゲームの処理
 
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
-			//transform.rotate.y += 0.03f;T
+			//transform.rotate.y += 0.03f;
 
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -1560,12 +1573,75 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// 入力解放
 	delete input;
+	// WindowsAPI解放
+	delete winApp_;
 
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 
 	CloseHandle(fenceEvent);
+	//	fence->Release();
+	//	rtvDescriptorHeap->Release();
+	//	srvDescriptorHeap->Release();
+	//	swapChainResource[0]->Release();
+	//	swapChainResource[1]->Release();
+	//	swapChain->Release();
+	//	commandList->Release();
+	//	commandAllocator->Release();
+	//	commandQueue->Release();
+	//	device->Release();
+	//	useAdapter->Release();
+	//	dxgiFactory->Release();
+	//
+	//	//wvpResource->Release();
+	//	//vertexResource->Release();
+	//	
+	//	wvpResourceSphere->Release();
+	//	vertexResourceSphere->Release();
+	//	
+	//	vertexResourceSprite->Release();
+	//	transformationMatrixResourceSprite->Release();
+	//
+	//	indexResourceSprite->Release();
+	//	
+	//	directionalLightSphereResource->Release();
+	//
+	//
+	//	vertexResourceModel->Release();
+	//
+	//
+	//
+	//	graphicsPipelineState->Release();
+	//
+	//	signatureBlob->Release();
+	//	if (errorBlob) {
+	//		errorBlob->Release();
+	//	}
+	//	rootSignature->Release();
+	//	pixelShaderBlob->Release();
+	//	vertexShaderBlob->Release();
+	//
+	//	//materialResource->Release();
+	//	materialResourceSphere->Release();
+	//
+	//	materialResourceSprite->Release();
+	//
+	//#ifdef _DEBUG
+	//	debugController->Release();
+	//#endif
+	//
+	//	mipImages.Release();
+	//	textureResource->Release();
+	//
+	//	depthStencilResource->Release();
+	//	dsvDescriptorHeap->Release();
+	//	
+	//	mipImages2.Release();
+	//	textureResource2->Release();
+	//
+	//	depthStencilResource2->Release();
+	//	dsvDescriptorHeap2->Release();
 
 	CloseWindow(hwnd);
 
