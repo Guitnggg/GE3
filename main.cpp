@@ -26,11 +26,18 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 //ComPtr
 #include <wrl.h>
 
+//#define DIRECTINPUT_VERSION  0x0800  // DirectInputのバージョン指定
+//#include <dinput.h>
+
+#include "Input.h"
+
+#pragma comment(lib,"dinput8.lib")
+
+
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 
 #pragma comment(lib,"dxguid.lib")
-
 
 #pragma comment(lib,"dxcompiler.lib")
 
@@ -133,7 +140,6 @@ IDxcBlob* CompileShader(
 
 	return shaderBlob;
 }
-
 
 //model
 struct MaterialData {
@@ -509,6 +515,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
+	// ポインタ
+	Input* input = nullptr;
+
+	// 入力の初期化
+	input = new Input();
+	input->Initialize(wc.hInstance, hwnd);
+
+
+
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr <ID3D12Debug1> debugController = nullptr;
 	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
@@ -653,6 +668,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
+
+
+	//HRESULT result;  // HRESULTの宣言
+	//HINSTANCE hInstance = GetModuleHandle(NULL);  // または、WinMainから取得する
+
+	//// DirectInputの初期化
+	//IDirectInput8* directInput = nullptr;
+	//result = DirectInput8Create(
+	//	hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
+	//assert(SUCCEEDED(result));
+
+	//// キーボードデバイスの生成
+	//IDirectInputDevice8* keyboard = nullptr;
+	//result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
+	//assert(SUCCEEDED(result));
+
+	//// 入力データ形式のセット
+	//result = keyboard->SetDataFormat(&c_dfDIKeyboard); // 
+	//assert(SUCCEEDED(result));
+
+	//// 排他制御レベルのセット
+	//result = keyboard->SetCooperativeLevel(
+	//	hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+	//assert(SUCCEEDED(result));
 
 
 #pragma region Swap Chainの生成
@@ -940,6 +980,60 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 
+	//Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
+
+
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+
+	//vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+
+	//vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
+
+	//vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+
+	//Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
+
+	//Matrix4x4* wvpDate = nullptr;
+
+	//wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpDate));
+
+	//*wvpDate = MakeIdentity4x4();
+
+	//VertexData* vertexData = nullptr;
+
+	//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	////leftTop
+	//vertexData[0].position = { -0.5f, -0.5f,0.0f,1.0f };
+	//vertexData[0].texcoord = { 0.0f,1.0f };
+
+	////Top
+	//vertexData[1].position = { 0.0f, 0.5f,0.0f,1.0f };
+	//vertexData[1].texcoord = { 0.5f,0.0f };
+
+	////rightBottom
+	//vertexData[2].position = { 0.5f, -0.5f,0.0f,1.0f };
+	//vertexData[2].texcoord = { 1.0f,1.0f };
+
+
+
+	////leftTop
+	//vertexData[3].position = { -0.5f, -0.5f,0.5f,1.0f };
+	//vertexData[3].texcoord = { 0.0f,1.0f };
+
+	////Top
+	//vertexData[4].position = { 0.0f, 0.0f,0.0f,1.0f };
+	//vertexData[4].texcoord = { 0.5f,0.0f };
+
+	////rightBottom
+	//vertexData[5].position = { 0.5f, -0.5f,-0.5f,1.0f };
+	//vertexData[5].texcoord = { 1.0f,1.0f };
+
+
+
+
+
+
 	uint32_t SphereVertexNum = 16 * 16 * 6;
 
 	//Sphere
@@ -965,6 +1059,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	VertexData* vertexDataSphere = nullptr;
 
 	vertexResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere));
+
+
+
 
 
 	//Sprite
@@ -1137,6 +1234,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{ 0.0f,0.0f,0.0f }
 	};
 
+
+	//float *inputMaterial[3] = { &materialDate->x,&materialDate->y,&materialDate->z };
+	//float* inputTransform[3] = { &transform.translate.x,&transform.translate.y,&transform.translate.z };
+	//float* inputRotate[3] = { &transform.rotate.x,&transform.rotate.y,&transform.rotate.z };
+	//float* inputScale[3] = { &transform.scale.x,&transform.scale.y,&transform.scale.z };
+
+
 	float* inputMaterialSphere[3] = { &materialDateSphere->color.x,&materialDateSphere->color.y,&materialDateSphere->color.z };
 	float* inputTransformSphere[3] = { &transformSphere.translate.x,&transformSphere.translate.y,&transformSphere.translate.z };
 	float* inputRotateSphere[3] = { &transformSphere.rotate.x,&transformSphere.rotate.y,&transformSphere.rotate.z };
@@ -1179,6 +1283,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			DispatchMessage(&msg);
 		}
 		else {
+
+			//==============================
+			// DirectXの毎フレームの処理
+			//==============================
+
+			// キーボード情報の所得開始
+			keyboard->Acquire();
+
+			// 全キーの入力状態を取得する
+			BYTE key[256] = {};
+			keyboard->GetDeviceState(sizeof(key), key);
+
+			//// 数字の0キーが押されていたら
+			//if (key[DIK_0]) {
+			//	OutputDebugStringA("Hit 0\n"); // 出力ウィンドウに「Hit 0」と表示
+			//}
+
+
+
+
+
 			//ゲームの処理
 
 			ImGui_ImplDX12_NewFrame();
@@ -1288,7 +1413,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat2("UVTranlate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
-
 
 
 			//ImGuiの内部コマンド
@@ -1447,12 +1571,76 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 	}
 
+	// 入力解放
+	delete input;
+
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 
 	CloseHandle(fenceEvent);
-	
+	//	fence->Release();
+	//	rtvDescriptorHeap->Release();
+	//	srvDescriptorHeap->Release();
+	//	swapChainResource[0]->Release();
+	//	swapChainResource[1]->Release();
+	//	swapChain->Release();
+	//	commandList->Release();
+	//	commandAllocator->Release();
+	//	commandQueue->Release();
+	//	device->Release();
+	//	useAdapter->Release();
+	//	dxgiFactory->Release();
+	//
+	//	//wvpResource->Release();
+	//	//vertexResource->Release();
+	//	
+	//	wvpResourceSphere->Release();
+	//	vertexResourceSphere->Release();
+	//	
+	//	vertexResourceSprite->Release();
+	//	transformationMatrixResourceSprite->Release();
+	//
+	//	indexResourceSprite->Release();
+	//	
+	//	directionalLightSphereResource->Release();
+	//
+	//
+	//	vertexResourceModel->Release();
+	//
+	//
+	//
+	//	graphicsPipelineState->Release();
+	//
+	//	signatureBlob->Release();
+	//	if (errorBlob) {
+	//		errorBlob->Release();
+	//	}
+	//	rootSignature->Release();
+	//	pixelShaderBlob->Release();
+	//	vertexShaderBlob->Release();
+	//
+	//	//materialResource->Release();
+	//	materialResourceSphere->Release();
+	//
+	//	materialResourceSprite->Release();
+	//
+	//#ifdef _DEBUG
+	//	debugController->Release();
+	//#endif
+	//
+	//	mipImages.Release();
+	//	textureResource->Release();
+	//
+	//	depthStencilResource->Release();
+	//	dsvDescriptorHeap->Release();
+	//	
+	//	mipImages2.Release();
+	//	textureResource2->Release();
+	//
+	//	depthStencilResource2->Release();
+	//	dsvDescriptorHeap2->Release();
+
 	CloseWindow(hwnd);
 
 	CoUninitialize();
