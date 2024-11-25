@@ -940,60 +940,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 
-	//Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
-
-
-	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-
-	//vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-
-	//vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
-
-	//vertexBufferView.StrideInBytes = sizeof(VertexData);
-
-
-	//Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
-
-	//Matrix4x4* wvpDate = nullptr;
-
-	//wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpDate));
-
-	//*wvpDate = MakeIdentity4x4();
-
-	//VertexData* vertexData = nullptr;
-
-	//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	////leftTop
-	//vertexData[0].position = { -0.5f, -0.5f,0.0f,1.0f };
-	//vertexData[0].texcoord = { 0.0f,1.0f };
-
-	////Top
-	//vertexData[1].position = { 0.0f, 0.5f,0.0f,1.0f };
-	//vertexData[1].texcoord = { 0.5f,0.0f };
-
-	////rightBottom
-	//vertexData[2].position = { 0.5f, -0.5f,0.0f,1.0f };
-	//vertexData[2].texcoord = { 1.0f,1.0f };
-
-
-
-	////leftTop
-	//vertexData[3].position = { -0.5f, -0.5f,0.5f,1.0f };
-	//vertexData[3].texcoord = { 0.0f,1.0f };
-
-	////Top
-	//vertexData[4].position = { 0.0f, 0.0f,0.0f,1.0f };
-	//vertexData[4].texcoord = { 0.5f,0.0f };
-
-	////rightBottom
-	//vertexData[5].position = { 0.5f, -0.5f,-0.5f,1.0f };
-	//vertexData[5].texcoord = { 1.0f,1.0f };
-
-
-
-
-
-
 	uint32_t SphereVertexNum = 16 * 16 * 6;
 
 	//Sphere
@@ -1019,9 +965,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	VertexData* vertexDataSphere = nullptr;
 
 	vertexResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere));
-
-
-
 
 
 	//Sprite
@@ -1193,13 +1136,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{ 0.0f,0.0f,0.0f },
 		{ 0.0f,0.0f,0.0f }
 	};
-
-
-	//float *inputMaterial[3] = { &materialDate->x,&materialDate->y,&materialDate->z };
-	//float* inputTransform[3] = { &transform.translate.x,&transform.translate.y,&transform.translate.z };
-	//float* inputRotate[3] = { &transform.rotate.x,&transform.rotate.y,&transform.rotate.z };
-	//float* inputScale[3] = { &transform.scale.x,&transform.scale.y,&transform.scale.z };
-
 
 	float* inputMaterialSphere[3] = { &materialDateSphere->color.x,&materialDateSphere->color.y,&materialDateSphere->color.z };
 	float* inputTransformSphere[3] = { &transformSphere.translate.x,&transformSphere.translate.y,&transformSphere.translate.z };
@@ -1516,68 +1452,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui::DestroyContext();
 
 	CloseHandle(fenceEvent);
-	//	fence->Release();
-	//	rtvDescriptorHeap->Release();
-	//	srvDescriptorHeap->Release();
-	//	swapChainResource[0]->Release();
-	//	swapChainResource[1]->Release();
-	//	swapChain->Release();
-	//	commandList->Release();
-	//	commandAllocator->Release();
-	//	commandQueue->Release();
-	//	device->Release();
-	//	useAdapter->Release();
-	//	dxgiFactory->Release();
-	//
-	//	//wvpResource->Release();
-	//	//vertexResource->Release();
-	//	
-	//	wvpResourceSphere->Release();
-	//	vertexResourceSphere->Release();
-	//	
-	//	vertexResourceSprite->Release();
-	//	transformationMatrixResourceSprite->Release();
-	//
-	//	indexResourceSprite->Release();
-	//	
-	//	directionalLightSphereResource->Release();
-	//
-	//
-	//	vertexResourceModel->Release();
-	//
-	//
-	//
-	//	graphicsPipelineState->Release();
-	//
-	//	signatureBlob->Release();
-	//	if (errorBlob) {
-	//		errorBlob->Release();
-	//	}
-	//	rootSignature->Release();
-	//	pixelShaderBlob->Release();
-	//	vertexShaderBlob->Release();
-	//
-	//	//materialResource->Release();
-	//	materialResourceSphere->Release();
-	//
-	//	materialResourceSprite->Release();
-	//
-	//#ifdef _DEBUG
-	//	debugController->Release();
-	//#endif
-	//
-	//	mipImages.Release();
-	//	textureResource->Release();
-	//
-	//	depthStencilResource->Release();
-	//	dsvDescriptorHeap->Release();
-	//	
-	//	mipImages2.Release();
-	//	textureResource2->Release();
-	//
-	//	depthStencilResource2->Release();
-	//	dsvDescriptorHeap2->Release();
-
+	
 	CloseWindow(hwnd);
 
 	CoUninitialize();
