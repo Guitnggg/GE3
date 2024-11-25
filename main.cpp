@@ -15,7 +15,6 @@
 
 #include "externals/DirectXTex/DirectXTex.h"
 
-
 #include"externals/imgui/imgui.h"
 #include"externals/imgui/imgui_impl_dx12.h"
 #include"externals/imgui/imgui_impl_win32.h"
@@ -33,6 +32,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
+
 
 #pragma comment(lib,"dxcompiler.lib")
 
@@ -135,6 +135,7 @@ IDxcBlob* CompileShader(
 
 	return shaderBlob;
 }
+
 
 //model
 struct MaterialData {
@@ -520,6 +521,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 入力の更新
 	input->Update();
 
+
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr <ID3D12Debug1> debugController = nullptr;
 	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
@@ -664,6 +666,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
+
+
+	//HRESULT result;  // HRESULTの宣言
+	//HINSTANCE hInstance = GetModuleHandle(NULL);  // または、WinMainから取得する
+
+	//// DirectInputの初期化
+	//IDirectInput8* directInput = nullptr;
+	//result = DirectInput8Create(
+	//	hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
+	//assert(SUCCEEDED(result));
+
+	//// キーボードデバイスの生成
+	//IDirectInputDevice8* keyboard = nullptr;
+	//result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
+	//assert(SUCCEEDED(result));
+
+	//// 入力データ形式のセット
+	//result = keyboard->SetDataFormat(&c_dfDIKeyboard); // 
+	//assert(SUCCEEDED(result));
+
+	//// 排他制御レベルのセット
+	//result = keyboard->SetCooperativeLevel(
+	//	hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+	//assert(SUCCEEDED(result));
 
 
 #pragma region Swap Chainの生成
@@ -1094,7 +1121,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	indexDataSprite[4] = 3;
 	indexDataSprite[5] = 2;
 
-
 	//モデルの読み込み
 	//ModelData modelData = LoadObjFile("resource", "plane.obj");	
 
@@ -1259,16 +1285,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// DirectXの毎フレームの処理
 			//==============================
 
-			//ゲームの処理
-
-			// 入力の更新
 			input->Update();
+
+			if (input->TriggerKey(DIK_0)) {
+				OutputDebugStringA("Hit 0\n");
+			}
+
+			//ゲームの処理
 
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
-			//transform.rotate.y += 0.03f;
+			//transform.rotate.y += 0.03f;T
 
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -1537,67 +1566,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui::DestroyContext();
 
 	CloseHandle(fenceEvent);
-	//	fence->Release();
-	//	rtvDescriptorHeap->Release();
-	//	srvDescriptorHeap->Release();
-	//	swapChainResource[0]->Release();
-	//	swapChainResource[1]->Release();
-	//	swapChain->Release();
-	//	commandList->Release();
-	//	commandAllocator->Release();
-	//	commandQueue->Release();
-	//	device->Release();
-	//	useAdapter->Release();
-	//	dxgiFactory->Release();
-	//
-	//	//wvpResource->Release();
-	//	//vertexResource->Release();
-	//	
-	//	wvpResourceSphere->Release();
-	//	vertexResourceSphere->Release();
-	//	
-	//	vertexResourceSprite->Release();
-	//	transformationMatrixResourceSprite->Release();
-	//
-	//	indexResourceSprite->Release();
-	//	
-	//	directionalLightSphereResource->Release();
-	//
-	//
-	//	vertexResourceModel->Release();
-	//
-	//
-	//
-	//	graphicsPipelineState->Release();
-	//
-	//	signatureBlob->Release();
-	//	if (errorBlob) {
-	//		errorBlob->Release();
-	//	}
-	//	rootSignature->Release();
-	//	pixelShaderBlob->Release();
-	//	vertexShaderBlob->Release();
-	//
-	//	//materialResource->Release();
-	//	materialResourceSphere->Release();
-	//
-	//	materialResourceSprite->Release();
-	//
-	//#ifdef _DEBUG
-	//	debugController->Release();
-	//#endif
-	//
-	//	mipImages.Release();
-	//	textureResource->Release();
-	//
-	//	depthStencilResource->Release();
-	//	dsvDescriptorHeap->Release();
-	//	
-	//	mipImages2.Release();
-	//	textureResource2->Release();
-	//
-	//	depthStencilResource2->Release();
-	//	dsvDescriptorHeap2->Release();
 
 	CloseWindow(hwnd);
 
