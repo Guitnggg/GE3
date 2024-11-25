@@ -1,31 +1,59 @@
-#pragma once
+#include "Input.h"
 
-#include <Windows.h>
-#include <wrl.h>
-#define DIRECTINPUT_VERSION 0x0800 // DirectInputのバージョン指定
-#include <dinput.h>
+#include <cassert>
 
-/// <summary>
-/// 入力
-/// </summary>
+#pragma comment(lib,"dinput8.lib")
+#pragma comment(lib,"dxguid.lib")
 
-class Input
+void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 {
-public: // メンバ関数
+	HRESULT result;
 
-	// namespace省略
-	template<class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+	// DirectInputのインスタンス生成
+	result = DirectInput8Create(
+		hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
+	assert(SUCCEEDED(result));
 
-	// 初期化
-	void Initialize(HINSTANCE hInstance, HWND hwnd);
+	// キーボードデバイス生成
+	//ComPtr<IDirectInputDevice8>keyboard;
+	result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
+	assert(SUCCEEDED(result));
 
-	// 更新
-	void Update();
+	// 入力データ形式のセット
+	result = keyboard->SetDataFormat(&c_dfDIKeyboard);
+	assert(SUCCEEDED(result));
 
-private: // メンバ変数
+	// 排他制御レベルのセット
+	result = keyboard->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+	assert(SUCCEEDED(result));
+}
 
-	// キーボードのデバイス
-	ComPtr<IDirectInputDevice8> keyboard;
+void Input::Update()
+{
+	// 前回のキー入力を保存
+	memcpy(keyPre, key, sizeof(key));
 
-};
+	// キーボード情報の所得開始
+	keyboard->Acquire();
 
+	// 全キーの入力状態を取得する
+	//BYTE key[256] = {};
+	keyboard->GetDeviceState(sizeof(key), key);
+}
+
+bool Input::PushKey(BYTE keyNumber)
+{
+	// 指定キーを押していればtrueを返す
+	if (key[keyNumber]) {
+		return true;
+	}
+
+	// そうでなければfalseを返す
+	return false;
+}
+
+bool Input::TriggerKey(BYTE keyNumber)
+{
+	// 今フレームで押されていて、前フレームでは押されていない場合にtrueを返す
+	return key[keyNumber] && !keyPre[keyNumber];
+}
