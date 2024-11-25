@@ -68,6 +68,9 @@
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h">
       <Filter>imgui</Filter>
     </ClInclude>
+    <ClInclude Include="Mymath.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
