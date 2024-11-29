@@ -21,10 +21,12 @@
 #include"externals/imgui/imgui_impl_win32.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-#include "Mymath.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 //ComPtr
 #include <wrl.h>
+
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -134,6 +136,610 @@ IDxcBlob* CompileShader(
 	return shaderBlob;
 }
 
+struct Vector2 {
+	float x;
+	float y;
+};
+
+struct Vector3 {
+	float x;
+	float y;
+	float z;
+};
+
+struct Vector4 {
+	float x;
+	float y;
+	float z;
+	float s;
+};
+
+struct Matrix3x3 {
+	float m[3][3];
+};
+
+struct Matrix4x4 {
+	float m[4][4];
+};
+
+Matrix4x4 MakeIdentity4x4() {
+	Matrix4x4 result{};
+
+	result.m[0][0] = 1.0f;
+	result.m[0][1] = 0.0f;
+	result.m[0][2] = 0.0f;
+	result.m[0][3] = 0.0f;
+	result.m[1][0] = 0.0f;
+	result.m[1][1] = 1.0f;
+	result.m[1][2] = 0.0f;
+	result.m[1][3] = 0.0f;
+	result.m[2][0] = 0.0f;
+	result.m[2][1] = 0.0f;
+	result.m[2][2] = 1.0f;
+	result.m[2][3] = 0.0f;
+	result.m[3][0] = 0.0f;
+	result.m[3][1] = 0.0f;
+	result.m[3][2] = 0.0f;
+	result.m[3][3] = 1.0f;
+
+	return result;
+}
+
+Matrix4x4 MakeScaleMatrix(Vector3 scale) {
+	Matrix4x4 result{};
+	result.m[0][0] = scale.x;
+	result.m[0][1] = 0.0f;
+	result.m[0][2] = 0.0f;
+	result.m[0][3] = 0.0f;
+	result.m[1][0] = 0.0f;
+	result.m[1][1] = scale.y;
+	result.m[1][2] = 0.0f;
+	result.m[1][3] = 0.0f;
+	result.m[2][0] = 0.0f;
+	result.m[2][1] = 0.0f;
+	result.m[2][2] = scale.z;
+	result.m[2][3] = 0.0f;
+	result.m[3][0] = 0.0f;
+	result.m[3][1] = 0.0f;
+	result.m[3][2] = 0.0f;
+	result.m[3][3] = 1.0f;
+
+	return result;
+}
+Matrix4x4 MakeRotateZMatrix(float radian) {
+	Matrix4x4 result{};
+	result.m[0][0] = std::cos(radian);
+	result.m[0][1] = std::sin(radian);
+	result.m[0][2] = 0.0f;
+	result.m[0][3] = 0.0f;
+	result.m[1][0] = -(std::sin(radian));
+	result.m[1][1] = std::cos(radian);
+	result.m[1][2] = 0.0f;
+	result.m[1][3] = 0.0f;
+	result.m[2][0] = 0.0f;
+	result.m[2][1] = 0.0f;
+	result.m[2][2] = 1.0f;
+	result.m[2][3] = 0.0f;
+	result.m[3][0] = 0.0f;
+	result.m[3][1] = 0.0f;
+	result.m[3][2] = 0.0f;
+	result.m[3][3] = 1.0f;
+
+	return result;
+}
+Matrix4x4 MakeTranslateMatrix(Vector3 translate) {
+	Matrix4x4 result{};
+
+	result.m[0][0] = 1.0f;
+	result.m[0][1] = 0.0f;
+	result.m[0][2] = 0.0f;
+	result.m[0][3] = 0.0f;
+	result.m[1][0] = 0.0f;
+	result.m[1][1] = 1.0f;
+	result.m[1][2] = 0.0f;
+	result.m[1][3] = 0.0f;
+	result.m[2][0] = 0.0f;
+	result.m[2][1] = 0.0f;
+	result.m[2][2] = 1.0f;
+	result.m[2][3] = 0.0f;
+	result.m[3][0] = translate.x;
+	result.m[3][1] = translate.y;
+	result.m[3][2] = translate.z;
+	result.m[3][3] = 1.0f;
+
+	return result;
+}
+
+struct Transform {
+	Vector3 scale;
+	Vector3 rotate;
+	Vector3 translate;
+};
+
+#pragma region Affine
+
+Matrix4x4 Multiply(Matrix4x4 m1, Matrix4x4 m2) {
+	Matrix4x4 result{};
+	result.m[0][0] = m1.m[0][0] * m2.m[0][0] + m1.m[0][1] * m2.m[1][0] + m1.m[0][2] * m2.m[2][0] + m1.m[0][3] * m2.m[3][0];
+	result.m[0][1] = m1.m[0][0] * m2.m[0][1] + m1.m[0][1] * m2.m[1][1] + m1.m[0][2] * m2.m[2][1] + m1.m[0][3] * m2.m[3][1];
+	result.m[0][2] = m1.m[0][0] * m2.m[0][2] + m1.m[0][1] * m2.m[1][2] + m1.m[0][2] * m2.m[2][2] + m1.m[0][3] * m2.m[3][2];
+	result.m[0][3] = m1.m[0][0] * m2.m[0][3] + m1.m[0][1] * m2.m[1][3] + m1.m[0][2] * m2.m[2][3] + m1.m[0][3] * m2.m[3][3];
+
+	result.m[1][0] = m1.m[1][0] * m2.m[0][0] + m1.m[1][1] * m2.m[1][0] + m1.m[1][2] * m2.m[2][0] + m1.m[1][3] * m2.m[3][0];
+	result.m[1][1] = m1.m[1][0] * m2.m[0][1] + m1.m[1][1] * m2.m[1][1] + m1.m[1][2] * m2.m[2][1] + m1.m[1][3] * m2.m[3][1];
+	result.m[1][2] = m1.m[1][0] * m2.m[0][2] + m1.m[1][1] * m2.m[1][2] + m1.m[1][2] * m2.m[2][2] + m1.m[1][3] * m2.m[3][2];
+	result.m[1][3] = m1.m[1][0] * m2.m[0][3] + m1.m[1][1] * m2.m[1][3] + m1.m[1][2] * m2.m[2][3] + m1.m[1][3] * m2.m[3][3];
+
+	result.m[2][0] = m1.m[2][0] * m2.m[0][0] + m1.m[2][1] * m2.m[1][0] + m1.m[2][2] * m2.m[2][0] + m1.m[2][3] * m2.m[3][0];
+	result.m[2][1] = m1.m[2][0] * m2.m[0][1] + m1.m[2][1] * m2.m[1][1] + m1.m[2][2] * m2.m[2][1] + m1.m[2][3] * m2.m[3][1];
+	result.m[2][2] = m1.m[2][0] * m2.m[0][2] + m1.m[2][1] * m2.m[1][2] + m1.m[2][2] * m2.m[2][2] + m1.m[2][3] * m2.m[3][2];
+	result.m[2][3] = m1.m[2][0] * m2.m[0][3] + m1.m[2][1] * m2.m[1][3] + m1.m[2][2] * m2.m[2][3] + m1.m[2][3] * m2.m[3][3];
+
+	result.m[3][0] = m1.m[3][0] * m2.m[0][0] + m1.m[3][1] * m2.m[1][0] + m1.m[3][2] * m2.m[2][0] + m1.m[3][3] * m2.m[3][0];
+	result.m[3][1] = m1.m[3][0] * m2.m[0][1] + m1.m[3][1] * m2.m[1][1] + m1.m[3][2] * m2.m[2][1] + m1.m[3][3] * m2.m[3][1];
+	result.m[3][2] = m1.m[3][0] * m2.m[0][2] + m1.m[3][1] * m2.m[1][2] + m1.m[3][2] * m2.m[2][2] + m1.m[3][3] * m2.m[3][2];
+	result.m[3][3] = m1.m[3][0] * m2.m[0][3] + m1.m[3][1] * m2.m[1][3] + m1.m[3][2] * m2.m[2][3] + m1.m[3][3] * m2.m[3][3];
+	return result;
+}
+
+Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
+
+	Matrix4x4 resultX{};
+
+	resultX.m[0][0] = 1.0f;
+	resultX.m[0][1] = 0.0f;
+	resultX.m[0][2] = 0.0f;
+	resultX.m[0][3] = 0.0f;
+	resultX.m[1][0] = 0.0f;
+	resultX.m[1][1] = std::cos(rotate.x);
+	resultX.m[1][2] = std::sin(rotate.x);
+	resultX.m[1][3] = 0.0f;
+	resultX.m[2][0] = 0.0f;
+	resultX.m[2][1] = -(std::sin(rotate.x));
+	resultX.m[2][2] = std::cos(rotate.x);
+	resultX.m[2][3] = 0.0f;
+	resultX.m[3][0] = 0.0f;
+	resultX.m[3][1] = 0.0f;
+	resultX.m[3][2] = 0.0f;
+	resultX.m[3][3] = 1.0f;
+
+
+	Matrix4x4 resultY{};
+
+	resultY.m[0][0] = std::cos(rotate.y);
+	resultY.m[0][1] = 0.0f;
+	resultY.m[0][2] = -(std::sin(rotate.y));
+	resultY.m[0][3] = 0.0f;
+	resultY.m[1][0] = 0.0f;
+	resultY.m[1][1] = 1.0f;
+	resultY.m[1][2] = 0.0f;
+	resultY.m[1][3] = 0.0f;
+	resultY.m[2][0] = std::sin(rotate.y);
+	resultY.m[2][1] = 0.0f;
+	resultY.m[2][2] = std::cos(rotate.y);
+	resultY.m[2][3] = 0.0f;
+	resultY.m[3][0] = 0.0f;
+	resultY.m[3][1] = 0.0f;
+	resultY.m[3][2] = 0.0f;
+	resultY.m[3][3] = 1.0f;
+
+
+	Matrix4x4 resultZ{};
+
+	resultZ.m[0][0] = std::cos(rotate.z);
+	resultZ.m[0][1] = std::sin(rotate.z);
+	resultZ.m[0][2] = 0.0f;
+	resultZ.m[0][3] = 0.0f;
+	resultZ.m[1][0] = -(std::sin(rotate.z));
+	resultZ.m[1][1] = std::cos(rotate.z);
+	resultZ.m[1][2] = 0.0f;
+	resultZ.m[1][3] = 0.0f;
+	resultZ.m[2][0] = 0.0f;
+	resultZ.m[2][1] = 0.0f;
+	resultZ.m[2][2] = 1.0f;
+	resultZ.m[2][3] = 0.0f;
+	resultZ.m[3][0] = 0.0f;
+	resultZ.m[3][1] = 0.0f;
+	resultZ.m[3][2] = 0.0f;
+	resultZ.m[3][3] = 1.0f;
+
+
+	Matrix4x4 rotateXYZ = Multiply(resultX, Multiply(resultY, resultZ));
+
+
+	Matrix4x4 result;
+
+	result.m[0][0] = scale.x * rotateXYZ.m[0][0];
+	result.m[0][1] = scale.x * rotateXYZ.m[0][1];
+	result.m[0][2] = scale.x * rotateXYZ.m[0][2];
+	result.m[0][3] = 0.0f;
+	result.m[1][0] = scale.y * rotateXYZ.m[1][0];
+	result.m[1][1] = scale.y * rotateXYZ.m[1][1];
+	result.m[1][2] = scale.y * rotateXYZ.m[1][2];
+	result.m[1][3] = 0.0f;
+	result.m[2][0] = scale.z * rotateXYZ.m[2][0];
+	result.m[2][1] = scale.z * rotateXYZ.m[2][1];
+	result.m[2][2] = scale.z * rotateXYZ.m[2][2];
+	result.m[2][3] = 0.0f;
+	result.m[3][0] = translate.x;
+	result.m[3][1] = translate.y;
+	result.m[3][2] = translate.z;
+	result.m[3][3] = 1.0f;
+
+	return result;
+}
+#pragma endregion
+
+#pragma region 逆数
+Matrix4x4 Inverse(const Matrix4x4& m) {
+	float A = m.m[0][0] * m.m[1][1] * m.m[2][2] * m.m[3][3]
+		+ m.m[0][0] * m.m[1][2] * m.m[2][3] * m.m[3][1]
+		+ m.m[0][0] * m.m[1][3] * m.m[2][1] * m.m[3][2]
+		- m.m[0][0] * m.m[1][3] * m.m[2][2] * m.m[3][1]
+		- m.m[0][0] * m.m[1][2] * m.m[2][1] * m.m[3][3]
+		- m.m[0][0] * m.m[1][1] * m.m[2][3] * m.m[3][2]
+		- m.m[0][1] * m.m[1][0] * m.m[2][2] * m.m[3][3]
+		- m.m[0][2] * m.m[1][0] * m.m[2][3] * m.m[3][1]
+		- m.m[0][3] * m.m[1][0] * m.m[2][1] * m.m[3][2]
+		+ m.m[0][3] * m.m[1][0] * m.m[2][2] * m.m[3][1]
+		+ m.m[0][2] * m.m[1][0] * m.m[2][1] * m.m[3][3]
+		+ m.m[0][1] * m.m[1][0] * m.m[2][3] * m.m[3][2]
+		+ m.m[0][1] * m.m[1][2] * m.m[2][0] * m.m[3][3]
+		+ m.m[0][2] * m.m[1][3] * m.m[2][0] * m.m[3][1]
+		+ m.m[0][3] * m.m[1][1] * m.m[2][0] * m.m[3][2]
+		- m.m[0][3] * m.m[1][2] * m.m[2][0] * m.m[3][1]
+		- m.m[0][2] * m.m[1][1] * m.m[2][0] * m.m[3][3]
+		- m.m[0][1] * m.m[1][3] * m.m[2][0] * m.m[3][2]
+		- m.m[0][1] * m.m[1][2] * m.m[2][3] * m.m[3][0]
+		- m.m[0][2] * m.m[1][3] * m.m[2][1] * m.m[3][0]
+		- m.m[0][3] * m.m[1][1] * m.m[2][2] * m.m[3][0]
+		+ m.m[0][3] * m.m[1][2] * m.m[2][1] * m.m[3][0]
+		+ m.m[0][2] * m.m[1][1] * m.m[2][3] * m.m[3][0]
+		+ m.m[0][1] * m.m[1][3] * m.m[2][2] * m.m[3][0];
+
+
+	Matrix4x4 result{};
+	result.m[0][0] = (m.m[1][1] * m.m[2][2] * m.m[3][3]
+		+ m.m[1][2] * m.m[2][3] * m.m[3][1]
+		+ m.m[1][3] * m.m[2][1] * m.m[3][2]
+		- m.m[1][3] * m.m[2][2] * m.m[3][1]
+		- m.m[1][2] * m.m[2][1] * m.m[3][3]
+		- m.m[1][1] * m.m[2][3] * m.m[3][2]) / A;
+
+	result.m[0][1] = (-m.m[0][1] * m.m[2][2] * m.m[3][3]
+		- m.m[0][2] * m.m[2][3] * m.m[3][1]
+		- m.m[0][3] * m.m[2][1] * m.m[3][2]
+		+ m.m[0][3] * m.m[2][2] * m.m[3][1]
+		+ m.m[0][2] * m.m[2][1] * m.m[3][3]
+		+ m.m[0][1] * m.m[2][3] * m.m[3][2]) / A;
+
+	result.m[0][2] = (m.m[0][1] * m.m[1][2] * m.m[3][3]
+		+ m.m[0][2] * m.m[1][3] * m.m[3][1]
+		+ m.m[0][3] * m.m[1][1] * m.m[3][2]
+		- m.m[0][3] * m.m[1][2] * m.m[3][1]
+		- m.m[0][2] * m.m[1][1] * m.m[3][3]
+		- m.m[0][1] * m.m[1][3] * m.m[3][2]) / A;
+
+	result.m[0][3] = (-m.m[0][1] * m.m[1][2] * m.m[2][3]
+		- m.m[0][2] * m.m[1][3] * m.m[2][1]
+		- m.m[0][3] * m.m[1][1] * m.m[2][2]
+		+ m.m[0][3] * m.m[1][2] * m.m[2][1]
+		+ m.m[0][2] * m.m[1][1] * m.m[2][3]
+		+ m.m[0][1] * m.m[1][3] * m.m[2][2]) / A;
+
+
+	result.m[1][0] = (-m.m[1][0] * m.m[2][2] * m.m[3][3]
+		- m.m[1][2] * m.m[2][3] * m.m[3][0]
+		- m.m[1][3] * m.m[2][0] * m.m[3][2]
+		+ m.m[1][3] * m.m[2][2] * m.m[3][0]
+		+ m.m[1][2] * m.m[2][0] * m.m[3][3]
+		+ m.m[1][0] * m.m[2][3] * m.m[3][2]) / A;
+
+	result.m[1][1] = (m.m[0][0] * m.m[2][2] * m.m[3][3]
+		+ m.m[0][2] * m.m[2][3] * m.m[3][0]
+		+ m.m[0][3] * m.m[2][0] * m.m[3][2]
+		- m.m[0][3] * m.m[2][2] * m.m[3][0]
+		- m.m[0][2] * m.m[2][0] * m.m[3][3]
+		- m.m[0][0] * m.m[2][3] * m.m[3][2]) / A;
+
+	result.m[1][2] = (-m.m[0][0] * m.m[1][2] * m.m[3][3]
+		- m.m[0][2] * m.m[1][3] * m.m[3][0]
+		- m.m[0][3] * m.m[1][0] * m.m[3][2]
+		+ m.m[0][3] * m.m[1][2] * m.m[3][0]
+		+ m.m[0][2] * m.m[1][0] * m.m[3][3]
+		+ m.m[0][0] * m.m[1][3] * m.m[3][2]) / A;
+
+	result.m[1][3] = (m.m[0][0] * m.m[1][2] * m.m[2][3]
+		+ m.m[0][2] * m.m[1][3] * m.m[2][0]
+		+ m.m[0][3] * m.m[1][0] * m.m[2][2]
+		- m.m[0][3] * m.m[1][2] * m.m[2][0]
+		- m.m[0][2] * m.m[1][0] * m.m[2][3]
+		- m.m[0][0] * m.m[1][3] * m.m[2][2]) / A;
+
+
+	result.m[2][0] = (m.m[1][0] * m.m[2][1] * m.m[3][3]
+		+ m.m[1][1] * m.m[2][3] * m.m[3][0]
+		+ m.m[1][3] * m.m[2][0] * m.m[3][1]
+		- m.m[1][3] * m.m[2][1] * m.m[3][0]
+		- m.m[1][1] * m.m[2][0] * m.m[3][3]
+		- m.m[1][0] * m.m[2][3] * m.m[3][1]) / A;
+
+	result.m[2][1] = (-m.m[0][0] * m.m[2][1] * m.m[3][3]
+		- m.m[0][1] * m.m[2][3] * m.m[3][0]
+		- m.m[0][3] * m.m[2][0] * m.m[3][1]
+		+ m.m[0][3] * m.m[2][1] * m.m[3][0]
+		+ m.m[0][1] * m.m[2][0] * m.m[3][3]
+		+ m.m[0][0] * m.m[2][3] * m.m[3][1]) / A;
+
+	result.m[2][2] = (m.m[0][0] * m.m[1][1] * m.m[3][3]
+		+ m.m[0][1] * m.m[1][3] * m.m[3][0]
+		+ m.m[0][3] * m.m[1][0] * m.m[3][1]
+		- m.m[0][3] * m.m[1][1] * m.m[3][0]
+		- m.m[0][1] * m.m[1][0] * m.m[3][3]
+		- m.m[0][0] * m.m[1][3] * m.m[3][1]) / A;
+
+	result.m[2][3] = (-m.m[0][0] * m.m[1][1] * m.m[2][3]
+		- m.m[0][1] * m.m[1][3] * m.m[2][0]
+		- m.m[0][3] * m.m[1][0] * m.m[2][1]
+		+ m.m[0][3] * m.m[1][1] * m.m[2][0]
+		+ m.m[0][1] * m.m[1][0] * m.m[2][3]
+		+ m.m[0][0] * m.m[1][3] * m.m[2][1]) / A;
+
+
+	result.m[3][0] = (-m.m[1][0] * m.m[2][1] * m.m[3][2]
+		- m.m[1][1] * m.m[2][2] * m.m[3][0]
+		- m.m[1][2] * m.m[2][0] * m.m[3][1]
+		+ m.m[1][2] * m.m[2][1] * m.m[3][0]
+		+ m.m[1][1] * m.m[2][0] * m.m[3][2]
+		+ m.m[1][0] * m.m[2][2] * m.m[3][1]) / A;
+
+	result.m[3][1] = (m.m[0][0] * m.m[2][1] * m.m[3][2]
+		+ m.m[0][1] * m.m[2][2] * m.m[3][0]
+		+ m.m[0][2] * m.m[2][0] * m.m[3][1]
+		- m.m[0][2] * m.m[2][1] * m.m[3][0]
+		- m.m[0][1] * m.m[2][0] * m.m[3][2]
+		- m.m[0][0] * m.m[2][2] * m.m[3][1]) / A;
+
+	result.m[3][2] = (-m.m[0][0] * m.m[1][1] * m.m[3][2]
+		- m.m[0][1] * m.m[1][2] * m.m[3][0]
+		- m.m[0][2] * m.m[1][0] * m.m[3][1]
+		+ m.m[0][2] * m.m[1][1] * m.m[3][0]
+		+ m.m[0][1] * m.m[1][0] * m.m[3][2]
+		+ m.m[0][0] * m.m[1][2] * m.m[3][1]) / A;
+
+	result.m[3][3] = (m.m[0][0] * m.m[1][1] * m.m[2][2]
+		+ m.m[0][1] * m.m[1][2] * m.m[2][0]
+		+ m.m[0][2] * m.m[1][0] * m.m[2][1]
+		- m.m[0][2] * m.m[1][1] * m.m[2][0]
+		- m.m[0][1] * m.m[1][0] * m.m[2][2]
+		- m.m[0][0] * m.m[1][2] * m.m[2][1]) / A;
+
+	return result;
+}
+#pragma endregion
+
+Matrix4x4 MakePerspectiveFovMatrix(float forY, float aspectRatio, float nearClip, float farClip) {
+	Matrix4x4 result;
+	float cot = 1 / std::tan(forY / 2);
+
+	result.m[0][0] = (1 / aspectRatio) * cot;
+	result.m[1][1] = cot;
+	result.m[2][2] = farClip / (farClip - nearClip);
+	result.m[2][3] = 1.0f;
+	result.m[3][2] = (-nearClip * farClip) / (farClip - nearClip);
+
+
+	result.m[0][1] = 0.0f;
+	result.m[0][2] = 0.0f;
+	result.m[0][3] = 0.0f;
+	result.m[1][0] = 0.0f;
+	result.m[1][2] = 0.0f;
+	result.m[1][3] = 0.0f;
+	result.m[2][0] = 0.0f;
+	result.m[2][1] = 0.0f;
+	result.m[3][0] = 0.0f;
+	result.m[3][1] = 0.0f;
+	result.m[3][3] = 0.0f;
+
+
+	return result;
+}
+
+
+Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip) {
+	Matrix4x4 result;
+	result.m[0][0] = 2 / (right - left);
+	result.m[1][1] = 2 / (top - bottom);
+	result.m[2][2] = 1 / (farClip - nearClip);
+
+	result.m[3][0] = (left + right) / (left - right);
+	result.m[3][1] = (top + bottom) / (bottom - top);
+	result.m[3][2] = nearClip / (nearClip - farClip);
+	result.m[3][3] = 1.0f;
+
+	result.m[0][1] = 0.0f;
+	result.m[0][2] = 0.0f;
+	result.m[0][3] = 0.0f;
+	result.m[1][0] = 0.0f;
+	result.m[1][2] = 0.0f;
+	result.m[1][3] = 0.0f;
+	result.m[2][0] = 0.0f;
+	result.m[2][1] = 0.0f;
+	result.m[2][3] = 0.0f;
+
+
+
+	return result;
+}
+
+struct VertexData {
+	Vector4 position;
+	Vector2 texcoord;
+	Vector3 normal;
+};
+
+struct Sphere {
+	Vector3 center;
+	float radius;
+};
+
+
+struct Material {
+	Vector4 color;
+	int32_t enableLighting;
+	float padding[3];//枠確保用06-01 9
+	Matrix4x4 uvTransform;
+};
+
+struct TransformationMatrix {
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+};
+
+
+struct DirectionalLight {
+	Vector4 color;
+	Vector3 direction;
+	float intensity;
+};
+
+Vector3 Normalize(const Vector3& v) {
+	Vector3 result;
+	result.x = v.x / (float)sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
+	result.y = v.y / (float)sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
+	result.z = v.z / (float)sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
+	return result;
+}
+
+VertexData AddVert(const VertexData& v1, const VertexData& v2) {
+	VertexData result{};
+
+	result.position.x = v1.position.x + v2.position.x;
+	result.position.y = v1.position.y + v2.position.y;
+	result.position.z = v1.position.z + v2.position.z;
+	result.position.s = v1.position.s + v2.position.s;
+	result.texcoord.x = v1.texcoord.x + v2.texcoord.x;
+	result.texcoord.y = v1.texcoord.y + v2.texcoord.y;
+	return result;
+}
+
+void DrawSphere(VertexData* vertexDataSphere) {
+
+	const uint32_t kSubdivision = 16;
+
+	float pi = float(M_PI);
+
+	const float kLonEvery = pi * 2.0f / float(kSubdivision);
+	const float kLatEvery = pi / float(kSubdivision);
+
+
+	VertexData vertexDataBkaraA[kSubdivision]{};
+
+	VertexData vertexDataCkaraA[kSubdivision]{};
+
+	VertexData vertexDataDkaraA[kSubdivision][kSubdivision]{};
+
+	VertexData vertexDataDkaraC[kSubdivision]{};
+	VertexData vertexDataDkaraB[kSubdivision]{};
+
+
+	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+		float lat = -pi / 2.0f + kLatEvery * latIndex;//緯度 シ－タ
+
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+
+			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
+			float lon = lonIndex * kLonEvery;//経度　ファイ
+
+
+			VertexData vertA{};
+			vertA.position =
+			{
+				std::cos(lat) * std::cos(lon),
+				std::sin(lat),
+				std::cos(lat) * std::sin(lon),
+				1.0f
+			};
+			vertA.texcoord =
+			{
+				float(lonIndex) / float(kSubdivision),
+				1.0f - float(latIndex) / float(kSubdivision)
+			};
+			vertA.normal = {
+				0.0f,0.0f,-1.0f
+			};
+
+
+			VertexData vertB{};
+			vertB.position =
+			{
+				std::cos(lat + kLatEvery) * std::cos(lon),
+				std::sin(lat + kLatEvery),
+				std::cos(lat + kLatEvery) * std::sin(lon)
+				,1.0f
+			};
+			vertB.texcoord =
+			{
+				float(lonIndex) / float(kSubdivision),
+				1.0f - float(latIndex + 1) / float(kSubdivision)
+			};
+			vertB.normal = {
+				0.0f,0.0f,-1.0f
+			};
+
+
+			VertexData vertC{};
+			vertC.position =
+			{
+				std::cos(lat) * std::cos(lon + kLonEvery),
+				std::sin(lat),
+				std::cos(lat) * std::sin(lon + kLonEvery),
+				1.0f
+			};
+			vertC.texcoord =
+			{
+				float(lonIndex + 1) / float(kSubdivision),
+				1.0f - float(latIndex) / float(kSubdivision)
+			};
+			vertC.normal = {
+				0.0f,0.0f,-1.0f
+			};
+
+
+			VertexData vertD{};
+			vertD.position =
+			{
+				std::cos(lat + kLatEvery) * std::cos(lon + kLonEvery),
+				std::sin(lat + kLatEvery),
+				std::cos(lat + kLatEvery) * std::sin(lon + kLonEvery),
+				1.0f
+			};
+			vertD.texcoord =
+			{
+				float(lonIndex + 1) / float(kSubdivision),
+				1.0f - float(latIndex + 1) / float(kSubdivision)
+			};
+			vertD.normal = {
+				0.0f,0.0f,-1.0f
+			};
+
+			vertexDataSphere[start + 0] = vertA;
+			vertexDataSphere[start + 1] = vertB;
+			vertexDataSphere[start + 2] = vertC;
+
+			vertexDataSphere[start + 3] = vertC;
+			vertexDataSphere[start + 4] = vertB;
+			vertexDataSphere[start + 5] = vertD;
+		}
+	}
+
+	for (uint32_t index = 0; index < kSubdivision * kSubdivision * 6; index++) {
+		vertexDataSphere[index].normal.x = vertexDataSphere[index].position.x;
+		vertexDataSphere[index].normal.y = vertexDataSphere[index].position.y;
+		vertexDataSphere[index].normal.z = vertexDataSphere[index].position.z;
+	}
+}
+
 
 //model
 struct MaterialData {
@@ -227,9 +833,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 					std::string index;
 					std::getline(v, index, '/'); //  "/"でインデックスを区切る
 					elementIndices[element] = std::stoi(index);
-
 				}
-
 
 				Vector4 position = positions[elementIndices[0] - 1];
 				Vector2 texcoord = texcoords[elementIndices[1] - 1];
@@ -271,8 +875,6 @@ struct D3DResourceLeakChecker {
 	}
 };
 
-
-
 Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t sizeInBytes) {
 	//VertexResource
 	//頂点シェーダを作る
@@ -299,7 +901,6 @@ Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComP
 	return vertexResource;
 }
 
-
 Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> CreateDescriptorHeap(Microsoft::WRL::ComPtr <ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDesciptors, bool shaderVisible)
 {
 	//ディスクリプターヒープの生成
@@ -314,8 +915,6 @@ Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> CreateDescriptorHeap(Microsoft::WR
 	assert(SUCCEEDED(hr));
 	return descriptorHeap;
 }
-
-
 
 DirectX::ScratchImage LoadTexture(const std::string& filePath) {
 	//テクスチャファイル // byte関連
@@ -716,8 +1315,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	device->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
 
 
+
+
+
+
+
+
 	//textureを読んで転送
-	DirectX::ScratchImage mipImages = LoadTexture("resource/uvChecker.png");
+	DirectX::ScratchImage mipImages = LoadTexture("resource/fence.png");
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = CrateTextureResource(device, metadata);
 	UploadTextureData(textureResource, mipImages);
@@ -890,7 +1495,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//BlendState
 	D3D12_BLEND_DESC blendDesc{};
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
+	blendDesc.RenderTarget[0].BlendEnable = true;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 
 	//RasterizerState
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
@@ -899,10 +1510,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	//shaderのコンパイラ
-	IDxcBlob* vertexShaderBlob = CompileShader(L"resource/shaders/Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+	IDxcBlob* vertexShaderBlob = CompileShader(L"Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(vertexShaderBlob != nullptr);
 
-	IDxcBlob* pixelShaderBlob = CompileShader(L"resource/shaders/Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	IDxcBlob* pixelShaderBlob = CompileShader(L"Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(pixelShaderBlob != nullptr);
 
 
@@ -1059,8 +1670,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexDataSprite[3].position = { 640.0f,0.0f,0.0f,1.0f };//4
 	vertexDataSprite[3].texcoord = { 1.0f,0.0f };
 
-
-
 	//Sprite
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
 
@@ -1085,9 +1694,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//モデルの読み込み
-	//ModelData modelData = LoadObjFile("resource", "plane.obj");	
+	ModelData modelData = LoadObjFile("resource", "plane.obj");
 
-	ModelData modelData = LoadObjFile("resource", "axis.obj");
+	/*ModelData modelData = LoadObjFile("resource", "axis.obj");*/
 
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceModel = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
@@ -1201,18 +1810,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//float* inputScale[3] = { &transform.scale.x,&transform.scale.y,&transform.scale.z };
 
 
-	float* inputMaterialSphere[3] = { &materialDateSphere->color.x,&materialDateSphere->color.y,&materialDateSphere->color.z };
+	float* inputMaterialSphere[4] = { &materialDateSphere->color.x,&materialDateSphere->color.y,&materialDateSphere->color.z ,&materialDateSphere->color.s };
 	float* inputTransformSphere[3] = { &transformSphere.translate.x,&transformSphere.translate.y,&transformSphere.translate.z };
 	float* inputRotateSphere[3] = { &transformSphere.rotate.x,&transformSphere.rotate.y,&transformSphere.rotate.z };
 	float* inputScaleSphere[3] = { &transformSphere.scale.x,&transformSphere.scale.y,&transformSphere.scale.z };
-	float textureChange = 0;
+	bool textureChange = false;
 
 
 	float* inputMaterialLigth[3] = { &directionalLightSphereData->color.x,&directionalLightSphereData->color.y,&directionalLightSphereData->color.z };
 	float* inputDirectionLight[3] = { &directionalLightSphereData->direction.x,&directionalLightSphereData->direction.y,&directionalLightSphereData->direction.z };
 	float* intensity = &directionalLightSphereData->intensity;
 
-
+	bool isSprite = false;
 
 	//ImGui初期化
 	IMGUI_CHECKVERSION();
@@ -1235,6 +1844,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	assert(fenceEvent != nullptr);
 
+
+
+
+
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -1249,7 +1862,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
-			//transform.rotate.y += 0.03f;
+			// sphere横回転
+			/*transformSphere.rotate.y += 0.03f;*/
 
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -1272,6 +1886,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			DrawSphere(vertexDataSphere);
 
+
+
+
 			directionalLightSphereData->direction = Normalize(directionalLightSphereData->direction);
 
 
@@ -1293,10 +1910,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//開発用UIの処理
 			/*ImGui::ShowDemoWindow();*/
 
-			//ここにテキストを入れられる
-			ImGui::Text("ImGuiText");
-
-
 			//ImGui::Text("Traiangle");
 			//ImGui::InputFloat3("Material", *inputMaterial);
 			//ImGui::SliderFloat3("SliderMaterial", *inputMaterial, 0.0f, 1.0f);
@@ -1310,10 +1923,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//ImGui::InputFloat3("Scale", *inputScale);
 			//ImGui::SliderFloat3("SliderScale", *inputScale, 0.5f, 5.0f);
 
+			ImGui::Text("Model");
+
+			/*ImGui::Checkbox()*/
 
 			ImGui::Text("Sphere");
-			ImGui::InputFloat3("MaterialSphere", *inputMaterialSphere);
-			ImGui::SliderFloat3("SliderMaterialSphere", *inputMaterialSphere, 0.0f, 1.0f);
+
+			ImGui::ColorEdit4("SphereColor", *inputMaterialSphere);
+			/*ImGui::InputFloat3("MaterialSphere", *inputMaterialSphere);
+			ImGui::SliderFloat3("SliderMaterialSphere", *inputMaterialSphere, 0.0f, 1.0f);*/
+
+			ImGui::Checkbox("MonsterBall", &textureChange);
 
 			ImGui::InputFloat3("VertexSphere", *inputTransformSphere);
 			ImGui::SliderFloat3("SliderVertexSphere", *inputTransformSphere, -5.0f, 5.0f);
@@ -1324,7 +1944,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::InputFloat3("ScaleSphere", *inputScaleSphere);
 			ImGui::SliderFloat3("SliderScaleSphere", *inputScaleSphere, 0.5f, 5.0f);
 
-			ImGui::InputFloat("SphereTexture", &textureChange);
 
 
 			ImGui::Text("Ligth");
@@ -1338,16 +1957,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::InputFloat("intensity", intensity);
 
 
+
 			ImGui::Text("Sprite");
+			ImGui::Checkbox("Active", &isSprite);
 			ImGui::InputFloat("SpriteX", &transformSprite.translate.x);
 			ImGui::SliderFloat("SliderSpriteX", &transformSprite.translate.x, 0.0f, 1000.0f);
 
 			ImGui::InputFloat("SpriteY", &transformSprite.translate.y);
 			ImGui::SliderFloat("SliderSpriteY", &transformSprite.translate.y, 0.0f, 600.0f);
-
-			ImGui::InputFloat("SpriteZ", &transformSprite.translate.z);
-			ImGui::SliderFloat("SliderSpriteZ", &transformSprite.translate.z, 0.0f, 0.0f);
-
 
 			ImGui::DragFloat2("UVTranlate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
@@ -1419,7 +2036,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//commandList->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
 			//commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());
 
-			//if (textureChange == 0) {
+			//if (textureChange == false) {
 			//	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			//}
 			//else {
@@ -1452,16 +2069,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 			//UI
-			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-			//commandList->IASetIndexBuffer(&indexBufferViewSprite);
+			if (isSprite) {
 
-			//commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
+				commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+				commandList->IASetIndexBuffer(&indexBufferViewSprite);
 
-			//commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());		
+				commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
 
-			//commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+				commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
-			//commandList->DrawIndexedInstanced(6, 1, 0, 0 ,0);
+				commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+
+				commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			}
+
+
 
 			//実際のcommandListのImGui描画コマンドを挟む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
@@ -1502,6 +2124,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			}
 
+
 			//次のフレームのコマンドリストを準備
 			hr = commandAllocator->Reset();
 			assert(SUCCEEDED(hr));
@@ -1514,6 +2137,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+
 
 	CloseHandle(fenceEvent);
 	//	fence->Release();
