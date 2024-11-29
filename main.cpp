@@ -26,6 +26,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 //ComPtr
 #include <wrl.h>
 
+
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 
@@ -716,6 +717,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	device->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
 
 
+
+
+
+
+
+
 	//textureを読んで転送
 	DirectX::ScratchImage mipImages = LoadTexture("resource/uvChecker.png");
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
@@ -890,7 +897,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//BlendState
 	D3D12_BLEND_DESC blendDesc{};
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
+	blendDesc.RenderTarget[0].BlendEnable = true;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 
 	//RasterizerState
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
@@ -1201,18 +1214,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//float* inputScale[3] = { &transform.scale.x,&transform.scale.y,&transform.scale.z };
 
 
-	float* inputMaterialSphere[3] = { &materialDateSphere->color.x,&materialDateSphere->color.y,&materialDateSphere->color.z };
+	float* inputMaterialSphere[4] = { &materialDateSphere->color.x,&materialDateSphere->color.y,&materialDateSphere->color.z ,&materialDateSphere->color.s };
 	float* inputTransformSphere[3] = { &transformSphere.translate.x,&transformSphere.translate.y,&transformSphere.translate.z };
 	float* inputRotateSphere[3] = { &transformSphere.rotate.x,&transformSphere.rotate.y,&transformSphere.rotate.z };
 	float* inputScaleSphere[3] = { &transformSphere.scale.x,&transformSphere.scale.y,&transformSphere.scale.z };
-	float textureChange = 0;
+	bool textureChange = false;
 
 
 	float* inputMaterialLigth[3] = { &directionalLightSphereData->color.x,&directionalLightSphereData->color.y,&directionalLightSphereData->color.z };
 	float* inputDirectionLight[3] = { &directionalLightSphereData->direction.x,&directionalLightSphereData->direction.y,&directionalLightSphereData->direction.z };
 	float* intensity = &directionalLightSphereData->intensity;
 
+	bool isModel = true;
+	bool isSphere = false;
 
+	bool isSprite = false;
 
 	//ImGui初期化
 	IMGUI_CHECKVERSION();
@@ -1235,6 +1251,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	assert(fenceEvent != nullptr);
 
+
+
+
+
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -1249,7 +1269,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
-			//transform.rotate.y += 0.03f;
+			// sphere横回転
+			transformSphere.rotate.y += 0.03f;
 
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -1272,6 +1293,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			DrawSphere(vertexDataSphere);
 
+
+
+
 			directionalLightSphereData->direction = Normalize(directionalLightSphereData->direction);
 
 
@@ -1291,29 +1315,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			materialDateSprite->uvTransform = uvTransformMatrix;
 
 			//開発用UIの処理
-			/*ImGui::ShowDemoWindow();*/
+			ImGui::Text("Model");
 
-			//ここにテキストを入れられる
-			ImGui::Text("ImGuiText");
-
-
-			//ImGui::Text("Traiangle");
-			//ImGui::InputFloat3("Material", *inputMaterial);
-			//ImGui::SliderFloat3("SliderMaterial", *inputMaterial, 0.0f, 1.0f);
-
-			//ImGui::InputFloat3("Vertex", *inputTransform);
-			//ImGui::SliderFloat3("SliderVertex", *inputTransform, -5.0f, 5.0f);
-
-			//ImGui::InputFloat3("Rotate", *inputRotate);
-			//ImGui::SliderFloat3("SliderRotate", *inputRotate, -10.0f, 10.0f);
-
-			//ImGui::InputFloat3("Scale", *inputScale);
-			//ImGui::SliderFloat3("SliderScale", *inputScale, 0.5f, 5.0f);
-
-
-			ImGui::Text("Sphere");
-			ImGui::InputFloat3("MaterialSphere", *inputMaterialSphere);
-			ImGui::SliderFloat3("SliderMaterialSphere", *inputMaterialSphere, 0.0f, 1.0f);
+			ImGui::ColorEdit4("SphereColor", *inputMaterialSphere);
+			
+			ImGui::Checkbox("Model", &isModel);
+			ImGui::Checkbox("Sphere", &isSphere);
 
 			ImGui::InputFloat3("VertexSphere", *inputTransformSphere);
 			ImGui::SliderFloat3("SliderVertexSphere", *inputTransformSphere, -5.0f, 5.0f);
@@ -1324,7 +1331,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::InputFloat3("ScaleSphere", *inputScaleSphere);
 			ImGui::SliderFloat3("SliderScaleSphere", *inputScaleSphere, 0.5f, 5.0f);
 
-			ImGui::InputFloat("SphereTexture", &textureChange);
+			ImGui::Checkbox("MonsterBall", &textureChange);
+
+
 
 
 			ImGui::Text("Ligth");
@@ -1338,16 +1347,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::InputFloat("intensity", intensity);
 
 
+
+
+
 			ImGui::Text("Sprite");
+
+			ImGui::Checkbox("Active", &isSprite);
+
 			ImGui::InputFloat("SpriteX", &transformSprite.translate.x);
 			ImGui::SliderFloat("SliderSpriteX", &transformSprite.translate.x, 0.0f, 1000.0f);
 
 			ImGui::InputFloat("SpriteY", &transformSprite.translate.y);
 			ImGui::SliderFloat("SliderSpriteY", &transformSprite.translate.y, 0.0f, 600.0f);
-
-			ImGui::InputFloat("SpriteZ", &transformSprite.translate.z);
-			ImGui::SliderFloat("SliderSpriteZ", &transformSprite.translate.z, 0.0f, 0.0f);
-
 
 			ImGui::DragFloat2("UVTranlate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
@@ -1415,53 +1426,57 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 			//球体
-			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);
-			//commandList->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
-			//commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());
+			if (isSphere) {
 
-			//if (textureChange == 0) {
-			//	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-			//}
-			//else {
-			//	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU2);
-			//}
-			//commandList->SetGraphicsRootConstantBufferView(3, directionalLightSphereResource->GetGPUVirtualAddress());
-			//commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-			//commandList->DrawInstanced(SphereVertexNum, 1, 0, 0);
+				commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);
+				commandList->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
+				commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());
 
+				if (textureChange == false) {
+					commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+				}
+				else {
+					commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU2);
+				}
+
+				commandList->SetGraphicsRootConstantBufferView(3, directionalLightSphereResource->GetGPUVirtualAddress());
+				commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+				commandList->DrawInstanced(SphereVertexNum, 1, 0, 0);
+			}
+			
 
 			//model
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewModel);
+			if (isModel) {
+				commandList->IASetVertexBuffers(0, 1, &vertexBufferViewModel);
+				commandList->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
+				commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());
 
-			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
+				if (textureChange == 0) {
+					commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+				}
+				else {
+					commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU2);
+				}
 
-			commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());
-
-
-			if (textureChange == 0) {
-				commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+				commandList->SetGraphicsRootConstantBufferView(3, directionalLightSphereResource->GetGPUVirtualAddress());
+				commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+				commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 			}
-			else {
-				commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU2);
-			}
-
-			commandList->SetGraphicsRootConstantBufferView(3, directionalLightSphereResource->GetGPUVirtualAddress());
-
-
-			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
-
+			
 			//UI
-			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-			//commandList->IASetIndexBuffer(&indexBufferViewSprite);
+			if (isSprite) {
+				commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+				commandList->IASetIndexBuffer(&indexBufferViewSprite);
 
-			//commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
+				commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
 
-			//commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());		
+				commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
-			//commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+				commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
-			//commandList->DrawIndexedInstanced(6, 1, 0, 0 ,0);
+				commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			}
+			
 
 			//実際のcommandListのImGui描画コマンドを挟む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
@@ -1502,6 +1517,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			}
 
+
 			//次のフレームのコマンドリストを準備
 			hr = commandAllocator->Reset();
 			assert(SUCCEEDED(hr));
@@ -1511,76 +1527,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 	}
 
+
+
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 
+
 	CloseHandle(fenceEvent);
-	//	fence->Release();
-	//	rtvDescriptorHeap->Release();
-	//	srvDescriptorHeap->Release();
-	//	swapChainResource[0]->Release();
-	//	swapChainResource[1]->Release();
-	//	swapChain->Release();
-	//	commandList->Release();
-	//	commandAllocator->Release();
-	//	commandQueue->Release();
-	//	device->Release();
-	//	useAdapter->Release();
-	//	dxgiFactory->Release();
-	//
-	//	//wvpResource->Release();
-	//	//vertexResource->Release();
-	//	
-	//	wvpResourceSphere->Release();
-	//	vertexResourceSphere->Release();
-	//	
-	//	vertexResourceSprite->Release();
-	//	transformationMatrixResourceSprite->Release();
-	//
-	//	indexResourceSprite->Release();
-	//	
-	//	directionalLightSphereResource->Release();
-	//
-	//
-	//	vertexResourceModel->Release();
-	//
-	//
-	//
-	//	graphicsPipelineState->Release();
-	//
-	//	signatureBlob->Release();
-	//	if (errorBlob) {
-	//		errorBlob->Release();
-	//	}
-	//	rootSignature->Release();
-	//	pixelShaderBlob->Release();
-	//	vertexShaderBlob->Release();
-	//
-	//	//materialResource->Release();
-	//	materialResourceSphere->Release();
-	//
-	//	materialResourceSprite->Release();
-	//
-	//#ifdef _DEBUG
-	//	debugController->Release();
-	//#endif
-	//
-	//	mipImages.Release();
-	//	textureResource->Release();
-	//
-	//	depthStencilResource->Release();
-	//	dsvDescriptorHeap->Release();
-	//	
-	//	mipImages2.Release();
-	//	textureResource2->Release();
-	//
-	//	depthStencilResource2->Release();
-	//	dsvDescriptorHeap2->Release();
+	
 
 	CloseWindow(hwnd);
 
+
 	CoUninitialize();
+
 
 	return 0;
 }
