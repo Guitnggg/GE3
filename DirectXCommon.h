@@ -6,6 +6,8 @@
 
 #include "WinApp.h"
 
+#include "externals/DirectXTex/DirectXTex.h"
+
 /// <summary>
 /// DirectX基盤
 /// </summary>

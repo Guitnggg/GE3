@@ -13,7 +13,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "externals/DirectXTex/DirectXTex.h"
+
 
 
 #include"externals/imgui/imgui.h"

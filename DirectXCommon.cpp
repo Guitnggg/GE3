@@ -237,7 +237,47 @@ void DirectXCommon::CreateDescriptorHeap()
 
 }
 
+//==============================
+// 
+//==============================
+void DirectXCommon::CreateRenderTargetView()
+{
+}
+
+//==============================
+// 
+//==============================
+void DirectXCommon::CreateDepthStencilView()
+{
+}
+
+//==============================
+// 
+//==============================
+void DirectXCommon::CreateFence()
+{
+}
+
+//==============================
+// 
+//==============================
+void DirectXCommon::CreateViewPort()
+{
+}
+
+//==============================
+// 
+//==============================
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)
 {
-	return Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>();
+	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+	heapDesc.Type = heapType;
+	heapDesc.NumDescriptors = numDescriptors;
+	heapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap;
+	HRESULT hr = device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&descriptorHeap));
+	assert(SUCCEEDED(hr));
+
+	return descriptorHeap;
 }
