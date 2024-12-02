@@ -2,16 +2,26 @@
 
 #include <cassert>
 
+//#include<wrl.h>
+//using namespace Microsoft::WRL;
+
+//#define DIRECTINPUT _VERSION  0x0800 // DirectInputのバージョン指定
+//#include <dinput.h>
+
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
 
-void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
+void Input::Initialize(WinApp* winApp)
 {
+	// 借りてきたWinAppのインスタンスを記録
+	this->winApp = winApp;
+
 	HRESULT result;
 
 	// DirectInputのインスタンス生成
+	/*ComPtr<IDirectInput8>directInput = nullptr;*/
 	result = DirectInput8Create(
-		hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
+		winApp->GetHInstance(), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
 	assert(SUCCEEDED(result));
 
 	// キーボードデバイス生成
@@ -24,7 +34,7 @@ void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 	assert(SUCCEEDED(result));
 
 	// 排他制御レベルのセット
-	result = keyboard->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+	result = keyboard->SetCooperativeLevel(winApp->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
 	assert(SUCCEEDED(result));
 }
 
@@ -54,6 +64,11 @@ bool Input::PushKey(BYTE keyNumber)
 
 bool Input::TriggerKey(BYTE keyNumber)
 {
-	// 今フレームで押されていて、前フレームでは押されていない場合にtrueを返す
-	return key[keyNumber] && !keyPre[keyNumber];
+	// 反応していたらtrueを返す
+	if (key[keyNumber]) {
+		return true;
+	}
+
+	// そうでなければfalseを返す
+	return false;
 }

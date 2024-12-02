@@ -27,6 +27,9 @@ public:
 	// 更新
 	void Update();
 
+	// 終了
+	void Finalize();
+
 	// getter
 	HWND GetHwnd()const { return hwnd; }
 
