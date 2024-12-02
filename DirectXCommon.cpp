@@ -12,9 +12,9 @@
 
 using namespace Microsoft::WRL;
 
-//========================================
-// 
-//========================================
+//==============================
+// デバイス生成
+//==============================
 void DirectXCommon::Initialize(WinApp* winApp)
 {
 	// NULL検出
@@ -30,9 +30,9 @@ void DirectXCommon::Initialize(WinApp* winApp)
 
 }
 
-//========================================
-// 
-//========================================
+//==============================
+// コマンド関連の生成
+//==============================
 void DirectXCommon::CreateDevice()
 {
 	HRESULT hr;
@@ -61,7 +61,7 @@ void DirectXCommon::CreateDevice()
 	// どうにもできない場合が多いのでassertにしておく
 	assert(SUCCEEDED(hr));//甲であることを保証　そうでないと止まる
 
-	Log("Hello,DirectX\n");
+	Logger::Log("Hello,DirectX\n");
 
 #pragma endregion
 
@@ -78,7 +78,7 @@ void DirectXCommon::CreateDevice()
 		//ソフトウェアダプタでなければ採用
 		if (!(adapterDesc.Flags & DXGI_ADAPTER_FLAG3_SOFTWARE)) {
 			//採用したアダプタの情報をログに出力。wstringのほうなので注意
-			log(ConvertString(std::format(L"Use Adapter:{}\n", adapterDesc.Description)));
+			Logger::Log(StringUtility::ConvertString(std::format(L"Use Adapter:{}\n", adapterDesc.Description)));
 			break;
 		}
 		useAdapter = nullptr;
@@ -98,13 +98,13 @@ void DirectXCommon::CreateDevice()
 	for (size_t i = 0; i < _countof(featureLevels); ++i) {
 		hr = D3D12CreateDevice(useAdapter.Get(), featureLevels[i], IID_PPV_ARGS(&device));
 		if (SUCCEEDED(hr)) {
-			log(std::format("FEatureLevel : {}\n", featureLevelStrings[i]));
+			Logger::Log(std::format("FEatureLevel : {}\n", featureLevelStrings[i]));
 			break;
 		}
 	}
 
 	assert(device != nullptr);
-	log("Complete create D3D12Device!!!\n");
+	Logger::Log("Complete create D3D12Device!!!\n");
 
 #pragma endregion
 
@@ -135,9 +135,9 @@ void DirectXCommon::CreateDevice()
 
 }
 
-//========================================
+//==============================
 // 
-//========================================
+//==============================
 void DirectXCommon::CreateCommandObjects()
 {
 	HRESULT hr;
@@ -172,9 +172,9 @@ void DirectXCommon::CreateCommandObjects()
 
 }
 
-//========================================
+//==============================
 // 
-//========================================
+//==============================
 void DirectXCommon::CreateSwapChain()
 {
 	HRESULT hr;
@@ -205,16 +205,16 @@ void DirectXCommon::CreateSwapChain()
 
 }
 
-//========================================
+//==============================
 // 
-//========================================
+//==============================
 void DirectXCommon::CreateDepthStencilBuffer()
 {
 }
 
-//========================================
+//==============================
 // 
-//========================================
+//==============================
 void DirectXCommon::CreateDescriptorHeap()
 {
 
