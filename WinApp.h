@@ -35,6 +35,9 @@ public:
 
 	HINSTANCE GetHInstance()const { return wc.hInstance; }
 
+	// メッセージの処理
+	bool ProcessMessege();
+
 
 public:
 	//====================
