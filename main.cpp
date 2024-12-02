@@ -1395,70 +1395,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui::DestroyContext();
 
 	CloseHandle(fenceEvent);
-	//	fence->Release();
-	//	rtvDescriptorHeap->Release();
-	//	srvDescriptorHeap->Release();
-	//	swapChainResource[0]->Release();
-	//	swapChainResource[1]->Release();
-	//	swapChain->Release();
-	//	commandList->Release();
-	//	commandAllocator->Release();
-	//	commandQueue->Release();
-	//	device->Release();
-	//	useAdapter->Release();
-	//	dxgiFactory->Release();
-	//
-	//	//wvpResource->Release();
-	//	//vertexResource->Release();
-	//	
-	//	wvpResourceSphere->Release();
-	//	vertexResourceSphere->Release();
-	//	
-	//	vertexResourceSprite->Release();
-	//	transformationMatrixResourceSprite->Release();
-	//
-	//	indexResourceSprite->Release();
-	//	
-	//	directionalLightSphereResource->Release();
-	//
-	//
-	//	vertexResourceModel->Release();
-	//
-	//
-	//
-	//	graphicsPipelineState->Release();
-	//
-	//	signatureBlob->Release();
-	//	if (errorBlob) {
-	//		errorBlob->Release();
-	//	}
-	//	rootSignature->Release();
-	//	pixelShaderBlob->Release();
-	//	vertexShaderBlob->Release();
-	//
-	//	//materialResource->Release();
-	//	materialResourceSphere->Release();
-	//
-	//	materialResourceSprite->Release();
-	//
-	//#ifdef _DEBUG
-	//	debugController->Release();
-	//#endif
-	//
-	//	mipImages.Release();
-	//	textureResource->Release();
-	//
-	//	depthStencilResource->Release();
-	//	dsvDescriptorHeap->Release();
-	//	
-	//	mipImages2.Release();
-	//	textureResource2->Release();
-	//
-	//	depthStencilResource2->Release();
-	//	dsvDescriptorHeap2->Release();
-
-	//CloseWindow(winApp_->GetHwnd());
-
+	
 	CoUninitialize();
 
 	return 0;
