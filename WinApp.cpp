@@ -3,8 +3,6 @@
 #include "externals/imgui/imgui.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-#include <cstdint>
-
 LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	//メッセージに応じてゲーム固有の処理を行う
@@ -26,7 +24,7 @@ LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 void WinApp::Initialize()
 {
-	WNDCLASS wc{};
+	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
 
 	//ウィンドウプロシージャ
 	wc.lpfnWndProc = WindowProc;
@@ -40,9 +38,6 @@ void WinApp::Initialize()
 	//ウィンドウクラスの登録
 	RegisterClass(&wc);
 
-	//クライアント領域のサイズ　横　縦
-	const int32_t kClientWidth = 1280;
-	const int32_t kClientHeight = 720;
 	//　ウィンドウサイズを表す構造体にクライアント領域を入れる
 	RECT wrc = { 0, 0,kClientWidth,kClientHeight };
 
@@ -51,7 +46,7 @@ void WinApp::Initialize()
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
 
-	HWND hwnd = CreateWindow(
+	hwnd = CreateWindow(
 		wc.lpszClassName,
 		L"CG2",
 		WS_OVERLAPPEDWINDOW,
@@ -69,6 +64,5 @@ void WinApp::Initialize()
 
 void WinApp::Update()
 {
-
 
 }
