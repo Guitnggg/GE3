@@ -34,6 +34,9 @@ private:
 	// スワップチェーン生成
 	void CreateSwapChain();
 
+	// 深度バッファの生成
+	void CreateDepthStencilBuffer();
+
 	// 各デスクリプタヒープの生成
 	void CreateDescriptorHeap();
 

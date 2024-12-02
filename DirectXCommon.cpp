@@ -3,6 +3,7 @@
 #include <cassert>
 #include <format>
 
+
 #include "StringUtility.h"
 #include "Logger.h"
 
@@ -11,6 +12,9 @@
 
 using namespace Microsoft::WRL;
 
+//========================================
+// 
+//========================================
 void DirectXCommon::Initialize(WinApp* winApp)
 {
 	// NULL検出
@@ -26,6 +30,9 @@ void DirectXCommon::Initialize(WinApp* winApp)
 
 }
 
+//========================================
+// 
+//========================================
 void DirectXCommon::CreateDevice()
 {
 	HRESULT hr;
@@ -128,6 +135,9 @@ void DirectXCommon::CreateDevice()
 
 }
 
+//========================================
+// 
+//========================================
 void DirectXCommon::CreateCommandObjects()
 {
 	HRESULT hr;
@@ -162,6 +172,9 @@ void DirectXCommon::CreateCommandObjects()
 
 }
 
+//========================================
+// 
+//========================================
 void DirectXCommon::CreateSwapChain()
 {
 	HRESULT hr;
@@ -192,6 +205,16 @@ void DirectXCommon::CreateSwapChain()
 
 }
 
+//========================================
+// 
+//========================================
+void DirectXCommon::CreateDepthStencilBuffer()
+{
+}
+
+//========================================
+// 
+//========================================
 void DirectXCommon::CreateDescriptorHeap()
 {
 
@@ -212,4 +235,9 @@ void DirectXCommon::CreateDescriptorHeap()
 
 
 
+}
+
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)
+{
+	return Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>();
 }
