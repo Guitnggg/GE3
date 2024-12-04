@@ -81,6 +81,7 @@
     <None Include="resource\shaders\Object3d.hlsli">
       <Filter>リソース ファイル</Filter>
     </None>
+    <None Include="Particle.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resource\shaders\Object3d.PS.hlsl">
@@ -89,5 +90,7 @@
     <FxCompile Include="resource\shaders\Object3d.VS.hlsl">
       <Filter>リソース ファイル</Filter>
     </FxCompile>
+    <FxCompile Include="Particle.PS.hlsl" />
+    <FxCompile Include="Particle.VS.hlsl" />
   </ItemGroup>
 </Project>
