@@ -20,12 +20,8 @@ struct DirectionalLight
     float intensity;
 };
 
-StructuredBuffer<Material> gMaterials : register(t1);
-StructuredBuffer<DirectionalLight> gDirectionalLights : register(t2);
-
-// MaterialとDirectionalLightをインデックスで参照する例
-Material gMaterial = gMaterials[0];
-DirectionalLight gDirectionalLight = gDirectionalLights[0];
+ConstantBuffer<Material> gMaterials : register(b0);
+ConstantBuffer<DirectionalLight> gDirectionalLights : register(b1);
 
 
 Texture2D<float32_t4> gTexture : register(t0);
@@ -43,10 +39,10 @@ PixelShaderOutput main(VertexShaderOutput input)
 {
     PixelShaderOutput output;
     
-    float32_t4 transformdUV = mul(float32_t4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
+    float32_t4 transformdUV = mul(float32_t4(input.texcoord, 0.0f, 1.0f), gMaterials.uvTransform);
     float32_t4 textureColor = gTexture.Sample(gSampler, transformdUV.xy);
     
-    output.color = gMaterial.color * textureColor;
+    output.color = gMaterials.color * textureColor;
     
     if (output.color.a == 0.0)
     {
