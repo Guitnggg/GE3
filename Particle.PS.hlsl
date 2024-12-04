@@ -20,8 +20,8 @@ struct DirectionalLight
     float intensity;
 };
 
-ConstantBuffer<Material> gMaterials : register(b0);
-ConstantBuffer<DirectionalLight> gDirectionalLights : register(b1);
+ConstantBuffer<Material> gMaterials : register(b1);
+ConstantBuffer<DirectionalLight> gDirectionalLights : register(b2);
 
 
 Texture2D<float32_t4> gTexture : register(t0);
