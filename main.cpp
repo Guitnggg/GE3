@@ -6,6 +6,8 @@
 #include<dxgi1_6.h>
 #include<cassert>
 
+#include <random>
+
 #include <dxgidebug.h>
 
 #include <dxcapi.h>
@@ -1114,7 +1116,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
 
-	//ビューポート
+	// ビューポート
 	D3D12_VIEWPORT viewport;
 
 	viewport.Width = kClientWidth;
@@ -1164,14 +1166,41 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool isSprite = false;
 
 	/// パーティクル ///
-	Transform transforms[kNumInstance];
+
+	struct Particle {
+		Transform transform;
+		Vector3 velocity;
+	};
+
+	// 乱数生成の初期化
+	std::random_device seedGenerator;
+	std::mt19937 randomEngine(seedGenerator());
+
+	Particle MakeNewParticle(std::mt19937& randomEngine) {
+		
+		std::uniform_real_distribution<float>distribution(-1.0f, 1.0f);
+		
+		Particle particle;
+		particle.transform.scale = { 1.0f,1.0f,1.0f };
+		particle.transform.rotate = { 0.0f,3.14f,0.0f };
+
+		// 位置と速度を[-1,1]でランダムに初期化
+		particle.transform.translate = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+		particle.velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+		
+		return particle;
+	}							
+
+	Particle particles[kNumInstance];
 	for (uint32_t index = 0; index < kNumInstance; ++index) {
-		transforms[index].scale = { 1.0f,1.0f,1.0f };
-		transforms[index].rotate = { 0.0f,3.14f,0.0f };
-		transforms[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
+		particles[index] = MakeNewParticle(randomEngine);
 	}
 
-	//ImGui初期化
+	bool isMove = false;
+
+
+
+	// ImGui初期化
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
@@ -1183,7 +1212,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	//初期化で0でFenceを作る
+	// 初期化で0でFenceを作る
 	Microsoft::WRL::ComPtr < ID3D12Fence> fence = nullptr;
 	uint64_t fenceValue = 0;
 	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
@@ -1249,20 +1278,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			/// パーティクル ///
 			for (uint32_t index = 0; index < kNumInstance; ++index) {
 				Matrix4x4 worldMatrix =
-					MakeAffineMatrix(transforms[index].scale, transforms[index].rotate, transforms[index].translate);
+					MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 				instancingData[index].WVP = worldViewProjectionMatrix;
 				instancingData[index].World = worldMatrix;
 			}
+
+			// Δtimeを定義。とりあえず60fpsで固定してあるが、実時間を計測して可変fpsで動かせるようにしておくといい
+			const float  kDeltaTime = 1.0f / 60.0f;
 
 
 			//開発用UIの処理
 
 			ImGui::Text("Model");
 
-			/*ImGui::Checkbox()*/
+			ImGui::Checkbox("Move", &isMove);
 
-			ImGui::Text("Sphere");
+			/*ImGui::Text("Sphere");
 
 			ImGui::ColorEdit4("SphereColor", *inputMaterialSphere);
 
@@ -1284,7 +1316,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::InputFloat3("VertexLigth", *inputDirectionLight);
 			ImGui::SliderFloat3("SliderVertexLigth", *inputDirectionLight, -1.0f, 1.0f);
 
-			ImGui::InputFloat("intensity", intensity);
+			ImGui::InputFloat("intensity", intensity);*/
 
 			/*ImGui::Text("Sprite");
 			ImGui::Checkbox("Active", &isSprite);
@@ -1366,7 +1398,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//commandList->DrawInstanced(SphereVertexNum, 1, 0, 0);
 
 
-			//model
+			
+
+			
+			// model
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewModel);
 
 			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
@@ -1383,10 +1418,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightSphereResource->GetGPUVirtualAddress());
 
+			if (isMove) {
+				for (uint32_t index = 0; index < kNumInstance; ++index) {
+					particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
+					particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
+					particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
+				}
+			}
 
 			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumInstance, 0, 0);
 
+
+#pragma region UI描画
 			//UI
 			//if (isSprite) {
 
@@ -1401,7 +1445,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 			//}
-
+#pragma endregion
 
 
 			//実際のcommandListのImGui描画コマンドを挟む
