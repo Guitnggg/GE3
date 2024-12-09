@@ -13,7 +13,7 @@
 using namespace Microsoft::WRL;
 
 //==============================
-// デバイス生成
+// 各種初期化
 //==============================
 void DirectXCommon::Initialize(WinApp* winApp)
 {
@@ -31,7 +31,7 @@ void DirectXCommon::Initialize(WinApp* winApp)
 }
 
 //==============================
-// コマンド関連の生成
+// デバイスの生成
 //==============================
 void DirectXCommon::CreateDevice()
 {
@@ -136,7 +136,7 @@ void DirectXCommon::CreateDevice()
 }
 
 //==============================
-// 
+// コマンド関連の生成
 //==============================
 void DirectXCommon::CreateCommandObjects()
 {
@@ -173,7 +173,7 @@ void DirectXCommon::CreateCommandObjects()
 }
 
 //==============================
-// 
+// スワップチェーンの生成
 //==============================
 void DirectXCommon::CreateSwapChain()
 {
@@ -206,27 +206,21 @@ void DirectXCommon::CreateSwapChain()
 }
 
 //==============================
-// 
+// 深度バッファの生成
 //==============================
 void DirectXCommon::CreateDepthStencilBuffer()
 {
 }
 
 //==============================
-// 
+// 各デスクリプタヒープの生成
 //==============================
 void DirectXCommon::CreateDescriptorHeap()
 {
-
-
-#pragma region ディスクリプターヒープの生成
-
 	Microsoft::WRL::ComPtr < ID3D12DescriptorHeap> rtvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 
 	Microsoft::WRL::ComPtr < ID3D12DescriptorHeap> srvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 
-
-#pragma endregion
 
 	const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -238,46 +232,50 @@ void DirectXCommon::CreateDescriptorHeap()
 }
 
 //==============================
-// 
+// レンダーターゲットビューの生成
 //==============================
 void DirectXCommon::CreateRenderTargetView()
 {
 }
 
 //==============================
-// 
+// 深度ステンシルビューの生成
 //==============================
 void DirectXCommon::CreateDepthStencilView()
 {
 }
 
 //==============================
-// 
+// フェンスの生成
 //==============================
 void DirectXCommon::CreateFence()
 {
 }
 
 //==============================
-// 
+// ビューポートの生成
 //==============================
 void DirectXCommon::CreateViewPort()
 {
 }
 
 //==============================
-// 
+// シザー矩形の生成
 //==============================
-Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)
+void DirectXCommon::CreateScissorRect()
 {
-	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-	heapDesc.Type = heapType;
-	heapDesc.NumDescriptors = numDescriptors;
-	heapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+}
 
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap;
-	HRESULT hr = device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&descriptorHeap));
-	assert(SUCCEEDED(hr));
+//==============================
+// DXCコンパイラの生成
+//==============================
+void DirectXCommon::CreateDXCCompiler()
+{
+}
 
-	return descriptorHeap;
+//==============================
+// ImGuiの生成
+//==============================
+void DirectXCommon::CreateImGui()
+{
 }

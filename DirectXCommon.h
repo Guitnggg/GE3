@@ -55,13 +55,13 @@ private:
 	void CreateViewPort();
 
 	// シザリング矩形
-
+	void CreateScissorRect();
 
 	// DXCコンパイラ
-
+	void CreateDXCCompiler();
 
 	// ImGui
-
+	void CreateImGui();
 
 	// WindowsAPI
 	WinApp* winApp = nullptr;
@@ -76,8 +76,5 @@ private:
 
 	// DXGIファクトリ
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
-
-	// デスクリプタヒープの生成
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 };
 
