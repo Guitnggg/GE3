@@ -179,7 +179,6 @@ void DirectXCommon::CreateSwapChain()
 {
 	HRESULT hr;
 
-#pragma region Swap Chainの生成
 	//スワップチェイン生成
 	Microsoft::WRL::ComPtr < IDXGISwapChain4> swapChain = nullptr;
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
@@ -193,6 +192,68 @@ void DirectXCommon::CreateSwapChain()
 
 	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), winApp->GetHwnd(), &swapChainDesc, nullptr, nullptr, reinterpret_cast <IDXGISwapChain1**>(swapChain.GetAddressOf()));
 	assert(SUCCEEDED(hr));
+}
+
+//==============================
+// 深度バッファの生成
+//==============================
+void DirectXCommon::CreateDepthStencilBuffer()
+{
+	//Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata & metadata) {
+
+	//	D3D12_RESOURCE_DESC resourceDesc{};
+	//	resourceDesc.Width = UINT(metadata.width);//幅
+	//	resourceDesc.Height = UINT(metadata.height);//高さ
+	//	resourceDesc.MipLevels = UINT16(metadata.miscFlags);//数
+	//	resourceDesc.DepthOrArraySize = UINT(metadata.arraySize);//奥行き　Textureの配置数
+	//	resourceDesc.Format = metadata.format;//format
+	//	resourceDesc.SampleDesc.Count = 1;//サンプリングカウント(1固定)
+	//	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION(metadata.dimension);// textureの次元数
+
+
+	//	//利用するHeapの設定
+	//	D3D12_HEAP_PROPERTIES heapProperties{};
+	//	heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM;
+	//	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
+	//	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
+
+
+	//	//Resouceの生成
+	//	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
+	//	HRESULT hr = device->CreateCommittedResource(
+	//		&heapProperties,
+	//		D3D12_HEAP_FLAG_NONE,
+	//		&resourceDesc,
+	//		D3D12_RESOURCE_STATE_GENERIC_READ,
+	//		nullptr,
+	//		IID_PPV_ARGS(&resource)
+	//	);
+	//	assert(SUCCEEDED(hr));
+	//	return resource;
+
+	//}
+}
+
+//==============================
+// 各デスクリプタヒープの生成
+//==============================
+void DirectXCommon::CreateDescriptorHeap()
+{
+	Microsoft::WRL::ComPtr < ID3D12DescriptorHeap> rtvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
+	Microsoft::WRL::ComPtr < ID3D12DescriptorHeap> srvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
+	Microsoft::WRL::ComPtr < ID3D12DescriptorHeap> dsvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
+
+	const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+}
+
+//==============================
+// レンダーターゲットビューの生成
+//==============================
+void DirectXCommon::CreateRenderTargetView()
+{
+	HRESULT hr;
 
 	//SwapchainからResourceを引っ張ってくる
 	Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResource[2] = { nullptr };
@@ -201,41 +262,26 @@ void DirectXCommon::CreateSwapChain()
 
 	hr = swapChain->GetBuffer(1, IID_PPV_ARGS(&swapChainResource[1]));
 	assert(SUCCEEDED(hr));
-#pragma endregion
 
-}
+	//RTV用の設定
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
-//==============================
-// 深度バッファの生成
-//==============================
-void DirectXCommon::CreateDepthStencilBuffer()
-{
-}
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
-//==============================
-// 各デスクリプタヒープの生成
-//==============================
-void DirectXCommon::CreateDescriptorHeap()
-{
-	Microsoft::WRL::ComPtr < ID3D12DescriptorHeap> rtvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 
-	Microsoft::WRL::ComPtr < ID3D12DescriptorHeap> srvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
+	for (uint32_t i = 0; i < rtvHandles; ++i)
+	{
+		rtvHandles[0] = rtvStartHandle;
+		device->CreateRenderTargetView(swapChainResource[0].Get(), &rtvDesc, rtvHandles[0]);
 
+		rtvHandles[1].ptr = rtvHandles[0].ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-	const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+		device->CreateRenderTargetView(swapChainResource[1].Get(), &rtvDesc, rtvHandles[1]);
 
-
-
-
-}
-
-//==============================
-// レンダーターゲットビューの生成
-//==============================
-void DirectXCommon::CreateRenderTargetView()
-{
+	}
 }
 
 //==============================
@@ -279,3 +325,34 @@ void DirectXCommon::CreateDXCCompiler()
 void DirectXCommon::CreateImGui()
 {
 }
+
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)
+{
+	return Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>();
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetSRVCPUDescriptorHandle(uint32_t index)
+{
+	return D3D12_CPU_DESCRIPTOR_HANDLE(srvDescriptorHeap, descriptorSizeSRV, index);
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetSRVGPUDescriptorHandle(uint32_t index)
+{
+	return D3D12_GPU_DESCRIPTOR_HANDLE(srvDescriptorHeap, descriptorSizeSRV, index);
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index)
+{
+	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	handleCPU.ptr += (descriptorSize * index);
+	return handleCPU;
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetGPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index)
+{
+	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	handleGPU.ptr += (descriptorSize * index);
+	return handleGPU;
+}
+
+
