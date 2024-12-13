@@ -7,6 +7,7 @@
 #include<cassert>
 
 #include <random>
+#include <numbers>
 
 #include <dxgidebug.h>
 
@@ -1299,6 +1300,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// Δtimeを定義。とりあえず60fpsで固定してあるが、実時間を計測して可変fpsで動かせるようにしておくといい
 			const float  kDeltaTime = 1.0f / 60.0f;
 
+			Matrix4x4 backToFromMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
 
 			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
 				if (particles[index].lifeTime <= particles[index].currentTime) {
@@ -1322,6 +1324,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 				++numInstance;
 			}
+
+			
 
 
 			//開発用UIの処理
