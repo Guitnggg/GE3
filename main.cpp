@@ -1308,27 +1308,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 				
-				particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
-				particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
-				particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
-				particles[index].currentTime += kDeltaTime;
+				
+				
 				
 				instancingData[index].WVP = worldViewProjectionMatrix;
 				instancingData[index].World = worldMatrix;
 				instancingData[index].color = particles[index].color;
 
-				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
-				instancingData[numInstance].color.s = alpha;
+				
 
-				++numInstance;
 			}
 
 
 			//開発用UIの処理
 
-			/*ImGui::Text("Model");
+			ImGui::Text("Model");
 
-			ImGui::Checkbox("Move", &isMove);*/
+			ImGui::Checkbox("Move", &isMove);
 
 			/*ImGui::Text("Sphere");
 
@@ -1459,6 +1455,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
 					particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
 					particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
+
+					particles[index].currentTime += kDeltaTime;
+
+					float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
+					instancingData[numInstance].color.s = alpha;
+
+					++numInstance;
 				}
 			}
 
