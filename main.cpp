@@ -186,12 +186,12 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 	while (std::getline(file, line)) {
 		std::string identifier;
 		std::istringstream s(line);
-		s >> identifier; //先頭の義別子 (v ,vt, vn, f) を読み取る
+		s >> identifier; 
 
 		//modeldataの建築
 		if (identifier == "v") {
 			Vector4 position;
-			s >> position.x >> position.y >> position.z;//左から順に消費 = 飛ばしたり、もう一度使うことはできない	
+			s >> position.x >> position.y >> position.z;
 			position.s = 1.0f;
 
 			//反転
@@ -817,7 +817,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//RootParameter作成__
-	D3D12_ROOT_PARAMETER rootParameters[4] = {};
+	D3D12_ROOT_PARAMETER rootParameters[5] = {};
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[0].Descriptor.ShaderRegister = 0;//Object3d.PS.hlsl の b0
@@ -836,9 +836,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
 	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
 
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBV
-	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//plxelshader
-	rootParameters[3].Descriptor.ShaderRegister = 1;//レジスタ番号
+	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;  // CBV
+	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;  // plxelshader
+	rootParameters[3].Descriptor.ShaderRegister = 1;  // レジスタ番号
+
+	rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;  // CBV
+	rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;  // plxelshader
+	rootParameters[4].Descriptor.ShaderRegister = 2;  // レジスタ番号
 
 	//2でまとめる
 
@@ -953,60 +957,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 
-	//Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
-
-
-	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-
-	//vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-
-	//vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
-
-	//vertexBufferView.StrideInBytes = sizeof(VertexData);
-
-
-	//Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
-
-	//Matrix4x4* wvpDate = nullptr;
-
-	//wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpDate));
-
-	//*wvpDate = MakeIdentity4x4();
-
-	//VertexData* vertexData = nullptr;
-
-	//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	////leftTop
-	//vertexData[0].position = { -0.5f, -0.5f,0.0f,1.0f };
-	//vertexData[0].texcoord = { 0.0f,1.0f };
-
-	////Top
-	//vertexData[1].position = { 0.0f, 0.5f,0.0f,1.0f };
-	//vertexData[1].texcoord = { 0.5f,0.0f };
-
-	////rightBottom
-	//vertexData[2].position = { 0.5f, -0.5f,0.0f,1.0f };
-	//vertexData[2].texcoord = { 1.0f,1.0f };
-
-
-
-	////leftTop
-	//vertexData[3].position = { -0.5f, -0.5f,0.5f,1.0f };
-	//vertexData[3].texcoord = { 0.0f,1.0f };
-
-	////Top
-	//vertexData[4].position = { 0.0f, 0.0f,0.0f,1.0f };
-	//vertexData[4].texcoord = { 0.5f,0.0f };
-
-	////rightBottom
-	//vertexData[5].position = { 0.5f, -0.5f,-0.5f,1.0f };
-	//vertexData[5].texcoord = { 1.0f,1.0f };
-
-
-
-
-
-
+	
 	uint32_t SphereVertexNum = 16 * 16 * 6;
 
 	//Sphere
@@ -1129,7 +1080,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//*materialDate = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
 
-
+	// カメラ用リソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource = CreateBufferResource(device, sizeof(CameraForGPU));
+	// マテリアルにデータを書き込む
+	CameraForGPU* cameraData = nullptr;
+	// 書き込むためのアドレス
+	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraData));
+	// カメラの位置（指定した場所）
+	cameraData->worldPositon = { 0.0f,0.0f,0.0f };
 
 	//球体用マテリアル
 	//マテリアル用のリソース
@@ -1230,6 +1188,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	bool isSprite = false;
 
+	bool isRotate = false;
+
 	//ImGui初期化
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -1269,8 +1229,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
-			// sphere横回転
-			transformSphere.rotate.y += 0.03f;
 
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -1279,12 +1237,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//Matrix4x4 projectionMatrix = MakeOrthographicMatrix((float)scissorRect.left, (float)scissorRect.top, (float)scissorRect.right, (float)scissorRect.bottom, 0.1f, 100.0f);
 			Matrix4x4 WorldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-			//三角
-			//*wvpDate = WorldViewProjectionMatrix;
-
-
+	
 			//球体
-
 			Matrix4x4 worldMatrixSphere = MakeAffineMatrix(transformSphere.scale, transformSphere.rotate, transformSphere.translate);
 			Matrix4x4 WorldViewProjectionMatrixSphere = Multiply(worldMatrixSphere, Multiply(viewMatrix, projectionMatrix));
 
@@ -1293,14 +1247,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			DrawSphere(vertexDataSphere);
 
-
+			if (isRotate) {
+				// sphere横回転
+				transformSphere.rotate.y += 0.03f;
+			}
 
 
 			directionalLightSphereData->direction = Normalize(directionalLightSphereData->direction);
 
 
 			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
-			//Matrix4x4 cameraMatrixSprite = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
+			Matrix4x4 cameraMatrixSprite = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
 			//Matrix4x4 projectionMatrixSprite = MakePerspectiveFovMatrix(0.45f, float(1280.0f) / float(720.0f), 0.1f, 100.0f);
 			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, (float)kClientWidth, (float)kClientHeight, 0.0f, 100.0f);
@@ -1332,7 +1289,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::SliderFloat3("SliderScaleSphere", *inputScaleSphere, 0.5f, 5.0f);
 
 			ImGui::Checkbox("MonsterBall", &textureChange);
-
+			ImGui::Checkbox("ModelRotate", &isRotate);
 
 
 
@@ -1388,9 +1345,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 			//TransitionBarrierを張る
 			commandList->ResourceBarrier(1, &barrier);
-
-
-
+	
 
 			// 描画先のRTVの設定をする
 			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
@@ -1416,14 +1371,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetPipelineState(graphicsPipelineState.Get());
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-			//三角
-			//commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-			//commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
-			//commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-			//commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);	
-			//commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-			//commandList->DrawInstanced(6, 1, 0, 0);
-
+		
 
 			//球体
 			if (isSphere) {
@@ -1441,6 +1389,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 				commandList->SetGraphicsRootConstantBufferView(3, directionalLightSphereResource->GetGPUVirtualAddress());
 				commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+				commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
 				commandList->DrawInstanced(SphereVertexNum, 1, 0, 0);
 			}
 			
@@ -1536,6 +1485,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	CloseHandle(fenceEvent);
 	
+	cameraResource->Release();
 
 	CloseWindow(hwnd);
 
