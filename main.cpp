@@ -1069,17 +1069,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	mipImages2 = LoadTexture(modelData.material.textureFilePath);
 
 
-	////三角用マテリアル
-	////マテリアル用のリソース
-	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = CreateBufferResource(device, sizeof(Vector4));
-	////マテリアルにデータを書き込む
-	//Vector4* materialDate = nullptr;
-	////書き込むためのアドレス
-	//materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
-	////色の設定
-	//*materialDate = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-
-
 	// カメラ用リソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource = CreateBufferResource(device, sizeof(CameraForGPU));
 	// マテリアルにデータを書き込む
@@ -1100,7 +1089,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialDateSphere->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialDateSphere->enableLighting = true;
 	materialDateSphere->uvTransform = MakeIdentity4x4();
-
+	materialDateSphere->shininess = 70.0f;
 
 
 	//球体マテリアルのライト用のリソース
@@ -1166,25 +1155,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	};
 
 
-	//float *inputMaterial[3] = { &materialDate->x,&materialDate->y,&materialDate->z };
-	//float* inputTransform[3] = { &transform.translate.x,&transform.translate.y,&transform.translate.z };
-	//float* inputRotate[3] = { &transform.rotate.x,&transform.rotate.y,&transform.rotate.z };
-	//float* inputScale[3] = { &transform.scale.x,&transform.scale.y,&transform.scale.z };
-
-
 	float* inputMaterialSphere[4] = { &materialDateSphere->color.x,&materialDateSphere->color.y,&materialDateSphere->color.z ,&materialDateSphere->color.s };
 	float* inputTransformSphere[3] = { &transformSphere.translate.x,&transformSphere.translate.y,&transformSphere.translate.z };
 	float* inputRotateSphere[3] = { &transformSphere.rotate.x,&transformSphere.rotate.y,&transformSphere.rotate.z };
 	float* inputScaleSphere[3] = { &transformSphere.scale.x,&transformSphere.scale.y,&transformSphere.scale.z };
-	bool textureChange = false;
+	bool textureChange = true;
 
 
 	float* inputMaterialLigth[3] = { &directionalLightSphereData->color.x,&directionalLightSphereData->color.y,&directionalLightSphereData->color.z };
 	float* inputDirectionLight[3] = { &directionalLightSphereData->direction.x,&directionalLightSphereData->direction.y,&directionalLightSphereData->direction.z };
 	float* intensity = &directionalLightSphereData->intensity;
 
-	bool isModel = true;
-	bool isSphere = false;
+
+	bool isModel = false;
+	bool isSphere = true;
 
 	bool isSprite = false;
 
@@ -1252,9 +1236,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				transformSphere.rotate.y += 0.03f;
 			}
 
-
 			directionalLightSphereData->direction = Normalize(directionalLightSphereData->direction);
-
+				
 
 			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 			Matrix4x4 cameraMatrixSprite = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -1276,8 +1259,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::ColorEdit4("SphereColor", *inputMaterialSphere);
 			
-			ImGui::Checkbox("Model", &isModel);
-			ImGui::Checkbox("Sphere", &isSphere);
+			/*ImGui::Checkbox("Model", &isModel);
+			ImGui::Checkbox("Sphere", &isSphere);*/
 
 			ImGui::InputFloat3("VertexSphere", *inputTransformSphere);
 			ImGui::SliderFloat3("SliderVertexSphere", *inputTransformSphere, -5.0f, 5.0f);
@@ -1292,22 +1275,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::Checkbox("ModelRotate", &isRotate);
 
 
-
 			ImGui::Text("Ligth");
 			ImGui::InputFloat4("MaterialLigth", *inputMaterialLigth);
 			ImGui::SliderFloat4("SliderMaterialLigth", *inputMaterialLigth, 0.0f, 1.0f);
 
-			ImGui::InputFloat3("VertexLigth", *inputDirectionLight);
-			ImGui::SliderFloat3("SliderVertexLigth", *inputDirectionLight, -1.0f, 1.0f);
-
+			ImGui::InputFloat3("DirectionLigth", *inputDirectionLight);
+			ImGui::SliderFloat3("SliderDirectionLigth", *inputDirectionLight, -1.0f, 1.0f);
 
 			ImGui::InputFloat("intensity", intensity);
 
 
-
-
-
-			ImGui::Text("Sprite");
+		/*	ImGui::Text("Sprite");
 
 			ImGui::Checkbox("Active", &isSprite);
 
@@ -1319,7 +1297,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::DragFloat2("UVTranlate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
+			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);*/
 
 
 
@@ -1485,10 +1463,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	CloseHandle(fenceEvent);
 	
-	cameraResource->Release();
-
 	CloseWindow(hwnd);
-
 
 	CoUninitialize();
 
