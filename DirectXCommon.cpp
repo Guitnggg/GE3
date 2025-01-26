@@ -7,6 +7,10 @@
 
 using namespace Microsoft::WRL;
 
+//===============
+// 初期化
+//===============
+
 void DirectXCommon::Initialize(WinApp* winApp)
 {
 	assert(winApp);
@@ -26,6 +30,10 @@ void DirectXCommon::Initialize(WinApp* winApp)
 	CreateDXC();
 	CreateImGui();
 }
+
+//===============
+// その色々
+//===============
 
 Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateDepthStencilTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, int32_t width, int32_t height)
 {
