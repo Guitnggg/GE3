@@ -1262,7 +1262,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			/*ImGui::Checkbox("Model", &isModel);
 			ImGui::Checkbox("Sphere", &isSphere);*/
 
-			ImGui::InputFloat3("VertexSphere", *inputTransformSphere);
+		/*	ImGui::InputFloat3("VertexSphere", *inputTransformSphere);
 			ImGui::SliderFloat3("SliderVertexSphere", *inputTransformSphere, -5.0f, 5.0f);
 
 			ImGui::InputFloat3("RotateSphere", *inputRotateSphere);
@@ -1272,7 +1272,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::SliderFloat3("SliderScaleSphere", *inputScaleSphere, 0.5f, 5.0f);
 
 			ImGui::Checkbox("MonsterBall", &textureChange);
-			ImGui::Checkbox("ModelRotate", &isRotate);
+			ImGui::Checkbox("ModelRotate", &isRotate);*/
 
 
 			ImGui::Text("Ligth");
