@@ -52,19 +52,17 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandleSRV(uint32_t index);
 
 	// 
-	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandleRTV(uint32_t index);
+	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandleSRV(uint32_t index);
 
 	// ゲッター
 	Microsoft::WRL::ComPtr<ID3D12Device> GetDevice() const { return device.Get(); }
+
 	ID3D12GraphicsCommandList* GetCommandList() const { return commandList.Get(); }
 
 	// コンパイルシェーダ
 	IDxcBlob* CompileShader(
 		const std::wstring& filePath,
-		const wchar_t* profile,
-		IDxcUtils* dxcUtils,
-		IDxcCompiler3* dxcCompiler,
-		IDxcIncludeHandler* includeHandler);
+		const wchar_t* profile);
 
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t sizeInBytes);
@@ -78,12 +76,11 @@ public:
 	// テクスチャー
 	DirectX::ScratchImage LoadTexture(const std::string& filePath);
 
-	// 
+	// 描画前処理
 	void PreDraw();
 
-	// 
+	// 描画後処理
 	void PostDraw();
-
 
 private:
 
@@ -200,6 +197,5 @@ private:
 	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
 	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler;
 	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;
-
 };
 
