@@ -73,6 +73,7 @@ Matrix4x4 MakeScaleMatrix(Vector3 scale) {
 
 	return result;
 }
+
 Matrix4x4 MakeRotateZMatrix(float radian) {
 	Matrix4x4 result{};
 	result.m[0][0] = std::cos(radian);
@@ -94,6 +95,7 @@ Matrix4x4 MakeRotateZMatrix(float radian) {
 
 	return result;
 }
+
 Matrix4x4 MakeTranslateMatrix(Vector3 translate) {
 	Matrix4x4 result{};
 
@@ -412,7 +414,6 @@ Matrix4x4 MakePerspectiveFovMatrix(float forY, float aspectRatio, float nearClip
 	return result;
 }
 
-
 Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip) {
 	Matrix4x4 result;
 	result.m[0][0] = 2 / (right - left);
@@ -450,7 +451,6 @@ struct Sphere {
 	float radius;
 };
 
-
 struct Material {
 	Vector4 color;
 	int32_t enableLighting;
@@ -458,11 +458,19 @@ struct Material {
 	Matrix4x4 uvTransform;
 };
 
+struct MaterialData {
+	std::string textureFilePath;
+};
+
+struct ModelData {
+	std::vector<VertexData> vertices;
+	MaterialData material;
+};
+
 struct TransformationMatrix {
 	Matrix4x4 WVP;
 	Matrix4x4 World;
 };
-
 
 struct DirectionalLight {
 	Vector4 color;

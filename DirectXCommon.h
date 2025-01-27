@@ -5,6 +5,8 @@
 #include <wrl.h>
 #include <format>
 #include <dxcapi.h>
+#include <format>
+#include <chrono>
 
 #include "WinApp.h"
 #include "StringUtility.h"
@@ -12,6 +14,8 @@
 
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
+#include "externals/DirectXTex/DirectXTex.h"
+#include "externals/DirectXTex/d3dx12.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -49,6 +53,37 @@ public:
 
 	// 
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandleRTV(uint32_t index);
+
+	// ゲッター
+	Microsoft::WRL::ComPtr<ID3D12Device> GetDevice() const { return device.Get(); }
+	ID3D12GraphicsCommandList* GetCommandList() const { return commandList.Get(); }
+
+	// コンパイルシェーダ
+	IDxcBlob* CompileShader(
+		const std::wstring& filePath,
+		const wchar_t* profile,
+		IDxcUtils* dxcUtils,
+		IDxcCompiler3* dxcCompiler,
+		IDxcIncludeHandler* includeHandler);
+
+	// バッファリソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t sizeInBytes);
+
+	// テクスチャリソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> CrateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata);
+
+	// テクスチャーデータの転送
+	Microsoft::WRL::ComPtr<ID3D12Resource>UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages);
+
+	// テクスチャー
+	DirectX::ScratchImage LoadTexture(const std::string& filePath);
+
+	// 
+	void PreDraw();
+
+	// 
+	void PostDraw();
+
 
 private:
 
@@ -88,6 +123,15 @@ private:
 	// ImGuiの初期化
 	void CreateImGui();
 
+	// 記録時間
+	std::chrono::steady_clock::time_point reference_;
+
+	// FPS固定初期化
+	void CreateFixFPS();
+
+	/// FPS固定更新
+	void UpdateFixFPS();
+
 private:
 
 	//====================
@@ -116,13 +160,13 @@ private:
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc;
 
 	// SRVデスクリプタヒープ
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> descriptorHeapSRV;
+	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvDescriptorHeap;
 
 	// RTVデスクリプタヒープ
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> descriptorHeapRTV;
+	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> rtvDescriptorHeap;
 
 	// DSVデスクリプタヒープ
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> descriptorHeapDSV;
+	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> dsvDescriptorHeap;
 
 	// 各種デスクリプタヒープ
 	uint32_t descriptorSizeSRV;
@@ -146,6 +190,16 @@ private:
 	D3D12_VIEWPORT viewport{};
 	// シザー矩形
 	D3D12_RECT scissorRect{};
+
+	// フェンス
+	uint64_t fenceValue = 0;
+
+	// TransitionBarrierの設定
+	D3D12_RESOURCE_BARRIER barrier{};
+
+	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
+	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler;
+	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;
 
 };
 
