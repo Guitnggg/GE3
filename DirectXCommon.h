@@ -191,7 +191,7 @@ private:
 	// フェンス
 	uint64_t fenceValue = 0;
 
-	// TransitionBarrierの設定
+
 	D3D12_RESOURCE_BARRIER barrier{};
 
 	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
