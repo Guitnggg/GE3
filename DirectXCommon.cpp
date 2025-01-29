@@ -228,12 +228,14 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CrateTextureResource(Micro
 	return resource;
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages)
+void DirectXCommon::UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages)
 {
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 
-	for (size_t mipLevel = 0; mipLevel < metadata.mipLevels; ++mipLevel) {
+	for (size_t mipLevel = 0; mipLevel < metadata.mipLevels; ++mipLevel)
+	{
 		const DirectX::Image* img = mipImages.GetImage(mipLevel, 0, 0);
+
 		HRESULT hr = texture->WriteToSubresource(
 			UINT(mipLevel),
 			nullptr,			 //全領域へコピー

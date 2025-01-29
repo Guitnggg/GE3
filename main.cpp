@@ -383,8 +383,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 
-
-
 	uint32_t SphereVertexNum = 16 * 16 * 6;
 
 	//Sphere
@@ -410,9 +408,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	VertexData* vertexDataSphere = nullptr;
 
 	vertexResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere));
-
-
-
 
 
 	//Sprite

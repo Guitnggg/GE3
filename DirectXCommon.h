@@ -71,7 +71,7 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12Resource> CrateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata);
 
 	// テクスチャーデータの転送
-	Microsoft::WRL::ComPtr<ID3D12Resource>UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages);
+	void UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages);
 
 	// テクスチャー
 	DirectX::ScratchImage LoadTexture(const std::string& filePath);
@@ -173,12 +173,12 @@ private:
 	// SRVのデスクリプタハンドル
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
-	
+
 	// スワップチェーンリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResources[2];
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource;
-	
+
 	// フェンス
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence;
 	HANDLE fenceEvent;
