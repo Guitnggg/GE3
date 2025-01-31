@@ -24,6 +24,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 #include "Mymath.h"
 
+#include <numbers>
+
 //ComPtr
 #include <wrl.h>
 
@@ -1179,7 +1181,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
     Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-    Transform cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f}, {0.0f,0.0f,-10.5f} };
+
+    Transform cameraTransform = { {1.0f,1.0f,1.0f},{std::numbers::pi_v<float> / 3.0f,std::numbers::pi_v<float>,0.0f}, {0.0f,23.0f,10.0f} };
 
     Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
@@ -1293,6 +1296,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             materialDateSprite->uvTransform = uvTransformMatrix;
 
 
+            Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
+
+            Matrix4x4 billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+            billboardMatrix.m[3][0] = 0.0f;
+            billboardMatrix.m[3][1] = 0.0f;
+            billboardMatrix.m[3][2] = 0.0f;
+
             /// パーティクル ///
             uint32_t numInstance = 0;
 
@@ -1305,6 +1315,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
                 }
                 Matrix4x4 worldMatrix =
                     MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
+
                 Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
                 instancingData[index].WVP = worldViewProjectionMatrix;
@@ -1318,44 +1329,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             ImGui::Text("Model");
 
             ImGui::Checkbox("Move", &isMove);
-
-            /*ImGui::Text("Sphere");
-
-            ImGui::ColorEdit4("SphereColor", *inputMaterialSphere);
-
-            ImGui::Checkbox("MonsterBall", &textureChange);
-
-            ImGui::InputFloat3("VertexSphere", *inputTransformSphere);
-            ImGui::SliderFloat3("SliderVertexSphere", *inputTransformSphere, -5.0f, 5.0f);
-
-            ImGui::InputFloat3("RotateSphere", *inputRotateSphere);
-            ImGui::SliderFloat3("SliderRotateSphere", *inputRotateSphere, -10.0f, 10.0f);
-
-            ImGui::InputFloat3("ScaleSphere", *inputScaleSphere);
-            ImGui::SliderFloat3("SliderScaleSphere", *inputScaleSphere, 0.5f, 5.0f);
-
-            ImGui::Text("Ligth");
-            ImGui::InputFloat4("MaterialLigth", *inputMaterialLigth);
-            ImGui::SliderFloat4("SliderMaterialLigth", *inputMaterialLigth, 0.0f, 1.0f);
-
-            ImGui::InputFloat3("VertexLigth", *inputDirectionLight);
-            ImGui::SliderFloat3("SliderVertexLigth", *inputDirectionLight, -1.0f, 1.0f);
-
-            ImGui::InputFloat("intensity", intensity);*/
-
-            /*ImGui::Text("Sprite");
-            ImGui::Checkbox("Active", &isSprite);
-            ImGui::InputFloat("SpriteX", &transformSprite.translate.x);
-            ImGui::SliderFloat("SliderSpriteX", &transformSprite.translate.x, 0.0f, 1000.0f);
-
-            ImGui::InputFloat("SpriteY", &transformSprite.translate.y);
-            ImGui::SliderFloat("SliderSpriteY", &transformSprite.translate.y, 0.0f, 600.0f);
-
-            ImGui::DragFloat2("UVTranlate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-            ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-            ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);*/
-
-
 
             //ImGuiの内部コマンド
             ImGui::Render();
@@ -1422,9 +1395,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             //commandList->DrawInstanced(SphereVertexNum, 1, 0, 0);
 
 
-
-
-
             // model
             commandList->IASetVertexBuffers(0, 1, &vertexBufferViewModel);
 
@@ -1457,7 +1427,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
                 }
                 ++numInstance;
             }
-
 
             commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
             commandList->DrawInstanced(UINT(modelData.vertices.size()), numInstance, 0, 0);
