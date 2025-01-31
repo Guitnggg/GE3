@@ -42,6 +42,8 @@ PixelShaderOutput main(VertexShaderOutput input)
     
     float32_t3 reflectLight = reflect(normalize(gDirectionalLight.direction), normalize(input.normal));
     
+    float32_t3 halfVector = normalize(-gDirectionalLight.direction * toEye);
+    
     PixelShaderOutput output;
     
     if (gMaterial.enableLighting != 0)
@@ -51,6 +53,9 @@ PixelShaderOutput main(VertexShaderOutput input)
         
         float RdotE = dot(reflectLight, toEye);
         float specularPow = pow(RdotE * 0.5f + 0.5f, gMaterial.shininess);
+        
+        float NdotH = dot(normalize(input.normal), halfVector);
+        specularPow = pow(saturate(NdotH), gMaterial.shininess);
         
         // 拡散反射
         float32_t3 diffuse = output.color.rgb = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity;
