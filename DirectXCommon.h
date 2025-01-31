@@ -65,13 +65,13 @@ public:
 		const wchar_t* profile);
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t sizeInBytes);
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource( size_t sizeInBytes);
 
 	// テクスチャリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> CrateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata);
+	Microsoft::WRL::ComPtr<ID3D12Resource> CrateTextureResource(Microsoft::WRL::ComPtr< ID3D12Device> device, const DirectX::TexMetadata& metadata);
 
 	// テクスチャーデータの転送
-	void UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages);
+	void UploadTextureData(Microsoft::WRL::ComPtr< ID3D12Resource>texture, const DirectX::ScratchImage& mipImages);
 
 	// テクスチャー
 	DirectX::ScratchImage LoadTexture(const std::string& filePath);

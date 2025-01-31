@@ -146,7 +146,6 @@ IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar
 	assert(SUCCEEDED(hr));
 
 	//3.警告エラー
-
 	IDxcBlobUtf8* shaderError = nullptr;
 	shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
 	if (shaderError != nullptr && shaderError->GetStringLength() != 0)
@@ -155,6 +154,7 @@ IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar
 		//警告エラーダメ絶対
 		assert(false);
 	}
+
 	//4.Complie結果
 	IDxcBlob* shaderBlob = nullptr;
 	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
@@ -162,13 +162,10 @@ IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar
 
 	Logger::Log(StringUtility::ConvertString(std::format(L"Compile Succeeded,path:{},profile:{}\n", filePath, profile)));
 
-	//shaderSource->Release();
-	//shaderResult->Release();
-
 	return shaderBlob;
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t sizeInBytes)
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_t sizeInBytes)
 {
 	//VertexResource
 	//頂点シェーダを作る
@@ -195,7 +192,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(Micro
 	return vertexResource;
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CrateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata)
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CrateTextureResource(Microsoft::WRL::ComPtr< ID3D12Device> device, const DirectX::TexMetadata& metadata)
 {
 	D3D12_RESOURCE_DESC resourceDesc{};
 	resourceDesc.Width = UINT(metadata.width);//幅
@@ -449,29 +446,35 @@ void DirectXCommon::CreateCommand()
 #pragma region コマンドキュー
 
 	//コマンドキュー生成
-	Microsoft::WRL::ComPtr < ID3D12CommandQueue> commandQueue = nullptr;
+	commandQueue = nullptr;
 	D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
 	hr = device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&commandQueue));
+	
 	//生成できない場合
 	assert(SUCCEEDED(hr));
 
 #pragma endregion
 
 #pragma region コマンドアロケータ
+
 	//コマンドアロケータ生成
-	Microsoft::WRL::ComPtr < ID3D12CommandAllocator> commandAllocator = nullptr;
+	commandAllocator = nullptr;
 	hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator));
+	
 	//生成できない場合
 	assert(SUCCEEDED(hr));
 
 #pragma endregion
 
 #pragma region コマンドリスト
+
 	//コマンドリスト生成
-	Microsoft::WRL::ComPtr < ID3D12GraphicsCommandList> commandList = nullptr;
+	commandList = nullptr;
 	hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList));
+	
 	//生成できない場合
 	assert(SUCCEEDED(hr));
+
 #pragma endregion
 }
 
@@ -529,9 +532,7 @@ void DirectXCommon::CreateRenderTargetView()
 
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 
-	rtvHandles[2];
 	for (uint32_t i = 0; i < 2; ++i) 
 	{
 		rtvHandles[0] = rtvStartHandle;
@@ -559,8 +560,6 @@ void DirectXCommon::CreateFence()
 {
 	HRESULT hr;
 
-	//初期化で0でFenceを作る
-	Microsoft::WRL::ComPtr < ID3D12Fence> fence = nullptr;
 	uint64_t fenceValue = 0;
 	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 	assert(SUCCEEDED(hr));
