@@ -549,6 +549,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	float* inputDirectionLight[3] = { &directionalLightSphereData->direction.x,&directionalLightSphereData->direction.y,&directionalLightSphereData->direction.z };
 	float* intensity = &directionalLightSphereData->intensity;
 
+	bool isModel = true;
+	bool isSphere = false;
+
+	bool isSprite = false;
 
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
@@ -619,9 +623,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			/*ImGui::ShowDemoWindow();*/
 
 			//ここにテキストを入れられる
-			ImGui::Text("ImGuiText");
+			ImGui::Text("Model");
 
-			ImGui::Text("Sphere");
+			ImGui::Checkbox("Model", &isModel);
+			ImGui::Checkbox("Sphere", &isSphere);
+
 			ImGui::InputFloat3("MaterialSphere", *inputMaterialSphere);
 			ImGui::SliderFloat3("SliderMaterialSphere", *inputMaterialSphere, 0.0f, 1.0f);
 
