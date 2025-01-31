@@ -748,7 +748,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
     //textureを読んで転送
-    DirectX::ScratchImage mipImages = LoadTexture("resource/uvChecker.png");
+    DirectX::ScratchImage mipImages = LoadTexture("resource/circle.png");
     const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
     Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = CrateTextureResource(device, metadata);
     UploadTextureData(textureResource, mipImages);
