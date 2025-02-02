@@ -1219,6 +1219,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     }
 
     bool isMove = false;
+    bool isBillboard = false;
 
 
     // ImGui初期化
@@ -1309,13 +1310,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             // Δtimeを定義。とりあえず60fpsで固定してあるが、実時間を計測して可変fpsで動かせるようにしておくといい
             const float  kDeltaTime = 1.0f / 60.0f;
 
+            if (!isBillboard) {
+                billboardMatrix = MakeIdentity4x4();
+            }
+
             for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
                 if (particles[index].lifeTime <= particles[index].currentTime) {
                     continue;
                 }
-                Matrix4x4 worldMatrix =
-                    MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
-
+                Matrix4x4 scaleMatrix = MakeScaleMatrix(particles[index].transform.scale);
+                Matrix4x4 translateMatrix = MakeTranslateMatrix(particles[index].transform.translate);
+                Matrix4x4 worldMatrix = Multiply(Multiply(scaleMatrix, billboardMatrix), translateMatrix);                              
                 Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
                 instancingData[index].WVP = worldViewProjectionMatrix;
@@ -1329,6 +1334,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             ImGui::Text("Model");
 
             ImGui::Checkbox("Move", &isMove);
+            ImGui::Checkbox("Billboard", &isBillboard);
 
             //ImGuiの内部コマンド
             ImGui::Render();
