@@ -33,6 +33,9 @@ public:
 	// メンバ関数
 	//====================
 
+	// デストラクタ
+	~DirectXCommon();
+
 	// 初期化
 	void Initialize(WinApp* winApp);
 

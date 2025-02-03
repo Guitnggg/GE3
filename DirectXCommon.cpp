@@ -13,6 +13,12 @@ using namespace Microsoft::WRL;
 // 初期化
 //===============
 
+// デストラクタ
+DirectXCommon::~DirectXCommon()
+{
+	delete fenceEvent;
+}
+
 void DirectXCommon::Initialize(WinApp* winApp)
 {
 	assert(winApp);
