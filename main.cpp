@@ -134,7 +134,6 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 }
 
 
-
 //Windowsアプリのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
