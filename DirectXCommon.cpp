@@ -13,10 +13,9 @@ using namespace Microsoft::WRL;
 // 初期化
 //===============
 
-// デストラクタ
 DirectXCommon::~DirectXCommon()
 {
-	delete fenceEvent;
+	CloseHandle(fenceEvent);
 }
 
 void DirectXCommon::Initialize(WinApp* winApp)
