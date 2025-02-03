@@ -13,6 +13,8 @@
 #include "WinApp.h"
 #include "DirectXCommon.h"
 #include "D3DResourceLeakChecker.h"
+#include "SpriteCommon.h"
+#include "Sprite.h"
 
 #pragma comment(lib,"dxcompiler.lib")
 
@@ -168,6 +170,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
+
+#pragma endregion
+
+#pragma region Sprite系
+
+	// SpriteCommon
+	SpriteCommon* spriteCommon = nullptr;
+
+	spriteCommon = new SpriteCommon;
+	spriteCommon->Initialize();
+
+	// Sprite
+	Sprite* sprite = new Sprite();
+	sprite->Initialize();
 
 #pragma endregion
 
@@ -755,6 +771,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// DirectXCommon解放
 	delete dxCommon;
+
+	// Sprite系解放
+	delete spriteCommon;
+	delete sprite;
 
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
