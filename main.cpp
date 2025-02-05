@@ -166,6 +166,12 @@ MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const st
     return materialData;
 };
 
+struct Emitter {
+    Transform transform; //エミッターのtransform
+    uint32_t count;  //発生数
+    float frequency;  //発生頻度
+    float frequencyTime;  //頻度用タイマー
+};
 
 struct ModelData {
     std::vector<VertexData> vertices;
@@ -471,6 +477,15 @@ Particle MakeNewParticle(std::mt19937& randomEngine) {
     return particle;
 }
 
+
+//エミッター
+std::list<Particle> Emit(const Emitter& emitter, std::mt19937& randomEngine) {
+    std::list<Particle> particles;
+    for (uint32_t count = 0; count < emitter.count; ++count) {
+        particles.push_back(MakeNewParticle(randomEngine));
+    }
+    return particles;
+}
 
 // ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg,
@@ -1128,7 +1143,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
     /// Instancing用のリソース ///
-    const uint32_t kNumMaxInstance = 10; // インスタンス数
+    const uint32_t kNumMaxInstance = 100; // インスタンス数
 
     // Instancing用のTransformationMatrixリソースを作る
     Microsoft::WRL::ComPtr<ID3D12Resource>instancingResource =
@@ -1160,6 +1175,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
 
+
+
     // ビューポート
     D3D12_VIEWPORT viewport;
 
@@ -1178,6 +1195,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     scissorRect.top = 0;
     scissorRect.bottom = kClientHeight;
 
+   
 
 
     Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
@@ -1213,10 +1231,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     /// パーティクル ///				
 
-    Particle particles[kNumMaxInstance];
-    for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
-        particles[index] = MakeNewParticle(randomEngine);
-    }
+    std::list<Particle>particles;
+
+    Emitter emitter{};
+    emitter.count = 3;
+    emitter.frequency = 0.5f;
+    emitter.frequencyTime = 0.0f;
+
+    emitter.transform.translate = { 0.0f,0.0f,0.0f };
+    emitter.transform.rotate = { 0.0f,0.0f,0.0f };
+    emitter.transform.scale = { 1.0f,1.0f,1.0f };
 
     bool isMove = false;
     bool isBillboard = false;
@@ -1314,18 +1338,40 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
                 billboardMatrix = MakeIdentity4x4();
             }
 
-            for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
-                if (particles[index].lifeTime <= particles[index].currentTime) {
+            emitter.frequencyTime += kDeltaTime;
+            if (emitter.frequency <= emitter.frequencyTime) {
+                particles.splice(particles.end(), Emit(emitter, randomEngine));
+                emitter.frequencyTime -= emitter.frequency;
+            }
+
+            for (std::list<Particle>::iterator particleIterator = particles.begin(); particleIterator != particles.end();) {
+                if ((*particleIterator).lifeTime <= (*particleIterator).currentTime) {
+                    particleIterator = particles.erase(particleIterator);
                     continue;
                 }
-                Matrix4x4 scaleMatrix = MakeScaleMatrix(particles[index].transform.scale);
-                Matrix4x4 translateMatrix = MakeTranslateMatrix(particles[index].transform.translate);
-                Matrix4x4 worldMatrix = Multiply(Multiply(scaleMatrix, billboardMatrix), translateMatrix);                              
-                Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-                instancingData[index].WVP = worldViewProjectionMatrix;
-                instancingData[index].World = worldMatrix;
-                instancingData[index].color = particles[index].color;
+                if (numInstance < kNumMaxInstance) {
+                    Matrix4x4 scaleMatrix = MakeScaleMatrix((*particleIterator).transform.scale);
+                    Matrix4x4 translateMatrix = MakeTranslateMatrix((*particleIterator).transform.translate);
+                    Matrix4x4 worldMatrix = Multiply(Multiply(scaleMatrix, billboardMatrix), translateMatrix);
+                    Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+
+                    instancingData[numInstance].WVP = worldViewProjectionMatrix;
+                    instancingData[numInstance].World = worldMatrix;
+                    instancingData[numInstance].color = (*particleIterator).color;
+
+                    (*particleIterator).transform.translate.x += (*particleIterator).velocity.x * kDeltaTime;
+                    (*particleIterator).transform.translate.y += (*particleIterator).velocity.y * kDeltaTime;
+                    (*particleIterator).transform.translate.z += (*particleIterator).velocity.z * kDeltaTime;
+
+                    (*particleIterator).currentTime += kDeltaTime;
+
+                    float alpha = 1.0f - ((*particleIterator).currentTime / (*particleIterator).lifeTime);
+                    instancingData[numInstance].color.s = alpha;
+
+                    ++particleIterator;
+                }
+                ++numInstance;
             }
 
 
@@ -1335,6 +1381,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
             ImGui::Checkbox("Move", &isMove);
             ImGui::Checkbox("Billboard", &isBillboard);
+
+            ImGui::DragFloat3("EmitterTranslate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
+           /* if (ImGui::Button("Particle")) {
+                particles.splice(particles.end(), Emit(emitter, randomEngine));
+            }*/
 
             //ImGuiの内部コマンド
             ImGui::Render();
@@ -1419,20 +1470,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             commandList->SetGraphicsRootConstantBufferView(3, directionalLightSphereResource->GetGPUVirtualAddress());
 
 
-            for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
-
-                if (isMove) {
-                    particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
-                    particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
-                    particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
-
-                    particles[index].currentTime += kDeltaTime;
-
-                    float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
-                    instancingData[numInstance].color.s = alpha;
-                }
-                ++numInstance;
-            }
+         
 
             commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
             commandList->DrawInstanced(UINT(modelData.vertices.size()), numInstance, 0, 0);
