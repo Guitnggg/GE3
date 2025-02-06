@@ -16,6 +16,12 @@ using namespace Microsoft::WRL;
 DirectXCommon::~DirectXCommon()
 {
 	CloseHandle(fenceEvent);
+
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+
+	CoUninitialize();
 }
 
 void DirectXCommon::Initialize(WinApp* winApp)
