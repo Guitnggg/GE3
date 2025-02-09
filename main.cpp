@@ -485,11 +485,31 @@ std::list<Particle> Emit(const Emitter& emitter, std::mt19937& randomEngine) {
     return particles;
 }
 
+struct AABB {
+    Vector3 min;
+    Vector3 max;
+};
 
 struct AccelerationField {
     Vector3 acceleration;
     AABB area;
 };
+
+bool IsCollision(const AABB& aabb, const Vector3& point) {
+    if (point.x < aabb.min.x || point.x > aabb.max.x) {
+        return false;
+    }
+
+    if (point.y < aabb.min.y || point.y > aabb.max.y) {
+        return false;
+    }
+
+    if (point.z < aabb.min.z || point.z > aabb.max.z) {
+        return false;
+    }
+
+    return true;
+}
 
 // ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg,
@@ -1199,7 +1219,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     scissorRect.top = 0;
     scissorRect.bottom = kClientHeight;
 
-   
+
+
+
+
+    AccelerationField accelerationField;
+    accelerationField.acceleration = { 15.0f,0.0f,0.0f };
+    accelerationField.area.min = { -1.0f,-1.0f,-1.0f };
+    accelerationField.area.max = { 1.0f,1.0f,1.0f };
+
+  
+
+
 
 
     Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
@@ -1248,6 +1279,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     bool isMove = false;
     bool isBillboard = false;
+    bool isField = false;
 
 
     // ImGui初期化
@@ -1364,6 +1396,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
                     instancingData[numInstance].World = worldMatrix;
                     instancingData[numInstance].color = (*particleIterator).color;
 
+                    if (isField) {
+                        if (IsCollision(accelerationField.area, (*particleIterator).transform.translate)) {
+                            (*particleIterator).velocity.x += accelerationField.acceleration.x * kDeltaTime;
+                            (*particleIterator).velocity.y += accelerationField.acceleration.y * kDeltaTime;
+                            (*particleIterator).velocity.z += accelerationField.acceleration.z * kDeltaTime;
+                        }
+                    }
+                   
                     (*particleIterator).transform.translate.x += (*particleIterator).velocity.x * kDeltaTime;
                     (*particleIterator).transform.translate.y += (*particleIterator).velocity.y * kDeltaTime;
                     (*particleIterator).transform.translate.z += (*particleIterator).velocity.z * kDeltaTime;
@@ -1385,6 +1425,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
             ImGui::Checkbox("Move", &isMove);
             ImGui::Checkbox("Billboard", &isBillboard);
+            ImGui::Checkbox("Field", &isField);
 
             ImGui::DragFloat3("EmitterTranslate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
            /* if (ImGui::Button("Particle")) {
