@@ -137,8 +137,6 @@ IDxcBlob* CompileShader(
     return shaderBlob;
 }
 
-
-
 //model
 struct MaterialData {
     std::string textureFilePath;
@@ -487,6 +485,12 @@ std::list<Particle> Emit(const Emitter& emitter, std::mt19937& randomEngine) {
     return particles;
 }
 
+
+struct AccelerationField {
+    Vector3 acceleration;
+    AABB area;
+};
+
 // ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg,
 
@@ -512,10 +516,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg,
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     D3DResourceLeakChecker leakCheck;
+    CoInitializeEx(0, COINIT_MULTITHREADED);
+
     Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
     Microsoft::WRL::ComPtr<ID3D12Device> device;
-
-    CoInitializeEx(0, COINIT_MULTITHREADED);
 
 
 #pragma region Windouの生成
