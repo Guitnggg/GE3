@@ -624,7 +624,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//開発用UIの処理
 			/*ImGui::ShowDemoWindow();*/
 
-			//ここにテキストを入れられる
+			/// Model ///
 			ImGui::Text("Model");
 
 			ImGui::Checkbox("Model", &isModel);
@@ -645,7 +645,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::Checkbox("MonsterBall", &textureChange);
 
-
+			/// Lightng ///
 			ImGui::Text("Ligth");
 			ImGui::InputFloat4("MaterialLigth", *inputMaterialLigth);
 			ImGui::SliderFloat4("SliderMaterialLigth", *inputMaterialLigth, 0.0f, 1.0f);
@@ -656,19 +656,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::InputFloat("intensity", intensity);
 
 
+			/// Sprite ///
 			ImGui::Text("Sprite");
+
 			ImGui::Checkbox("UI", &isSprite);
+
 			ImGui::InputFloat("SpriteX", &transformSprite.translate.x);
 			ImGui::SliderFloat("SliderSpriteX", &transformSprite.translate.x, 0.0f, 1000.0f);
 
 			ImGui::InputFloat("SpriteY", &transformSprite.translate.y);
 			ImGui::SliderFloat("SliderSpriteY", &transformSprite.translate.y, 0.0f, 600.0f);
 
-			ImGui::InputFloat("SpriteZ", &transformSprite.translate.z);
-			ImGui::SliderFloat("SliderSpriteZ", &transformSprite.translate.z, 0.0f, 0.0f);
-
 			ImGui::DragFloat2("UVTranlate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+
 			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
 
 
