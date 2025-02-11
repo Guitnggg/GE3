@@ -1,11 +1,16 @@
 #include<Windows.h>
 #include <cstdint>
 #include <string>
-#include<format>
+#include <format>
 
 #include <cassert>
 #include <fstream>
 #include <sstream>
+
+#include <iostream>
+#include <list>
+
+using namespace std;
 
 #include "Mymath.h"
 
@@ -133,6 +138,13 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 	return modelData;
 }
 
+
+void displayList(const list<const char*>& stations, const char* year) {
+	cout << "\n--- Yamanote Line Stations in " << year << " ---" << endl;
+	for (const auto& station : stations) {
+		cout << station << endl;
+	}
+}
 
 //Windowsアプリのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -521,32 +533,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialDateSprite->uvTransform = MakeIdentity4x4();
 
 
-	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	Transform cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f}, {0.0f,0.0f,-10.5f} };
-	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	Transform transformSphere{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	Transform transformL{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	Transform uvTransformSprite{
-		{ 1.0f,1.0f,1.0f },
-		{ 0.0f,0.0f,0.0f },
-		{ 0.0f,0.0f,0.0f }
+	// 1970年の山手線のリスト
+	list<const char*> stations1970 = {
+		"Tokyo", "Kanda", "Akihabara", "Okachimachi", "Ueno",
+		"Uguisudani", "Nippori", "Tabata", "Komagome",
+		"Sugamo", "Otsuka", "Ikebukuro", "Mejiro", "Takadanobaba",
+		"Shin-Okubo", "Shinjuku", "Yoyogi", "Harajuku", "Shibuya",
+		"Ebisu", "Meguro", "Gotanda", "Osaki", "Shinagawa",
+		"Tamachi", "Hamamatsucho", "Shimbashi", "Yurakucho"
 	};
 
-	float* inputMaterialSphere[3] = { &materialDateSphere->color.x,&materialDateSphere->color.y,&materialDateSphere->color.z };
-	float* inputTransformSphere[3] = { &transformSphere.translate.x,&transformSphere.translate.y,&transformSphere.translate.z };
-	float* inputRotateSphere[3] = { &transformSphere.rotate.x,&transformSphere.rotate.y,&transformSphere.rotate.z };
-	float* inputScaleSphere[3] = { &transformSphere.scale.x,&transformSphere.scale.y,&transformSphere.scale.z };
-	bool textureChange = true;
-
-	float* inputMaterialLigth[3] = { &directionalLightSphereData->color.x,&directionalLightSphereData->color.y,&directionalLightSphereData->color.z };
-	float* inputDirectionLight[3] = { &directionalLightSphereData->direction.x,&directionalLightSphereData->direction.y,&directionalLightSphereData->direction.z };
-	float* intensity = &directionalLightSphereData->intensity;
-
-	bool isRotate = false;
-	bool isModel = false;
-	bool isSphere = true;
-	bool isSprite = false;
-
+	
 	//ウィンドウの×ボタンが押されるまでループ
 	while (true) {
 		if (winApp->ProcessMessege()) {
@@ -555,171 +552,63 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		else {
 
-			//==============================
-			// DirectXの毎フレームの処理
-			//==============================
-
 			//// ImGui関連 ////
 
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
-			// Model //
-			ImGui::Text("Model");
-
-			ImGui::Checkbox("Model", &isModel);
-			ImGui::Checkbox("Sphere", &isSphere);
-
-			ImGui::InputFloat3("MaterialSphere", *inputMaterialSphere);
-			ImGui::SliderFloat3("SliderMaterialSphere", *inputMaterialSphere, 0.0f, 1.0f);
-
-			ImGui::InputFloat3("VertexSphere", *inputTransformSphere);
-			ImGui::SliderFloat3("SliderVertexSphere", *inputTransformSphere, -5.0f, 5.0f);
-
-			ImGui::Checkbox("Rotate", &isRotate);
-			ImGui::InputFloat3("RotateSphere", *inputRotateSphere);
-			ImGui::SliderFloat3("SliderRotateSphere", *inputRotateSphere, -10.0f, 10.0f);
-
-			ImGui::InputFloat3("ScaleSphere", *inputScaleSphere);
-			ImGui::SliderFloat3("SliderScaleSphere", *inputScaleSphere, 0.5f, 5.0f);
-
-			ImGui::Checkbox("MonsterBall", &textureChange);
-
-			// Lightng //
-			ImGui::Text("Ligth");
-			ImGui::InputFloat4("MaterialLigth", *inputMaterialLigth);
-			ImGui::SliderFloat4("SliderMaterialLigth", *inputMaterialLigth, 0.0f, 1.0f);
-
-			ImGui::InputFloat3("VertexLigth", *inputDirectionLight);
-			ImGui::SliderFloat3("SliderVertexLigth", *inputDirectionLight, -1.0f, 1.0f);
-
-			ImGui::InputFloat("intensity", intensity);
-
-			// Sprite //
-			ImGui::Text("Sprite");
-
-			ImGui::Checkbox("UI", &isSprite);
-
-			ImGui::InputFloat("SpriteX", &transformSprite.translate.x);
-			ImGui::SliderFloat("SliderSpriteX", &transformSprite.translate.x, 0.0f, 1000.0f);
-
-			ImGui::InputFloat("SpriteY", &transformSprite.translate.y);
-			ImGui::SliderFloat("SliderSpriteY", &transformSprite.translate.y, 0.0f, 600.0f);
-
-			ImGui::DragFloat2("UVTranlate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-
-			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
-
-			//===============
-			//ゲームの処理
-			//===============
-
+			//// ゲームの処理 ////
+			
 			input->Update();
 
-			if (input->PushKey(DIK_0)) {
-				OutputDebugStringA("Hit 0\n");
-			}
-
-			if (isRotate) {
-				transformSphere.rotate.y -= 0.05f;
+			// 1970年の駅を表示
+			ImGui::Text("-----1970s station-----");
+			for (const char* station : stations1970) {
+				ImGui::Text("%s", station);
 			}
 			
-			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(1280.0f) / float(720.0f), 0.1f, 100.0f);
-			Matrix4x4 WorldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+			// 西日暮里駅開業に伴い、2019年に西日暮里駅を追加
+			list<const char*> stations2019 = stations1970;
+			auto it2019 = stations2019.begin();
+			for (; it2019 != stations2019.end(); ++it2019) {
+				if (string(*it2019) == "Nippori") {
+					++it2019;
+					stations2019.insert(it2019, "Nishi-Nippori");
+					break;
+				}
+			}
 
-			// 球体
-			Matrix4x4 worldMatrixSphere = MakeAffineMatrix(transformSphere.scale, transformSphere.rotate, transformSphere.translate);
-			Matrix4x4 WorldViewProjectionMatrixSphere = Multiply(worldMatrixSphere, Multiply(viewMatrix, projectionMatrix));
+			// 高縄ゲートウェイ駅開業に伴い、2022年に高輪ゲートウェイ駅を追加
+			list<const char*> stations2022 = stations2019;
+			auto it2022 = stations2022.begin();
+			for (; it2022 != stations2022.end(); ++it2022) {
+				if (string(*it2022) == "Tamachi") {
+					++it2022;
+					stations2022.insert(it2022, "Takanawa Gateway");
+					break;
+				}
+			}
 
-			wvpDateSphere->World = worldMatrixSphere;
-			wvpDateSphere->WVP = WorldViewProjectionMatrixSphere;
+			// 2019年の駅を表示
+			ImGui::Text("-----2019s station-----");
+			for (const char* station : stations2019) {
+				ImGui::Text("%s", station);
+			}
 
-			DrawSphere(vertexDataSphere);
-
-			directionalLightSphereData->direction = Normalize(directionalLightSphereData->direction);
-
-			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
-			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
-			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, (float)WinApp::kClientWidth, (float)WinApp::kClientHeight, 0.0f, 100.0f);
-			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
-
-			transformationMatrixDataSprite->WVP = worldViewProjectionMatrixSprite;
-
-			Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
-			uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
-			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
-			materialDateSprite->uvTransform = uvTransformMatrix;
+			// 2022年の駅を表示
+			ImGui::Text("-----2022s station-----");
+			for (const char* station : stations2022) {
+				ImGui::Text("%s", station);
+			}
+		
 
 			// ImGuiの内部コマンド
 			ImGui::Render();
 
 			dxCommon->PreDraw();
 
-			dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
-			dxCommon-> GetCommandList()->SetPipelineState(graphicsPipelineState.Get());
-			dxCommon-> GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);//球体
 			
-			// 球体
-			if (isSphere) {
-
-				dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);
-				dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
-				dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());
-
-				if (textureChange == false) {
-					dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-				}
-				else {
-					dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU2);
-				}
-
-				dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightSphereResource->GetGPUVirtualAddress());
-				dxCommon->GetCommandList()->DrawInstanced(SphereVertexNum, 1, 0, 0);
-			}
-
-			// model
-			if (isModel) {
-				dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewModel);
-
-				dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
-
-				dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());
-
-				if (textureChange == 0) {
-					dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-				}
-				else {
-					dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU2);
-				}
-
-				dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightSphereResource->GetGPUVirtualAddress());
-
-				dxCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
-			}
-			
-			// UI
-			if (isSprite) {
-				dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-				dxCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);
-
-				dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
-
-				dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-
-				if (textureChange == 0) {
-					dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-				}
-				else {
-					dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU2);
-				}
-
-				dxCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
-			}
 			
 			//実際のcommandListのImGui描画コマンドを挟む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
