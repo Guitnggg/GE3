@@ -752,6 +752,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// DirectXCommon解放
 	delete dxCommon;
-	
+
+	// Sprite系解放
+	delete spriteCommon;
+	delete sprite;
+
 	return 0;
 }
