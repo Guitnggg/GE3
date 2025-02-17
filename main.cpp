@@ -570,9 +570,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	bool isSprite = false;
 
-	MSG msg{};
-	//ウィンドウの×ボタンが押されるまでループ
-	while (msg.message != WM_QUIT) {
+	while (true) {
 		if (winApp->ProcessMessege()) {
 			// ゲームループを抜ける
 			break;
