@@ -1184,6 +1184,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
 	Transform transformSphere{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	// axis.obj（モデル）用のTransform（球体とは別にいじれるようにする）
+	Transform transformModel{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
 	Transform transformL{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
@@ -1201,20 +1203,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//float* inputScale[3] = { &transform.scale.x,&transform.scale.y,&transform.scale.z };
 
 
-	float* inputMaterialSphere[3] = { &materialDateSphere->color.x,&materialDateSphere->color.y,&materialDateSphere->color.z };
-	float* inputTransformSphere[3] = { &transformSphere.translate.x,&transformSphere.translate.y,&transformSphere.translate.z };
-	float* inputRotateSphere[3] = { &transformSphere.rotate.x,&transformSphere.rotate.y,&transformSphere.rotate.z };
-	float* inputScaleSphere[3] = { &transformSphere.scale.x,&transformSphere.scale.y,&transformSphere.scale.z };
-	float textureChange = 0;
+		// ImGuiでテクスチャを切り替える用（0: uvChecker, 1: monsterBall）
+	int textureChange = 0;
+	// ImGuiで描画対象を切り替える用（0: Sphere, 1: Model(axis.obj)）
+	int drawTarget = 1;
 
-
-	float* inputMaterialLigth[3] = { &directionalLightSphereData->color.x,&directionalLightSphereData->color.y,&directionalLightSphereData->color.z };
-	float* inputDirectionLight[3] = { &directionalLightSphereData->direction.x,&directionalLightSphereData->direction.y,&directionalLightSphereData->direction.z };
-	float* intensity = &directionalLightSphereData->intensity;
+	// UV操作用（Sprite用）
+	// ※ materialDateSprite->uvTransform に反映されます
 
 
 
-	//ImGui初期化
+//ImGui初期化
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
@@ -1262,15 +1261,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//*wvpDate = WorldViewProjectionMatrix;
 
 
-			//球体
-
-			Matrix4x4 worldMatrixSphere = MakeAffineMatrix(transformSphere.scale, transformSphere.rotate, transformSphere.translate);
-			Matrix4x4 WorldViewProjectionMatrixSphere = Multiply(worldMatrixSphere, Multiply(viewMatrix, projectionMatrix));
-
-			wvpDateSphere->World = worldMatrixSphere;
-			wvpDateSphere->WVP = WorldViewProjectionMatrixSphere;
-
-			DrawSphere(vertexDataSphere);
+			// 描画対象（Sphere / Model）
+			// どちらも同じPSO/RootSignatureで描ける前提なので、ここでは
+			// - WVP（定数バッファ）
+			// - （Sphereの場合）頂点生成
+			// を切り替える。
+			if (drawTarget == 0) {
+				// Sphere
+				Matrix4x4 worldMatrixSphere = MakeAffineMatrix(transformSphere.scale, transformSphere.rotate, transformSphere.translate);
+				Matrix4x4 wvpSphere = Multiply(worldMatrixSphere, Multiply(viewMatrix, projectionMatrix));
+				wvpDateSphere->World = worldMatrixSphere;
+				wvpDateSphere->WVP = wvpSphere;
+				// 球体頂点を更新（頂点バッファがUPLOA DなのでCPU側で毎フレーム書き換え可能）
+				DrawSphere(vertexDataSphere);
+			}
+			else {
+				// Model (axis.obj)
+				Matrix4x4 worldMatrixModel = MakeAffineMatrix(transformModel.scale, transformModel.rotate, transformModel.translate);
+				Matrix4x4 wvpModel = Multiply(worldMatrixModel, Multiply(viewMatrix, projectionMatrix));
+				// 既存のCB（wvpResourceSphere）をモデルにも使い回す（今の動作と同じ方針）
+				wvpDateSphere->World = worldMatrixModel;
+				wvpDateSphere->WVP = wvpModel;
+			}
 
 			directionalLightSphereData->direction = Normalize(directionalLightSphereData->direction);
 
@@ -1290,72 +1302,49 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 			materialDateSprite->uvTransform = uvTransformMatrix;
 
-			//開発用UIの処理
-			/*ImGui::ShowDemoWindow();*/
+			// 開発用UI（ImGui）
+			ImGui::Begin("Debug");
 
-			//ここにテキストを入れられる
-			ImGui::Text("ImGuiText");
+			ImGui::SeparatorText("Draw Target");
+			ImGui::RadioButton("Sphere", &drawTarget, 0);
+			ImGui::SameLine();
+			ImGui::RadioButton("Model (axis.obj)", &drawTarget, 1);
 
+			ImGui::SeparatorText("Texture");
+			ImGui::RadioButton("UV Checker", &textureChange, 0);
+			ImGui::SameLine();
+			ImGui::RadioButton("Monster Ball", &textureChange, 1);
 
-			//ImGui::Text("Traiangle");
-			//ImGui::InputFloat3("Material", *inputMaterial);
-			//ImGui::SliderFloat3("SliderMaterial", *inputMaterial, 0.0f, 1.0f);
+			ImGui::SeparatorText("Transform");
+			Transform* activeTransform = (drawTarget == 0) ? &transformSphere : &transformModel;
+			ImGui::DragFloat3("Translate", &activeTransform->translate.x, 0.01f);
+			ImGui::DragFloat3("Rotate", &activeTransform->rotate.x, 0.01f);
+			ImGui::DragFloat3("Scale", &activeTransform->scale.x, 0.01f, 0.01f, 100.0f);
 
-			//ImGui::InputFloat3("Vertex", *inputTransform);
-			//ImGui::SliderFloat3("SliderVertex", *inputTransform, -5.0f, 5.0f);
+			ImGui::SeparatorText("Material");
+			ImGui::ColorEdit4("Color", &materialDateSphere->color.x);
+			bool enableLighting = (materialDateSphere->enableLighting != 0);
+			if (ImGui::Checkbox("Enable Lighting", &enableLighting)) {
+				materialDateSphere->enableLighting = enableLighting ? 1 : 0;
+			}
 
-			//ImGui::InputFloat3("Rotate", *inputRotate);
-			//ImGui::SliderFloat3("SliderRotate", *inputRotate, -10.0f, 10.0f);
+			ImGui::SeparatorText("Directional Light");
+			ImGui::ColorEdit4("Light Color", &directionalLightSphereData->color.x);
+			ImGui::DragFloat3("Direction", &directionalLightSphereData->direction.x, 0.01f, -1.0f, 1.0f);
+			ImGui::DragFloat("Intensity", &directionalLightSphereData->intensity, 0.01f, 0.0f, 10.0f);
 
-			//ImGui::InputFloat3("Scale", *inputScale);
-			//ImGui::SliderFloat3("SliderScale", *inputScale, 0.5f, 5.0f);
+			ImGui::SeparatorText("Sprite");
+			ImGui::DragFloat3("Sprite Translate", &transformSprite.translate.x, 1.0f);
+			ImGui::DragFloat2("UV Translate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+			ImGui::DragFloat2("UV Scale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+			ImGui::SliderAngle("UV Rotate", &uvTransformSprite.rotate.z);
 
+			ImGui::End();
 
-			ImGui::Text("Sphere");
-			ImGui::InputFloat3("MaterialSphere", *inputMaterialSphere);
-			ImGui::SliderFloat3("SliderMaterialSphere", *inputMaterialSphere, 0.0f, 1.0f);
+			// ライト方向は常に正規化しておく（PS側のdot計算が安定）
+			directionalLightSphereData->direction = Normalize(directionalLightSphereData->direction);
 
-			ImGui::InputFloat3("VertexSphere", *inputTransformSphere);
-			ImGui::SliderFloat3("SliderVertexSphere", *inputTransformSphere, -5.0f, 5.0f);
-
-			ImGui::InputFloat3("RotateSphere", *inputRotateSphere);
-			ImGui::SliderFloat3("SliderRotateSphere", *inputRotateSphere, -10.0f, 10.0f);
-
-			ImGui::InputFloat3("ScaleSphere", *inputScaleSphere);
-			ImGui::SliderFloat3("SliderScaleSphere", *inputScaleSphere, 0.5f, 5.0f);
-
-			ImGui::InputFloat("SphereTexture", &textureChange);
-
-
-			ImGui::Text("Ligth");
-			ImGui::InputFloat4("MaterialLigth", *inputMaterialLigth);
-			ImGui::SliderFloat4("SliderMaterialLigth", *inputMaterialLigth, 0.0f, 1.0f);
-
-			ImGui::InputFloat3("VertexLigth", *inputDirectionLight);
-			ImGui::SliderFloat3("SliderVertexLigth", *inputDirectionLight, -1.0f, 1.0f);
-
-
-			ImGui::InputFloat("intensity", intensity);
-
-
-			ImGui::Text("Sprite");
-			ImGui::InputFloat("SpriteX", &transformSprite.translate.x);
-			ImGui::SliderFloat("SliderSpriteX", &transformSprite.translate.x, 0.0f, 1000.0f);
-
-			ImGui::InputFloat("SpriteY", &transformSprite.translate.y);
-			ImGui::SliderFloat("SliderSpriteY", &transformSprite.translate.y, 0.0f, 600.0f);
-
-			ImGui::InputFloat("SpriteZ", &transformSprite.translate.z);
-			ImGui::SliderFloat("SliderSpriteZ", &transformSprite.translate.z, 0.0f, 0.0f);
-
-
-			ImGui::DragFloat2("UVTranlate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
-
-
-
-			//ImGuiの内部コマンド
+			// ImGuiの内部コマンド
 			ImGui::Render();
 
 
@@ -1414,30 +1403,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//commandList->DrawInstanced(6, 1, 0, 0);
 
 
-			//球体
-			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);
-			//commandList->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
-			//commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());
+			// ここから本描画（Sphere / Model を切り替え）
+			// Depthはこのフレームで1回クリアすればOK
+			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-			//if (textureChange == 0) {
-			//	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-			//}
-			//else {
-			//	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU2);
-			//}
-			//commandList->SetGraphicsRootConstantBufferView(3, directionalLightSphereResource->GetGPUVirtualAddress());
-			//commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-			//commandList->DrawInstanced(SphereVertexNum, 1, 0, 0);
+			// 共通：定数バッファ（Material / WVP / Light）は今の動作と同じくSphere用を使い回す
+			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress()); // b0 PS
+			commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());      // b0 VS
+			commandList->SetGraphicsRootConstantBufferView(3, directionalLightSphereResource->GetGPUVirtualAddress()); // b1 PS
 
-
-			//model
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewModel);
-
-			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress()); //rootParameterの配列の0番目 [0]
-
-			commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());
-
-
+			// テクスチャ切り替え（0: uvChecker, 1: monsterBall）
 			if (textureChange == 0) {
 				commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			}
@@ -1445,11 +1420,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU2);
 			}
 
-			commandList->SetGraphicsRootConstantBufferView(3, directionalLightSphereResource->GetGPUVirtualAddress());
-
-
-			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+			if (drawTarget == 0) {
+				// Sphere
+				commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);
+				commandList->DrawInstanced(SphereVertexNum, 1, 0, 0);
+			}
+			else {
+				// Model (axis.obj)
+				commandList->IASetVertexBuffers(0, 1, &vertexBufferViewModel);
+				commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+			}
 
 			//UI
 			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
