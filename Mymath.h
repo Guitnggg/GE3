@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cmath>
+#include <cstdint>
+#include <string>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -31,7 +33,7 @@ struct Matrix4x4 {
 	float m[4][4];
 };
 
-Matrix4x4 MakeIdentity4x4() {
+inline Matrix4x4 MakeIdentity4x4() {
 	Matrix4x4 result{};
 
 	result.m[0][0] = 1.0f;
@@ -54,7 +56,7 @@ Matrix4x4 MakeIdentity4x4() {
 	return result;
 }
 
-Matrix4x4 MakeScaleMatrix(Vector3 scale) {
+inline Matrix4x4 MakeScaleMatrix(Vector3 scale) {
 	Matrix4x4 result{};
 	result.m[0][0] = scale.x;
 	result.m[0][1] = 0.0f;
@@ -76,7 +78,7 @@ Matrix4x4 MakeScaleMatrix(Vector3 scale) {
 	return result;
 }
 
-Matrix4x4 MakeRotateZMatrix(float radian) {
+inline Matrix4x4 MakeRotateZMatrix(float radian) {
 	Matrix4x4 result{};
 	result.m[0][0] = std::cos(radian);
 	result.m[0][1] = std::sin(radian);
@@ -98,7 +100,7 @@ Matrix4x4 MakeRotateZMatrix(float radian) {
 	return result;
 }
 
-Matrix4x4 MakeTranslateMatrix(Vector3 translate) {
+inline Matrix4x4 MakeTranslateMatrix(Vector3 translate) {
 	Matrix4x4 result{};
 
 	result.m[0][0] = 1.0f;
@@ -129,7 +131,7 @@ struct Transform {
 
 #pragma region Affine
 
-Matrix4x4 Multiply(Matrix4x4 m1, Matrix4x4 m2) {
+inline Matrix4x4 Multiply(Matrix4x4 m1, Matrix4x4 m2) {
 	Matrix4x4 result{};
 	result.m[0][0] = m1.m[0][0] * m2.m[0][0] + m1.m[0][1] * m2.m[1][0] + m1.m[0][2] * m2.m[2][0] + m1.m[0][3] * m2.m[3][0];
 	result.m[0][1] = m1.m[0][0] * m2.m[0][1] + m1.m[0][1] * m2.m[1][1] + m1.m[0][2] * m2.m[2][1] + m1.m[0][3] * m2.m[3][1];
@@ -153,10 +155,9 @@ Matrix4x4 Multiply(Matrix4x4 m1, Matrix4x4 m2) {
 	return result;
 }
 
-Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
+inline Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
 
 	Matrix4x4 resultX{};
-
 	resultX.m[0][0] = 1.0f;
 	resultX.m[0][1] = 0.0f;
 	resultX.m[0][2] = 0.0f;
@@ -174,9 +175,7 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 	resultX.m[3][2] = 0.0f;
 	resultX.m[3][3] = 1.0f;
 
-
 	Matrix4x4 resultY{};
-
 	resultY.m[0][0] = std::cos(rotate.y);
 	resultY.m[0][1] = 0.0f;
 	resultY.m[0][2] = -(std::sin(rotate.y));
@@ -194,9 +193,7 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 	resultY.m[3][2] = 0.0f;
 	resultY.m[3][3] = 1.0f;
 
-
 	Matrix4x4 resultZ{};
-
 	resultZ.m[0][0] = std::cos(rotate.z);
 	resultZ.m[0][1] = std::sin(rotate.z);
 	resultZ.m[0][2] = 0.0f;
@@ -214,12 +211,9 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 	resultZ.m[3][2] = 0.0f;
 	resultZ.m[3][3] = 1.0f;
 
-
 	Matrix4x4 rotateXYZ = Multiply(resultX, Multiply(resultY, resultZ));
 
-
 	Matrix4x4 result;
-
 	result.m[0][0] = scale.x * rotateXYZ.m[0][0];
 	result.m[0][1] = scale.x * rotateXYZ.m[0][1];
 	result.m[0][2] = scale.x * rotateXYZ.m[0][2];
@@ -242,7 +236,7 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 #pragma endregion
 
 #pragma region 逆数
-Matrix4x4 Inverse(const Matrix4x4& m) {
+inline Matrix4x4 Inverse(const Matrix4x4& m) {
 	float A = m.m[0][0] * m.m[1][1] * m.m[2][2] * m.m[3][3]
 		+ m.m[0][0] * m.m[1][2] * m.m[2][3] * m.m[3][1]
 		+ m.m[0][0] * m.m[1][3] * m.m[2][1] * m.m[3][2]
@@ -389,7 +383,7 @@ Matrix4x4 Inverse(const Matrix4x4& m) {
 }
 #pragma endregion
 
-Matrix4x4 MakePerspectiveFovMatrix(float forY, float aspectRatio, float nearClip, float farClip) {
+inline Matrix4x4 MakePerspectiveFovMatrix(float forY, float aspectRatio, float nearClip, float farClip) {
 	Matrix4x4 result;
 	float cot = 1 / std::tan(forY / 2);
 
@@ -398,7 +392,6 @@ Matrix4x4 MakePerspectiveFovMatrix(float forY, float aspectRatio, float nearClip
 	result.m[2][2] = farClip / (farClip - nearClip);
 	result.m[2][3] = 1.0f;
 	result.m[3][2] = (-nearClip * farClip) / (farClip - nearClip);
-
 
 	result.m[0][1] = 0.0f;
 	result.m[0][2] = 0.0f;
@@ -412,11 +405,10 @@ Matrix4x4 MakePerspectiveFovMatrix(float forY, float aspectRatio, float nearClip
 	result.m[3][1] = 0.0f;
 	result.m[3][3] = 0.0f;
 
-
 	return result;
 }
 
-Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip) {
+inline Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip) {
 	Matrix4x4 result;
 	result.m[0][0] = 2 / (right - left);
 	result.m[1][1] = 2 / (top - bottom);
@@ -436,8 +428,6 @@ Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float botto
 	result.m[2][0] = 0.0f;
 	result.m[2][1] = 0.0f;
 	result.m[2][3] = 0.0f;
-
-
 
 	return result;
 }
@@ -475,7 +465,7 @@ struct DirectionalLight {
 	float intensity;
 };
 
-Vector3 Normalize(const Vector3& v) {
+inline Vector3 Normalize(const Vector3& v) {
 	Vector3 result;
 	result.x = v.x / (float)sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
 	result.y = v.y / (float)sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
@@ -483,7 +473,7 @@ Vector3 Normalize(const Vector3& v) {
 	return result;
 }
 
-VertexData AddVert(const VertexData& v1, const VertexData& v2) {
+inline VertexData AddVert(const VertexData& v1, const VertexData& v2) {
 	VertexData result{};
 
 	result.position.x = v1.position.x + v2.position.x;
@@ -495,7 +485,7 @@ VertexData AddVert(const VertexData& v1, const VertexData& v2) {
 	return result;
 }
 
-void DrawSphere(VertexData* vertexDataSphere) {
+inline void DrawSphere(VertexData* vertexDataSphere) {
 
 	const uint32_t kSubdivision = 16;
 
