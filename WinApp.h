@@ -6,9 +6,7 @@
 /// <summary>
 /// WindowsAPI
 /// </summary>
-
-class WinApp
-{
+class WinApp{
 public:
 	//====================
 	// 静的メンバ関数

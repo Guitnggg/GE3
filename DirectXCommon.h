@@ -24,15 +24,8 @@
 /// <summary>
 /// DirectX基盤
 /// </summary>
-
-class DirectXCommon
-{
-public:
-
-	//====================
-	// メンバ関数
-	//====================
-
+class DirectXCommon{
+public:  // メンバ関数
 	~DirectXCommon();
 
 	// 初期化
@@ -50,15 +43,16 @@ public:
 	// 指定番号のGPUデスクリプタハンドルを取得
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
-	// 
+	// SRV用のCPUデスクリプタハンドルを取得
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandleSRV(uint32_t index);
 
-	// 
+	// SRV用のGPUデスクリプタハンドルを取得
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandleSRV(uint32_t index);
 
-	// ゲッター
+	// RTV用のCPUデスクリプタハンドルを取得
 	Microsoft::WRL::ComPtr<ID3D12Device> GetDevice() const { return device.Get(); }
 
+	// コマンドリストを取得
 	ID3D12GraphicsCommandList* GetCommandList() const { return commandList.Get(); }
 
 	// コンパイルシェーダ
@@ -84,7 +78,7 @@ public:
 	// 描画後処理
 	void PostDraw();
 
-private:
+private:  // メンバ関数
 
 	// デバイスの初期化
 	void CreateInitialze();
@@ -131,7 +125,7 @@ private:
 	/// FPS固定更新
 	void UpdateFixFPS();
 
-private:
+private:  // 
 
 	//====================
 	// メンバ変数
