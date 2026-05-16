@@ -6,6 +6,7 @@
 
 namespace StringUtility
 {
+	// UTF-8文字列をWindows APIで扱いやすいワイド文字列へ変換する
 	std::wstring ConvertString(const std::string& str)
 	{
 		if (str.empty())
@@ -25,6 +26,7 @@ namespace StringUtility
 		return result;
 	}
 
+	// ワイド文字列をログ出力やファイルパスで扱いやすいUTF-8文字列へ変換する
 	std::string ConvertString(const std::wstring& str)
 	{
 		if (str.empty()) 

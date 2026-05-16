@@ -4,12 +4,14 @@
 
 #include "engine/base/Logger.h"
 
+// 3D描画共通処理を初期化する
 void Object3dCommon::Initialize(DirectXCommon* directXCommon) {
 	assert(directXCommon != nullptr);
 	dxCommon_ = directXCommon;
 	CreateGraphicsPipeline();
 }
 
+// 3D描画で共通して使うパイプライン設定をコマンドリストへ設定する
 void Object3dCommon::CommonDrawSetting() {
 	auto* commandList = dxCommon_->GetCommandList();
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
@@ -17,6 +19,7 @@ void Object3dCommon::CommonDrawSetting() {
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
+// 3D描画用のルートシグネチャを作成する
 void Object3dCommon::CreateRootSignature() {
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
@@ -75,6 +78,7 @@ void Object3dCommon::CreateRootSignature() {
 	assert(SUCCEEDED(hr));
 }
 
+// 3D描画用のグラフィックスパイプラインを作成する
 void Object3dCommon::CreateGraphicsPipeline() {
 	CreateRootSignature();
 

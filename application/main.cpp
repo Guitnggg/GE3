@@ -21,14 +21,15 @@
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //Windowsアプリのエントリーポイント(main関数)
+// Windowsアプリケーションのエントリーポイント
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
-	D3DResourceLeakChecker leakCheck;
+	D3DResourceLeakChecker leakCheck;  // 終了時にD3Dリソースリークを確認する
 
 #pragma region Windowの生成
 
 	// ポインタ
-	WinApp* winApp = nullptr;
+	WinApp* winApp = nullptr;  // WindowsAPI管理クラス
 
 	// WindowsAPIの初期化
 	winApp = new WinApp();
@@ -39,7 +40,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region 入力
 
 	// 入力のポインタ
-	Input* input = nullptr;
+	Input* input = nullptr;  // 入力管理クラス
 
 	// 入力の初期化
 	input = new Input();
@@ -49,7 +50,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region DirectXCommon
 
-	DirectXCommon* dxCommon = nullptr;
+	DirectXCommon* dxCommon = nullptr;  // DirectX共通処理
 
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
@@ -59,13 +60,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region Sprite系
 
 	// SpriteCommon
-	SpriteCommon* spriteCommon = nullptr;
+	SpriteCommon* spriteCommon = nullptr;  // スプライト描画共通処理
 
 	spriteCommon = new SpriteCommon;
 	spriteCommon->Initialize(dxCommon);
 
 	// Sprite
-	Sprite* sprite = new Sprite();
+	Sprite* sprite = new Sprite();  // 表示するスプライト
 	sprite->Initialize(spriteCommon);
 
 #pragma endregion
@@ -131,17 +132,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
 
 	// Object3d共通部
-	Object3dCommon* object3dCommon = new Object3dCommon();
+	Object3dCommon* object3dCommon = new Object3dCommon();  // 3D描画共通処理
 	object3dCommon->Initialize(dxCommon);
 
 	// Object3d
-	Object3d* object3d = new Object3d();
+	Object3d* object3d = new Object3d();  // OBJモデル表示用オブジェクト
 	object3d->Initialize(object3dCommon);
 
-	uint32_t SphereVertexNum = 16 * 16 * 6;
+	uint32_t SphereVertexNum = 16 * 16 * 6;  // 球メッシュの頂点数
 
 	//Sphere
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSphere = dxCommon->CreateBufferResource(sizeof(VertexData) * SphereVertexNum);
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSphere = dxCommon->CreateBufferResource(sizeof(VertexData) * SphereVertexNum);  // 球の頂点バッファ
 
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSphere{};
 	vertexBufferViewSphere.BufferLocation = vertexResourceSphere->GetGPUVirtualAddress();

@@ -6,47 +6,42 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	//メッセージに応じてゲーム固有の処理を行う
+	// Windowsメッセージに応じてアプリ固有の処理を行う
 	switch (msg) {
-		//ウィンドウが破壊された
 	case WM_DESTROY:
-		//OSに対して、アプリの終了を伝える
+		// OSへアプリ終了を通知する
 		PostQuitMessage(0);
 		return 0;
 	}
 
+	// ImGuiが使用するメッセージを先に処理する
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
 		return true;
 	}
 
-	//標準のメッセージ処理を行う
+	// 標準のWindowsメッセージ処理を行う
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
 void WinApp::Initialize()
 {
+	// COMライブラリをマルチスレッドで初期化する
 	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
 
-	//ウィンドウプロシージャ
+	// ウィンドウクラスを設定する
 	wc.lpfnWndProc = WindowProc;
-	//ウィンドウクラス名
 	wc.lpszClassName = L"C62WindowClass";
-	//インスタンスハンドル
 	wc.hInstance = GetModuleHandle(nullptr);
-	//カーソル
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 
-	//ウィンドウクラスの登録
+	// ウィンドウクラスを登録する
 	RegisterClass(&wc);
 
-	//　ウィンドウサイズを表す構造体にクライアント領域を入れる
+	// クライアント領域のサイズから実際のウィンドウサイズを計算する
 	RECT wrc = { 0, 0,kClientWidth,kClientHeight };
-
-
-	//クライアント領域をもとに実際のサイズにwrcを変更してもらう
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
-
+	// ウィンドウを生成する
 	hwnd = CreateWindow(
 		wc.lpszClassName,
 		L"CG2",
@@ -60,16 +55,17 @@ void WinApp::Initialize()
 		wc.hInstance,
 		nullptr);
 
+	// 生成したウィンドウを表示する
 	ShowWindow(hwnd, SW_SHOW);
 }
 
 void WinApp::Update()
 {
-
 }
 
 void WinApp::Finalize()
 {
+	// ウィンドウとCOMライブラリを終了する
 	CloseWindow(hwnd);
 	CoUninitialize();
 }
@@ -78,11 +74,13 @@ bool WinApp::ProcessMessege()
 {
 	MSG msg{};
 
+	// キューにあるWindowsメッセージを処理する
 	if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
 
+	// WM_QUITを受け取ったらアプリを終了する
 	if (msg.message == WM_QUIT) {
 		return true;
 	}

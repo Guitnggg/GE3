@@ -6,42 +6,42 @@
 #include "engine/base/DirectXCommon.h"
 
 /// <summary>
-/// スプライト共通
+/// スプライト描画で共有するルートシグネチャとパイプラインを管理するクラス
 /// </summary>
-class SpriteCommon{
-public:  // メンバ関数
+class SpriteCommon {
+public:
 	/// <summary>
-	///　初期化処理
+	/// DirectX共通処理を受け取り、スプライト描画用の共通設定を初期化する
 	/// </summary>
-	/// <param name="dxCommon"></param>
+	/// <param name="dxCommon">DirectX共通処理</param>
 	void Initialize(DirectXCommon* dxCommon);
 
 	/// <summary>
-	///　描画前の共通設定
+	/// スプライト描画前に共通の描画設定をコマンドリストへ設定する
 	/// </summary>
 	void CommonDrawSetting();
 
 	/// <summary>
-	///　DirectXCommonのゲッター
+	/// DirectXCommonクラスを取得する
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>DirectX共通処理</returns>
 	DirectXCommon* GetDXCommon() const { return dxCommon_; }
 
 private:
 	/// <summary>
-	/// ルートシグネチャーの生成
+	/// スプライト描画用のルートシグネチャを生成する
 	/// </summary>
 	void CreateRootSignature();
 
 	/// <summary>
-	/// グラフィックスパイプラインの生成
+	/// スプライト描画用のグラフィックスパイプラインを生成する
 	/// </summary>
 	void CreateGraphicsPipeline();
 
 private:
-	// 
-	DirectXCommon* dxCommon_ = nullptr;
+	DirectXCommon* dxCommon_ = nullptr;  // DirectX共通処理
 
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;          // ルートシグネチャー
+	// ===== パイプライン関連 =====
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;          // ルートシグネチャ
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_;  // グラフィックスパイプラインステート
 };

@@ -7,17 +7,26 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+/// <summary>
+/// 2次元ベクトル
+/// </summary>
 struct Vector2 {
 	float x;
 	float y;
 };
 
+/// <summary>
+/// 3次元ベクトル
+/// </summary>
 struct Vector3 {
 	float x;
 	float y;
 	float z;
 };
 
+/// <summary>
+/// 4次元ベクトル
+/// </summary>
 struct Vector4 {
 	float x;
 	float y;
@@ -25,14 +34,23 @@ struct Vector4 {
 	float s;
 };
 
+/// <summary>
+/// 3x3行列
+/// </summary>
 struct Matrix3x3 {
 	float m[3][3];
 };
 
+/// <summary>
+/// 4x4行列
+/// </summary>
 struct Matrix4x4 {
 	float m[4][4];
 };
 
+/// <summary>
+/// 4x4単位行列を作成する
+/// </summary>
 inline Matrix4x4 MakeIdentity4x4() {
 	Matrix4x4 result{};
 
@@ -56,6 +74,9 @@ inline Matrix4x4 MakeIdentity4x4() {
 	return result;
 }
 
+/// <summary>
+/// 拡縮行列を作成する
+/// </summary>
 inline Matrix4x4 MakeScaleMatrix(Vector3 scale) {
 	Matrix4x4 result{};
 	result.m[0][0] = scale.x;
@@ -78,6 +99,9 @@ inline Matrix4x4 MakeScaleMatrix(Vector3 scale) {
 	return result;
 }
 
+/// <summary>
+/// Z軸回転行列を作成する
+/// </summary>
 inline Matrix4x4 MakeRotateZMatrix(float radian) {
 	Matrix4x4 result{};
 	result.m[0][0] = std::cos(radian);
@@ -100,6 +124,9 @@ inline Matrix4x4 MakeRotateZMatrix(float radian) {
 	return result;
 }
 
+/// <summary>
+/// 平行移動行列を作成する
+/// </summary>
 inline Matrix4x4 MakeTranslateMatrix(Vector3 translate) {
 	Matrix4x4 result{};
 
@@ -123,6 +150,9 @@ inline Matrix4x4 MakeTranslateMatrix(Vector3 translate) {
 	return result;
 }
 
+/// <summary>
+/// 座標変換に使用する拡縮・回転・平行移動データ
+/// </summary>
 struct Transform {
 	Vector3 scale;
 	Vector3 rotate;
@@ -131,6 +161,9 @@ struct Transform {
 
 #pragma region Affine
 
+/// <summary>
+/// 4x4行列同士を乗算する
+/// </summary>
 inline Matrix4x4 Multiply(Matrix4x4 m1, Matrix4x4 m2) {
 	Matrix4x4 result{};
 	result.m[0][0] = m1.m[0][0] * m2.m[0][0] + m1.m[0][1] * m2.m[1][0] + m1.m[0][2] * m2.m[2][0] + m1.m[0][3] * m2.m[3][0];
@@ -155,6 +188,9 @@ inline Matrix4x4 Multiply(Matrix4x4 m1, Matrix4x4 m2) {
 	return result;
 }
 
+/// <summary>
+/// 拡縮・回転・平行移動をまとめたアフィン変換行列を作成する
+/// </summary>
 inline Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
 
 	Matrix4x4 resultX{};
@@ -236,6 +272,9 @@ inline Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, c
 #pragma endregion
 
 #pragma region 逆数
+/// <summary>
+/// 4x4行列の逆行列を作成する
+/// </summary>
 inline Matrix4x4 Inverse(const Matrix4x4& m) {
 	float A = m.m[0][0] * m.m[1][1] * m.m[2][2] * m.m[3][3]
 		+ m.m[0][0] * m.m[1][2] * m.m[2][3] * m.m[3][1]
@@ -383,6 +422,9 @@ inline Matrix4x4 Inverse(const Matrix4x4& m) {
 }
 #pragma endregion
 
+/// <summary>
+/// 透視投影行列を作成する
+/// </summary>
 inline Matrix4x4 MakePerspectiveFovMatrix(float forY, float aspectRatio, float nearClip, float farClip) {
 	Matrix4x4 result;
 	float cot = 1 / std::tan(forY / 2);
@@ -408,6 +450,9 @@ inline Matrix4x4 MakePerspectiveFovMatrix(float forY, float aspectRatio, float n
 	return result;
 }
 
+/// <summary>
+/// 正射影行列を作成する
+/// </summary>
 inline Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip) {
 	Matrix4x4 result;
 	result.m[0][0] = 2 / (right - left);
@@ -432,39 +477,60 @@ inline Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, floa
 	return result;
 }
 
+/// <summary>
+/// 頂点シェーダーへ渡す頂点データ
+/// </summary>
 struct VertexData {
 	Vector4 position;
 	Vector2 texcoord;
 	Vector3 normal;
 };
 
+/// <summary>
+/// 球の中心座標と半径
+/// </summary>
 struct Sphere {
 	Vector3 center;
 	float radius;
 };
 
+/// <summary>
+/// 描画用マテリアルデータ
+/// </summary>
 struct Material {
 	Vector4 color;
 	int32_t enableLighting;
-	float padding[3];//枠確保用06-01 9
+	float padding[3];  // 定数バッファのアライメント調整用
 	Matrix4x4 uvTransform;
 };
 
+/// <summary>
+/// マテリアルファイルから読み込んだデータ
+/// </summary>
 struct MaterialData {
 	std::string textureFilePath;
 };
 
+/// <summary>
+/// シェーダーへ渡す座標変換行列
+/// </summary>
 struct TransformationMatrix {
 	Matrix4x4 WVP;
 	Matrix4x4 World;
 };
 
+/// <summary>
+/// 平行光源データ
+/// </summary>
 struct DirectionalLight {
 	Vector4 color;
 	Vector3 direction;
 	float intensity;
 };
 
+/// <summary>
+/// 3次元ベクトルを正規化する
+/// </summary>
 inline Vector3 Normalize(const Vector3& v) {
 	Vector3 result;
 	result.x = v.x / (float)sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
@@ -473,6 +539,9 @@ inline Vector3 Normalize(const Vector3& v) {
 	return result;
 }
 
+/// <summary>
+/// 2つの頂点データを加算する
+/// </summary>
 inline VertexData AddVert(const VertexData& v1, const VertexData& v2) {
 	VertexData result{};
 
@@ -485,6 +554,9 @@ inline VertexData AddVert(const VertexData& v1, const VertexData& v2) {
 	return result;
 }
 
+/// <summary>
+/// 球メッシュの頂点データを作成する
+/// </summary>
 inline void DrawSphere(VertexData* vertexDataSphere) {
 
 	const uint32_t kSubdivision = 16;

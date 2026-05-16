@@ -1,12 +1,11 @@
 #pragma once
 
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <wrl.h>
-#include <format>
-#include <dxcapi.h>
-#include <format>
 #include <chrono>
+#include <d3d12.h>
+#include <dxcapi.h>
+#include <dxgi1_6.h>
+#include <format>
+#include <wrl.h>
 
 #include "WinApp.h"
 #include "StringUtility.h"
@@ -22,176 +21,178 @@
 #pragma comment(lib, "dxguid.lib")
 
 /// <summary>
-/// DirectX基盤
+/// DirectX 12の初期化、描画開始終了、GPUリソース生成をまとめて管理するクラス
 /// </summary>
-class DirectXCommon{
-public:  // メンバ関数
+class DirectXCommon {
+public:
+	/// <summary>
+	/// DirectXとImGui関連の終了処理を行う
+	/// </summary>
 	~DirectXCommon();
 
-	// 初期化
+	/// <summary>
+	/// DirectX 12で描画するための各種オブジェクトを初期化する
+	/// </summary>
+	/// <param name="winApp">Windowsアプリケーション</param>
 	void Initialize(WinApp* winApp);
 
-	// DepthStencilTextureの作成
-	Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(Microsoft::WRL::ComPtr <ID3D12Device> device, int32_t width, int32_t height);
+	/// <summary>
+	/// 深度ステンシル用テクスチャリソースを生成する
+	/// </summary>
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(
+		Microsoft::WRL::ComPtr<ID3D12Device> device, int32_t width, int32_t height);
 
-	// デスクリプタヒープの生成
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> CreateDescriptorHeap(Microsoft::WRL::ComPtr <ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDesciptors, bool shaderVisible);
+	/// <summary>
+	/// 指定された種類のディスクリプタヒープを生成する
+	/// </summary>
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(
+		Microsoft::WRL::ComPtr<ID3D12Device> device,
+		D3D12_DESCRIPTOR_HEAP_TYPE heapType,
+		UINT numDesciptors,
+		bool shaderVisible);
 
-	// 指定番号のCPUデスクリプタハンドルを取得
-	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
+	/// <summary>
+	/// 指定番号のCPUディスクリプタハンドルを取得する
+	/// </summary>
+	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
-	// 指定番号のGPUデスクリプタハンドルを取得
-	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
+	/// <summary>
+	/// 指定番号のGPUディスクリプタハンドルを取得する
+	/// </summary>
+	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
-	// SRV用のCPUデスクリプタハンドルを取得
+	/// <summary>
+	/// SRV用のCPUディスクリプタハンドルを取得する
+	/// </summary>
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandleSRV(uint32_t index);
 
-	// SRV用のGPUデスクリプタハンドルを取得
+	/// <summary>
+	/// SRV用のGPUディスクリプタハンドルを取得する
+	/// </summary>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandleSRV(uint32_t index);
 
-	// RTV用のCPUデスクリプタハンドルを取得
+	/// <summary>
+	/// Direct3Dデバイスを取得する
+	/// </summary>
 	Microsoft::WRL::ComPtr<ID3D12Device> GetDevice() const { return device.Get(); }
 
-	// コマンドリストを取得
+	/// <summary>
+	/// 描画コマンドリストを取得する
+	/// </summary>
 	ID3D12GraphicsCommandList* GetCommandList() const { return commandList.Get(); }
 
-	// コンパイルシェーダ
-	IDxcBlob* CompileShader(
-		const std::wstring& filePath,
-		const wchar_t* profile);
+	/// <summary>
+	/// HLSLシェーダーをコンパイルする
+	/// </summary>
+	IDxcBlob* CompileShader(const std::wstring& filePath, const wchar_t* profile);
 
-	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource( size_t sizeInBytes);
+	/// <summary>
+	/// CPUから書き込めるアップロード用バッファリソースを生成する
+	/// </summary>
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
 
-	// テクスチャリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> CrateTextureResource(Microsoft::WRL::ComPtr< ID3D12Device> device, const DirectX::TexMetadata& metadata);
+	/// <summary>
+	/// テクスチャ用リソースを生成する
+	/// </summary>
+	Microsoft::WRL::ComPtr<ID3D12Resource> CrateTextureResource(
+		Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata);
 
-	// テクスチャーデータの転送
-	void UploadTextureData(Microsoft::WRL::ComPtr< ID3D12Resource>texture, const DirectX::ScratchImage& mipImages);
+	/// <summary>
+	/// ScratchImageのミップマップデータをテクスチャリソースへ転送する
+	/// </summary>
+	void UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages);
 
-	// テクスチャー
+	/// <summary>
+	/// 画像ファイルを読み込み、ミップマップ付きテクスチャデータを生成する
+	/// </summary>
 	DirectX::ScratchImage LoadTexture(const std::string& filePath);
 
-	// 描画前処理
+	/// <summary>
+	/// 1フレーム分の描画前処理を行う
+	/// </summary>
 	void PreDraw();
 
-	// 描画後処理
+	/// <summary>
+	/// 1フレーム分の描画後処理を行う
+	/// </summary>
 	void PostDraw();
 
-private:  // メンバ関数
+private:
+	// ===== 初期化用メンバ関数 =====
 
-	// デバイスの初期化
-	void CreateInitialze();
+	void CreateInitialze();       // デバイスとDXGIファクトリを生成する
+	void CreateCommand();         // コマンドキュー、アロケータ、リストを生成する
+	void CreateSwapChain();       // スワップチェーンを生成する
+	void CreateDepthBuffer();     // 深度バッファを生成する
+	void CreateDescritorHeap();   // 各種ディスクリプタヒープを生成する
+	void CreateRenderTargetView();// レンダーターゲットビューを生成する
+	void CreateDepthStencilView();// 深度ステンシルビューを生成する
+	void CreateFence();           // GPU同期用フェンスを生成する
+	void CreateViewport();        // ビューポートを設定する
+	void CreateScissorRect();     // シザー矩形を設定する
+	void CreateDXC();             // DXCコンパイラ関連を初期化する
+	void CreateImGui();           // ImGuiを初期化する
 
-	// コマンド関連の初期化
-	void CreateCommand();
+	// ===== FPS固定処理 =====
 
-	// スワップチェーンの初期化
-	void CreateSwapChain();
+	void CreateFixFPS();  // FPS固定用の基準時間を初期化する
+	void UpdateFixFPS();  // 60FPSになるよう待機時間を調整する
 
-	// 深度バッファの初期化
-	void CreateDepthBuffer();
+private:
+	// ===== アプリケーション関連 =====
 
-	// 各種デスクリプタヒープの初期化
-	void CreateDescritorHeap();
+	WinApp* winApp = nullptr;  // Windowsアプリケーション
 
-	// レンダーターゲットビューの初期化
-	void CreateRenderTargetView();
+	// ===== DirectX基本オブジェクト =====
 
-	// 深度ステンシルビューの初期化
-	void CreateDepthStencilView();
+	Microsoft::WRL::ComPtr<ID3D12Device> device;                       // Direct3Dデバイス
+	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;                 // DXGIファクトリ
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;   // コマンドアロケータ
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;           // コマンドキュー
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;     // コマンドリスト
 
-	// フェンスの初期化
-	void CreateFence();
+	// ===== スワップチェーン関連 =====
 
-	// ビューポートの初期化
-	void CreateViewport();
+	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain;                 // スワップチェーン
+	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};                             // スワップチェーン設定
+	Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResources[2];      // バックバッファ
+	D3D12_RESOURCE_BARRIER barrier{};                                  // リソース状態遷移用バリア
 
-	// シザリング矩形の初期化
-	void CreateScissorRect();
+	// ===== ディスクリプタ関連 =====
 
-	// DXCの初期化
-	void CreateDXC();
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap;    // SRV用ディスクリプタヒープ
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap;    // RTV用ディスクリプタヒープ
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap;    // DSV用ディスクリプタヒープ
+	uint32_t descriptorSizeSRV = 0;                                    // SRVディスクリプタサイズ
+	uint32_t descriptorSizeRTV = 0;                                    // RTVディスクリプタサイズ
+	uint32_t descriptorSizeDSV = 0;                                    // DSVディスクリプタサイズ
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2]{};                       // RTVハンドル
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};                           // RTV設定
 
-	// ImGuiの初期化
-	void CreateImGui();
+	// ===== 深度バッファ関連 =====
 
-	// 記録時間
-	std::chrono::steady_clock::time_point reference_;
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource;        // 深度ステンシルリソース
 
-	// FPS固定初期化
-	void CreateFixFPS();
+	// ===== GPU同期関連 =====
 
-	/// FPS固定更新
-	void UpdateFixFPS();
+	Microsoft::WRL::ComPtr<ID3D12Fence> fence;                         // GPU同期用フェンス
+	HANDLE fenceEvent = nullptr;                                       // フェンス完了待ちイベント
+	uint64_t fenceValue = 0;                                           // フェンス値
 
-private:  // 
+	// ===== 描画領域 =====
 
-	//====================
-	// メンバ変数
-	//====================
+	D3D12_VIEWPORT viewport{};                                         // ビューポート
+	D3D12_RECT scissorRect{};                                          // シザー矩形
 
-	WinApp* winApp = nullptr;
+	// ===== シェーダーコンパイル関連 =====
 
-	// デバイス
-	Microsoft::WRL::ComPtr <ID3D12Device> device;
+	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;                        // DXCユーティリティ
+	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler;                 // DXCコンパイラ
+	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;         // include解決用ハンドラ
 
-	// DXGIファクトリ
-	Microsoft::WRL::ComPtr <IDXGIFactory7> dxgiFactory;
+	// ===== FPS固定用 =====
 
-	// コマンドアロケータ
-	Microsoft::WRL::ComPtr <ID3D12CommandAllocator> commandAllocator;
-
-	// コマンドキュー
-	Microsoft::WRL::ComPtr <ID3D12CommandQueue> commandQueue;
-
-	// コマンドリスト	
-	Microsoft::WRL::ComPtr <ID3D12GraphicsCommandList> commandList;
-
-	// スワップチェイン
-	Microsoft::WRL::ComPtr <IDXGISwapChain4> swapChain;
-	DXGI_SWAP_CHAIN_DESC1 swapChainDesc;
-
-	// SRVデスクリプタヒープ
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvDescriptorHeap;
-
-	// RTVデスクリプタヒープ
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> rtvDescriptorHeap;
-
-	// DSVデスクリプタヒープ
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> dsvDescriptorHeap;
-
-	// 各種デスクリプタヒープ
-	uint32_t descriptorSizeSRV;
-	uint32_t descriptorSizeRTV;
-	uint32_t descriptorSizeDSV;
-
-	// SRVのデスクリプタハンドル
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
-	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
-
-	// スワップチェーンリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResources[2];
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource;
-
-	// フェンス
-	Microsoft::WRL::ComPtr<ID3D12Fence> fence;
-	HANDLE fenceEvent;
-
-	// ビューポート
-	D3D12_VIEWPORT viewport{};
-	// シザー矩形
-	D3D12_RECT scissorRect{};
-
-	// フェンス
-	uint64_t fenceValue = 0;
-
-
-	D3D12_RESOURCE_BARRIER barrier{};
-
-	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
-	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler;
-	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;
+	std::chrono::steady_clock::time_point reference_;                  // 前回フレームの基準時間
 };
-

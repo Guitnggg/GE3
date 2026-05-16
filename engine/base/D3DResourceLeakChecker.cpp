@@ -5,6 +5,7 @@
 #include <dxgi1_6.h>
 #include <wrl.h>
 
+// アプリ終了時にDirect3D関連リソースのリーク情報を出力する
 D3DResourceLeakChecker::~D3DResourceLeakChecker()
 {
 	//リソースリークチェック

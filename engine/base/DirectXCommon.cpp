@@ -13,6 +13,7 @@ using namespace Microsoft::WRL;
 // 初期化
 //===============
 
+// DirectXとImGuiで確保した終了処理を行う
 DirectXCommon::~DirectXCommon()
 {
 	CloseHandle(fenceEvent);
@@ -24,6 +25,7 @@ DirectXCommon::~DirectXCommon()
 	CoUninitialize();
 }
 
+// DirectX 12の描画に必要な各要素を順番に初期化する
 void DirectXCommon::Initialize(WinApp* winApp)
 {
 	assert(winApp);
@@ -50,6 +52,7 @@ void DirectXCommon::Initialize(WinApp* winApp)
 // その色々
 //===============
 
+// 深度ステンシル用テクスチャリソースを作成する
 Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateDepthStencilTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, int32_t width, int32_t height)
 {
 	D3D12_RESOURCE_DESC resourceDesc{};
@@ -86,6 +89,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateDepthStencilTextureR
 	return resource;
 }
 
+// 指定した種類と数でディスクリプタヒープを作成する
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::CreateDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDesciptors, bool shaderVisible)
 {
 	//ディスクリプターヒープの生成
@@ -101,6 +105,7 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::CreateDescriptorHeap
 	return descriptorHeap;
 }
 
+// CPU用ディスクリプタハンドルを指定インデックス分進めて取得する
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetCPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index)
 {
 	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -108,6 +113,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetCPUDescriptorHandle(Microsoft::WRL
 	return handleCPU;
 }
 
+// GPU用ディスクリプタハンドルを指定インデックス分進めて取得する
 D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index)
 {
 	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
@@ -115,16 +121,19 @@ D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetGPUDescriptorHandle(Microsoft::WRL
 	return handleGPU;
 }
 
+// SRVヒープからCPU用ディスクリプタハンドルを取得する
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetCPUDescriptorHandleSRV(uint32_t index)
 {
 	return GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, index);
 }
 
+// SRVヒープからGPU用ディスクリプタハンドルを取得する
 D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetGPUDescriptorHandleSRV(uint32_t index)
 {
 	return GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, index);
 }
 
+// HLSLファイルをDXCでコンパイルする
 IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar_t* profile)
 {
 	//1.hlslファイル
@@ -176,6 +185,7 @@ IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar
 	return shaderBlob;
 }
 
+// CPUから書き込めるバッファリソースを作成する
 Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_t sizeInBytes)
 {
 	//VertexResource
@@ -203,6 +213,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 	return vertexResource;
 }
 
+// 読み込んだ画像情報をもとにテクスチャリソースを作成する
 Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CrateTextureResource(Microsoft::WRL::ComPtr< ID3D12Device> device, const DirectX::TexMetadata& metadata)
 {
 	D3D12_RESOURCE_DESC resourceDesc{};
@@ -236,6 +247,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CrateTextureResource(Micro
 	return resource;
 }
 
+// ミップマップを含む画像データをテクスチャリソースへ書き込む
 void DirectXCommon::UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages)
 {
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
@@ -255,6 +267,7 @@ void DirectXCommon::UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> tex
 	}
 }
 
+// テクスチャファイルを読み込み、ミップマップを生成する
 DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
 {
 	//テクスチャファイル // byte関連
@@ -272,6 +285,7 @@ DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
 	return mipImages;
 }
 
+// 描画開始前にバックバッファ、RTV/DSV、描画領域を設定する
 void DirectXCommon::PreDraw()
 {
 	// 書き込むバックバッファのインデックスの取得
@@ -305,6 +319,7 @@ void DirectXCommon::PreDraw()
 	commandList->RSSetScissorRects(1, &scissorRect);
 }
 
+// 描画後に画面表示、GPU同期、次フレーム準備を行う
 void DirectXCommon::PostDraw()
 {
 	HRESULT hr;
@@ -353,6 +368,7 @@ void DirectXCommon::PostDraw()
 // 初期化関数群
 //===============
 
+// デバッグレイヤー、DXGIファクトリ、Direct3Dデバイスを作成する
 void DirectXCommon::CreateInitialze()
 {
 #ifdef _DEBUG
@@ -450,6 +466,7 @@ void DirectXCommon::CreateInitialze()
 #endif
 }
 
+// コマンドキュー、コマンドアロケータ、コマンドリストを作成する
 void DirectXCommon::CreateCommand()
 {
 	HRESULT hr;
@@ -489,6 +506,7 @@ void DirectXCommon::CreateCommand()
 #pragma endregion
 }
 
+// ウィンドウに表示するためのスワップチェーンを作成する
 void DirectXCommon::CreateSwapChain()
 {
 	HRESULT hr;
@@ -506,11 +524,13 @@ void DirectXCommon::CreateSwapChain()
 	assert(SUCCEEDED(hr));
 }
 
+// 深度バッファを作成する
 void DirectXCommon::CreateDepthBuffer()
 {
 	depthStencilResource = CreateDepthStencilTextureResource(device, WinApp::kClientWidth, WinApp::kClientHeight);
 }
 
+// SRV、RTV、DSV用のディスクリプタヒープを作成する
 void DirectXCommon::CreateDescritorHeap()
 {
 	// SRV用のディスクリプタヒープの作成
@@ -526,6 +546,7 @@ void DirectXCommon::CreateDescritorHeap()
 	descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 }
 
+// スワップチェーンのバックバッファにRTVを作成する
 void DirectXCommon::CreateRenderTargetView()
 {
 	HRESULT hr;
@@ -556,6 +577,7 @@ void DirectXCommon::CreateRenderTargetView()
 
 }
 
+// 深度ステンシルリソースにDSVを作成する
 void DirectXCommon::CreateDepthStencilView()
 {
 	// DSVの設定
@@ -567,6 +589,7 @@ void DirectXCommon::CreateDepthStencilView()
 	device->CreateDepthStencilView(depthStencilResource.Get(), &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 }
 
+// GPUとの同期に使うフェンスを作成する
 void DirectXCommon::CreateFence()
 {
 	HRESULT hr;
@@ -579,6 +602,7 @@ void DirectXCommon::CreateFence()
 	assert(fenceEvent != nullptr);
 }
 
+// 描画に使用するビューポートを設定する
 void DirectXCommon::CreateViewport()
 {
 	viewport.Width = WinApp::kClientWidth;
@@ -589,6 +613,7 @@ void DirectXCommon::CreateViewport()
 	viewport.MaxDepth = 1.0f;
 }
 
+// 描画範囲を制限するシザー矩形を設定する
 void DirectXCommon::CreateScissorRect()
 {
 	scissorRect.left = 0;
@@ -597,6 +622,7 @@ void DirectXCommon::CreateScissorRect()
 	scissorRect.bottom = WinApp::kClientHeight;
 }
 
+// シェーダーコンパイル用のDXC関連オブジェクトを作成する
 void DirectXCommon::CreateDXC()
 {
 	HRESULT hr;
@@ -611,6 +637,7 @@ void DirectXCommon::CreateDXC()
 	assert(SUCCEEDED(hr));
 }
 
+// ImGuiをDirectX 12とWin32向けに初期化する
 void DirectXCommon::CreateImGui()
 {
 	IMGUI_CHECKVERSION();
@@ -623,12 +650,14 @@ void DirectXCommon::CreateImGui()
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 }
 
+// FPS固定処理で使う基準時間を初期化する
 void DirectXCommon::CreateFixFPS()
 {
 	// 現在時間を記録する
 	reference_ = std::chrono::steady_clock::now();
 }
 
+// 60FPSになるようにフレーム時間を調整する
 void DirectXCommon::UpdateFixFPS()
 {
 	// 1/60秒ぴったりの時間

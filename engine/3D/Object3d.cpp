@@ -7,12 +7,15 @@
 
 #include "Object3dCommon.h"
 
+// 3Dオブジェクトのモデル、マテリアル、行列、ライト用リソースを初期化する
 void Object3d::Initialize(Object3dCommon* object3dCommon) {
 	assert(object3dCommon != nullptr);
 	object3dCommon_ = object3dCommon;
 
+	// OBJモデルを読み込む
 	modelData_ = LoadObjectFile("resource", "axis.obj");
 
+	// 頂点バッファを作成し、読み込んだ頂点データを転送する
 	auto* dxCommon = object3dCommon_->GetDxCommon();
 	vertexResource_ = dxCommon->CreateBufferResource(sizeof(VertexData) * modelData_.vertices.size());
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
@@ -22,17 +25,20 @@ void Object3d::Initialize(Object3dCommon* object3dCommon) {
 	vertexBufferView_.SizeInBytes = static_cast<UINT>(sizeof(VertexData) * modelData_.vertices.size());
 	vertexBufferView_.StrideInBytes = sizeof(VertexData);
 
+	// マテリアル用定数バッファを作成する
 	materialResource_ = dxCommon->CreateBufferResource(sizeof(Material));
 	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
 	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialData_->enableLighting = true;
 	materialData_->uvTransform = MakeIdentity4x4();
 
+	// 座標変換行列用定数バッファを作成する
 	transformationMatrixResource_ = dxCommon->CreateBufferResource(sizeof(TransformationMatrix));
 	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
 	transformationMatrixData_->World = MakeIdentity4x4();
 	transformationMatrixData_->WVP = MakeIdentity4x4();
 
+	// 平行光源用定数バッファを作成する
 	directionalLightResource_ = dxCommon->CreateBufferResource(sizeof(DirectionalLight));
 	directionalLightResource_->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData_));
 	directionalLightData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -40,6 +46,7 @@ void Object3d::Initialize(Object3dCommon* object3dCommon) {
 	directionalLightData_->intensity = 1.0f;
 }
 
+// .mtlファイルからテクスチャファイルパスを読み込む
 MaterialData Object3d::LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
 	MaterialData materialData;
 	std::string line;
@@ -61,6 +68,7 @@ MaterialData Object3d::LoadMaterialTemplateFile(const std::string& directoryPath
 	return materialData;
 }
 
+// .objファイルを解析し、頂点データとマテリアルデータを作成する
 ModelData Object3d::LoadObjectFile(const std::string& directoryPath, const std::string& filename) {
 	ModelData modelData;
 
@@ -78,6 +86,7 @@ ModelData Object3d::LoadObjectFile(const std::string& directoryPath, const std::
 		s >> identifier;
 
 		if (identifier == "v") {
+			// 頂点座標を読み込む
 			Vector4 position;
 			s >> position.x >> position.y >> position.z;
 			position.s = 1.0f;
@@ -85,18 +94,21 @@ ModelData Object3d::LoadObjectFile(const std::string& directoryPath, const std::
 			positions.push_back(position);
 		}
 		else if (identifier == "vt") {
+			// テクスチャ座標を読み込む
 			Vector2 texcoord;
 			s >> texcoord.x >> texcoord.y;
 			texcoord.y = 1.0f - texcoord.y;
 			texcoords.push_back(texcoord);
 		}
 		else if (identifier == "vn") {
+			// 法線を読み込む
 			Vector3 normal;
 			s >> normal.x >> normal.y >> normal.z;
 			normal.x *= -1.0f;
 			normals.push_back(normal);
 		}
 		else if (identifier == "f") {
+			// 面情報を頂点データへ変換する
 			VertexData triangle[3];
 			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
 				std::string vertexDefinition;
@@ -121,6 +133,7 @@ ModelData Object3d::LoadObjectFile(const std::string& directoryPath, const std::
 			modelData.vertices.push_back(triangle[0]);
 		}
 		else if (identifier == "mtllib") {
+			// 使用するマテリアルファイルを読み込む
 			std::string materialFilename;
 			s >> materialFilename;
 			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);

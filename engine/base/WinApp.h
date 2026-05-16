@@ -4,57 +4,59 @@
 #include <cstdint>
 
 /// <summary>
-/// WindowsAPI
+/// Windowsアプリケーションのウィンドウ生成とメッセージ処理を管理するクラス
 /// </summary>
-class WinApp{
+class WinApp {
 public:
-	//====================
-	// 静的メンバ関数
-	//====================
+	// ===== 静的メンバ関数 =====
 
+	/// <summary>
+	/// Windowsから送られるメッセージを処理するコールバック関数
+	/// </summary>
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 public:
-	//====================
-	// メンバ関数
-	//====================
+	// ===== メンバ関数 =====
 
-	// 初期化
+	/// <summary>
+	/// ウィンドウを生成し、Windowsアプリケーションを初期化する
+	/// </summary>
 	void Initialize();
 
-	// 更新
+	/// <summary>
+	/// ウィンドウ関連の毎フレーム処理を行う
+	/// </summary>
 	void Update();
 
-	// 終了
+	/// <summary>
+	/// ウィンドウとCOMを終了処理する
+	/// </summary>
 	void Finalize();
 
-	// getter
-	HWND GetHwnd()const { return hwnd; }
+	/// <summary>
+	/// ウィンドウハンドルを取得する
+	/// </summary>
+	HWND GetHwnd() const { return hwnd; }
 
-	HINSTANCE GetHInstance()const { return wc.hInstance; }
+	/// <summary>
+	/// アプリケーションインスタンスを取得する
+	/// </summary>
+	HINSTANCE GetHInstance() const { return wc.hInstance; }
 
-	// メッセージの処理
+	/// <summary>
+	/// Windowsメッセージを処理し、終了要求の有無を返す
+	/// </summary>
 	bool ProcessMessege();
 
-
 public:
-	//====================
-	// 定数
-	//====================
+	// ===== 定数 =====
 
-	//クライアント領域のサイズ　横　縦
-	static const int32_t kClientWidth = 1280;
-	static const int32_t kClientHeight = 720;
+	static const int32_t kClientWidth = 1280;   // クライアント領域の横幅
+	static const int32_t kClientHeight = 720;   // クライアント領域の縦幅
 
 private:
-	//====================
-	// メンバ変数
-	//====================
+	// ===== メンバ変数 =====
 
-	// ウィンドウハンドル
-	HWND hwnd = nullptr;
-
-	// ウィンドウクラスの設定
-	WNDCLASS wc{};
+	HWND hwnd = nullptr;  // ウィンドウハンドル
+	WNDCLASS wc{};        // ウィンドウクラス設定
 };
-

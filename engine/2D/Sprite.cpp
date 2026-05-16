@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+// スプライト描画に必要な頂点、インデックス、マテリアル、行列リソースを初期化する
 void Sprite::Initialize(SpriteCommon* spriteCommon) {
 	assert(spriteCommon != nullptr);
 	assert(spriteCommon->GetDXCommon() != nullptr);
@@ -9,6 +10,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon) {
 	spriteCommon_ = spriteCommon;
 	DirectXCommon* dxCommon = spriteCommon_->GetDXCommon();
 
+	// 矩形スプライト用の頂点バッファを作成する
 	vertexResource_ = dxCommon->CreateBufferResource(sizeof(VertexData) * 4);
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
@@ -25,6 +27,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon) {
 	vertexData[3].position = { 640.0f,0.0f,0.0f,1.0f };
 	vertexData[3].texcoord = { 1.0f,0.0f };
 
+	// 2つの三角形で矩形を描くためのインデックスバッファを作成する
 	indexResource_ = dxCommon->CreateBufferResource(sizeof(uint32_t) * 6);
 	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
 	indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
@@ -39,11 +42,13 @@ void Sprite::Initialize(SpriteCommon* spriteCommon) {
 	indexData[4] = 3;
 	indexData[5] = 2;
 
+	// 座標変換行列用定数バッファを作成する
 	transformationMatrixResource_ = dxCommon->CreateBufferResource(sizeof(TransformationMatrix));
 	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
 	transformationMatrixData_->World = MakeIdentity4x4();
 	transformationMatrixData_->WVP = MakeIdentity4x4();
 
+	// マテリアル用定数バッファを作成する
 	materialResource_ = dxCommon->CreateBufferResource(sizeof(Material));
 	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
 	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
