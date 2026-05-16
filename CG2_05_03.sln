@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CG2_00_01", "CG2_00_01.vcxproj", "{D9C33899-786E-4974-B1E8-D92DE51A95F1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CG2_05_03", "CG2_00_01.vcxproj", "{D9C33899-786E-4974-B1E8-D92DE51A95F1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ソリューション項目", "ソリューション項目", "{25440758-D951-4BDE-A94E-160F0ABC1E72}"
 	ProjectSection(SolutionItems) = preProject
@@ -15,20 +15,15 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
-		Profile|x64 = Profile|x64
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{D9C33899-786E-4974-B1E8-D92DE51A95F1}.Debug|x64.ActiveCfg = Debug|x64
 		{D9C33899-786E-4974-B1E8-D92DE51A95F1}.Debug|x64.Build.0 = Debug|x64
-		{D9C33899-786E-4974-B1E8-D92DE51A95F1}.Profile|x64.ActiveCfg = Release|x64
-		{D9C33899-786E-4974-B1E8-D92DE51A95F1}.Profile|x64.Build.0 = Release|x64
 		{D9C33899-786E-4974-B1E8-D92DE51A95F1}.Release|x64.ActiveCfg = Release|x64
 		{D9C33899-786E-4974-B1E8-D92DE51A95F1}.Release|x64.Build.0 = Release|x64
 		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x64.ActiveCfg = Debug|x64
 		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x64.Build.0 = Debug|x64
-		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Profile|x64.ActiveCfg = Profile|x64
-		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Profile|x64.Build.0 = Profile|x64
 		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x64.ActiveCfg = Release|x64
 		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
