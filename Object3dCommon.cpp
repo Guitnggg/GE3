@@ -6,7 +6,7 @@
 
 void Object3dCommon::Initialize(DirectXCommon* directXCommon) {
 	assert(directXCommon != nullptr);
-
+	dxCommon_ = directXCommon;
 	CreateGraphicsPipeline();
 }
 

@@ -13,42 +13,9 @@
 /// </summary>
 class Object3dCommon;
 
-// 頂点データ
-struct VertexData {
-	Vector4 position;
-	Vector2 texcoord;
-	Vector3 normal;
-};
-
-struct MaterialData {
-	std::string textureFilePath;
-	uint32_t textureIndex = 0;
-};
-
 struct ModelData {
 	std::vector<VertexData> vertices;
 	MaterialData material;
-};
-
-// マテリアルデータ
-struct Material {
-	Vector4 color;
-	int32_t enableLighting;
-	float padding[3];
-	Matrix4x4 uvTransform;
-};
-
-// 座標変換データ
-struct TransformationMatrix {
-	Matrix4x4 WVP;
-	Matrix4x4 World;
-};
-
-// 平行光源データ
-struct DirectionalLight {
-	Vector4 color;
-	Vector3 direction;
-	float intensity;
 };
 
 /// <summary>
@@ -71,6 +38,41 @@ public:
 	/// .objファイルの読み込み
 	/// </summary>
 	static ModelData LoadObjectFile(const std::string& directoryPath, const std::string& filename);
+
+	/// <summary>
+	/// 頂点バッファビューの取得
+	/// </summary>
+	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const;
+
+	/// <summary>
+	/// マテリアルリソースの取得
+	/// </summary>
+	ID3D12Resource* GetMaterialResource() const;
+
+	/// <summary>
+	/// 座標変換リソースの取得
+	/// </summary>
+	ID3D12Resource* GetTransformationMatrixResource() const;
+
+	/// <summary>
+	/// 平行光源リソースの取得
+	/// </summary>
+	ID3D12Resource* GetDirectionalLightResource() const;
+
+	/// <summary>
+	/// 座標変換データの取得
+	/// </summary>
+	TransformationMatrix* GetTransformationMatrixData() const;
+
+	/// <summary>
+	/// 平行光源データの取得
+	/// </summary>
+	DirectionalLight* GetDirectionalLightData() const;
+
+	/// <summary>
+	/// モデルデータの取得
+	/// </summary>
+	const ModelData& GetModelData() const;
 
 private:
 	Object3dCommon* object3dCommon_ = nullptr;  // Object3dCommonクラスのポインタ
