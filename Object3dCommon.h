@@ -1,5 +1,8 @@
 #pragma once
 
+#include <d3d12.h>
+#include <wrl.h>
+
 #include "DirectXCommon.h"
 
 class Object3dCommon {
@@ -10,12 +13,17 @@ public:
 	/// <param name="dxCommon"></param>
 	void Initialize(DirectXCommon* dxCommon);
 
+	/// <summary>
+	/// 描画前の共通設定
+	/// </summary>
+	void CommonDrawSetting();
+
 public:
 	/// <summary>
-	/// 
+	/// DirectXCommonクラスのゲッター
 	/// </summary>
 	/// <returns></returns>
-	DirectXCommon* GetDxCommon()const { return dxCommon_; }
+	DirectXCommon* GetDxCommon() const { return dxCommon_; }
 
 private:
 	/// <summary>
@@ -29,6 +37,8 @@ private:
 	void CreateGraphicsPipeline();
 
 private:
-	DirectXCommon* dxCommon_;
+	DirectXCommon* dxCommon_ = nullptr;
 
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_;
 };

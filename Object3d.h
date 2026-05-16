@@ -1,13 +1,24 @@
 #pragma once
 
+#include <d3d12.h>
+#include <wrl.h>
+
 #include <string>
+#include <vector>
 
 #include "Mymath.h"
 
 /// <summary>
-/// Object3dCommonクラスの前方宣言 
+/// Object3dCommonクラスの前方宣言
 /// </summary>
 class Object3dCommon;
+
+// 頂点データ
+struct VertexData {
+	Vector4 position;
+	Vector2 texcoord;
+	Vector3 normal;
+};
 
 struct MaterialData {
 	std::string textureFilePath;
@@ -19,13 +30,6 @@ struct ModelData {
 	MaterialData material;
 };
 
-// 頂点データ
-struct VertexData {
-	Vector4 position;
-	Vector2 texcoord;
-	Vector3 normal;
-};
-
 // マテリアルデータ
 struct Material {
 	Vector4 color;
@@ -34,7 +38,7 @@ struct Material {
 	Matrix4x4 uvTransform;
 };
 
-// 座標返還データ
+// 座標変換データ
 struct TransformationMatrix {
 	Matrix4x4 WVP;
 	Matrix4x4 World;
@@ -58,64 +62,38 @@ public:
 	/// <param name="object3dCommon"></param>
 	void Initialize(Object3dCommon* object3dCommon);
 
-	// objファイルのデータ
-	ModelData modelData;
-
-	// Object3dCommonクラスのポインタ
-	Object3dCommon* object3dCommon_ = nullptr;
-
 	/// <summary>
-	///  .mtlファイルの読み込み
+	/// .mtlファイルの読み込み
 	/// </summary>
-	/// <param name="directoryPath"></param>
-	/// <param name="filename"></param>
-	/// <returns></returns>
 	static MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
 
 	/// <summary>
 	/// .objファイルの読み込み
 	/// </summary>
-	/// <param name="directoryPath"></param>
-	/// <param name="filename"></param>
-	/// <returns></returns>
 	static ModelData LoadObjectFile(const std::string& directoryPath, const std::string& filename);
 
+private:
+	Object3dCommon* object3dCommon_ = nullptr;  // Object3dCommonクラスのポインタ
+	ModelData modelData_;  // objファイルのデータ
 
-	頂点データ
-	// バッファリソース
-	VertexResource (VertexBuffer)
+	// ===== 頂点データ =====
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;
+	VertexData* vertexData_ = nullptr;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
 
-	// バッファリソース内のデータを指すポインタ
-	VertexData* vertexData = nullptr;
+	// ===== マテリアル =====
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_;
+	Material* materialData_ = nullptr;
 
-	// バッファリソースの使い道を補足するバッファビュー
-	D3D12_VERTEX_DATA_VIEW vertexBufferView{};
+	// ===== 座標変換データ =====
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource_;
+	TransformationMatrix* transformationMatrixData_ = nullptr;
 
+	// ===== 平行光源 =====
+	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource_;
+	DirectionalLight* directionalLightData_ = nullptr;
 
-	マテリアル
-	// バッファリソース
-	マテリアルリソース(ConstantBuffer)
-
-	// バッファリソース内のデータを指すポインタ
-	Material* materialData = nullptr;
-
-
-	座標変換行列
-	// バッファリソース
-	座標変換行列リソース(ConstantBuffer)
-
-	// バッファリソース内のデータを指すポインタ
-	TransformationMatrix* transformationMatrixData = nullptr;
-
-
-	平行光源
-	// バッファリソース
-	平行光源リソース(ConstantBuffer)
-
-	// バッファリソース内のデータを指すポインタ
-	DirectionalLight* directionalLightData = nullptr;
-
-
-	Transform transform;
-	Transform cameraTransform;
+	// ===== 座標変換用のデータ =====
+	Transform transform_{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+	Transform cameraTransform_{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -10.5f} };
 };
