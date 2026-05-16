@@ -5,16 +5,16 @@
 
 #include <cassert>
 
-#include "Mymath.h"
+#include "engine/base/Mymath.h"
 
-#include "Input.h"
-#include "WinApp.h"
-#include "DirectXCommon.h"
-#include "D3DResourceLeakChecker.h"
-#include "SpriteCommon.h"
-#include "Sprite.h"
-#include "Object3dCommon.h"
-#include "Object3d.h"
+#include "engine/base/Input.h"
+#include "engine/base/WinApp.h"
+#include "engine/base/DirectXCommon.h"
+#include "engine/base/D3DResourceLeakChecker.h"
+#include "engine/2d/SpriteCommon.h"
+#include "engine/2d/Sprite.h"
+#include "engine/3d/Object3dCommon.h"
+#include "engine/3d/Object3d.h"
 
 #pragma comment(lib,"dxcompiler.lib")
 

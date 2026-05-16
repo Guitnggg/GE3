@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include "Logger.h"
+#include "engine/base/Logger.h"
 
 void Object3dCommon::Initialize(DirectXCommon* directXCommon) {
 	assert(directXCommon != nullptr);
