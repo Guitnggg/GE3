@@ -3,7 +3,7 @@
 #include <cassert>
 
 #include "engine/3D/SrvManager.h"
-#include "engine/base/DirectXCommon.h"
+#include "engine/core/DirectXCommon.h"
 
 void TextureManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager) {
 	assert(dxCommon != nullptr);

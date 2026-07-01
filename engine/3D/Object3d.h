@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "engine/base/Mymath.h"
+#include "engine/core/Mymath.h"
 
 /// <summary>
 /// Object3dCommonクラスの前方宣言

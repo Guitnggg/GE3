@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include "engine/base/DirectXCommon.h"
+#include "engine/core/DirectXCommon.h"
 
 void SrvManager::Initialize(DirectXCommon* dxCommon) {
 	assert(dxCommon != nullptr);

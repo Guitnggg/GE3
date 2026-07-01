@@ -3,7 +3,7 @@
 #include <d3d12.h>
 #include <wrl.h>
 
-#include "engine/base/DirectXCommon.h"
+#include "engine/core/DirectXCommon.h"
 
 /// <summary>
 /// 3Dオブジェクト描画で共有するルートシグネチャとパイプラインを管理するクラス

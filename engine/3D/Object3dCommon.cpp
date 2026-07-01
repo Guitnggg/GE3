@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include "engine/base/Logger.h"
+#include "engine/core/Logger.h"
 
 // 3D描画共通処理を初期化する
 void Object3dCommon::Initialize(DirectXCommon* directXCommon) {

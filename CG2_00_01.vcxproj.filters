@@ -22,7 +22,7 @@
     <Filter Include="engine">
       <UniqueIdentifier>{0a00b4e5-8996-409a-bcc6-4e0f3b8cbd83}</UniqueIdentifier>
     </Filter>
-    <Filter Include="engine\base">
+    <Filter Include="engine\core">
       <UniqueIdentifier>{e1d46a1a-33d3-4afa-8b0f-cd83e0500c56}</UniqueIdentifier>
     </Filter>
     <Filter Include="engine\2d">
@@ -57,23 +57,23 @@
     <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="engine\base\Input.cpp">
-      <Filter>engine\base</Filter>
+    <ClCompile Include="engine\core\Input.cpp">
+      <Filter>engine\core</Filter>
     </ClCompile>
-    <ClCompile Include="engine\base\WinApp.cpp">
-      <Filter>engine\base</Filter>
+    <ClCompile Include="engine\core\WinApp.cpp">
+      <Filter>engine\core</Filter>
     </ClCompile>
-    <ClCompile Include="engine\base\DirectXCommon.cpp">
-      <Filter>engine\base</Filter>
+    <ClCompile Include="engine\core\DirectXCommon.cpp">
+      <Filter>engine\core</Filter>
     </ClCompile>
-    <ClCompile Include="engine\base\StringUtility.cpp">
-      <Filter>engine\base</Filter>
+    <ClCompile Include="engine\core\StringUtility.cpp">
+      <Filter>engine\core</Filter>
     </ClCompile>
-    <ClCompile Include="engine\base\Logger.cpp">
-      <Filter>engine\base</Filter>
+    <ClCompile Include="engine\core\Logger.cpp">
+      <Filter>engine\core</Filter>
     </ClCompile>
-    <ClCompile Include="engine\base\D3DResourceLeakChecker.cpp">
-      <Filter>engine\base</Filter>
+    <ClCompile Include="engine\core\D3DResourceLeakChecker.cpp">
+      <Filter>engine\core</Filter>
     </ClCompile>
     <ClCompile Include="engine\2d\SpriteCommon.cpp">
       <Filter>engine\2d</Filter>
@@ -113,29 +113,29 @@
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="engine\base\Mymath.h">
-      <Filter>engine\base</Filter>
+    <ClInclude Include="engine\core\Mymath.h">
+      <Filter>engine\core</Filter>
     </ClInclude>
-    <ClInclude Include="engine\base\ResourceObject.h">
-      <Filter>engine\base</Filter>
+    <ClInclude Include="engine\core\ResourceObject.h">
+      <Filter>engine\core</Filter>
     </ClInclude>
-    <ClInclude Include="engine\base\Input.h">
-      <Filter>engine\base</Filter>
+    <ClInclude Include="engine\core\Input.h">
+      <Filter>engine\core</Filter>
     </ClInclude>
-    <ClInclude Include="engine\base\WinApp.h">
-      <Filter>engine\base</Filter>
+    <ClInclude Include="engine\core\WinApp.h">
+      <Filter>engine\core</Filter>
     </ClInclude>
-    <ClInclude Include="engine\base\DirectXCommon.h">
-      <Filter>engine\base</Filter>
+    <ClInclude Include="engine\core\DirectXCommon.h">
+      <Filter>engine\core</Filter>
     </ClInclude>
-    <ClInclude Include="engine\base\StringUtility.h">
-      <Filter>engine\base</Filter>
+    <ClInclude Include="engine\core\StringUtility.h">
+      <Filter>engine\core</Filter>
     </ClInclude>
-    <ClInclude Include="engine\base\Logger.h">
-      <Filter>engine\base</Filter>
+    <ClInclude Include="engine\core\Logger.h">
+      <Filter>engine\core</Filter>
     </ClInclude>
-    <ClInclude Include="engine\base\D3DResourceLeakChecker.h">
-      <Filter>engine\base</Filter>
+    <ClInclude Include="engine\core\D3DResourceLeakChecker.h">
+      <Filter>engine\core</Filter>
     </ClInclude>
     <ClInclude Include="engine\2d\SpriteCommon.h">
       <Filter>engine\2d</Filter>
