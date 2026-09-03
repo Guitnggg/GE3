@@ -1,20 +1,23 @@
 #include "TextureManager.h"
 
 #include <cassert>
+#include <stdexcept>
 
 #include "engine/3D/SrvManager.h"
 #include "engine/core/DirectXCommon.h"
 
 void TextureManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager) {
-	assert(dxCommon != nullptr);
-	assert(srvManager != nullptr);
+	if (dxCommon == nullptr || srvManager == nullptr) {
+		throw std::invalid_argument("TextureManager requires DirectXCommon and SrvManager.");
+	}
 	dxCommon_ = dxCommon;
 	srvManager_ = srvManager;
 }
 
 uint32_t TextureManager::Load(const std::string& filePath) {
-	assert(dxCommon_ != nullptr);
-	assert(srvManager_ != nullptr);
+	if (dxCommon_ == nullptr || srvManager_ == nullptr) {
+		throw std::logic_error("TextureManager is not initialized.");
+	}
 
 	if (textureIndexMap_.contains(filePath)) {
 		return textureIndexMap_[filePath];
@@ -37,7 +40,11 @@ uint32_t TextureManager::Load(const std::string& filePath) {
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(uint32_t textureIndex) const {
-	assert(srvManager_ != nullptr);
-	assert(textureIndex < textures_.size());
+	if (srvManager_ == nullptr) {
+		throw std::logic_error("TextureManager is not initialized.");
+	}
+	if (textureIndex >= textures_.size()) {
+		throw std::out_of_range("Invalid texture index.");
+	}
 	return srvManager_->GetGPUDescriptorHandle(textures_[textureIndex].srvIndex);
 }

@@ -1,35 +1,38 @@
 #include "SrvManager.h"
 
 #include <cassert>
+#include <stdexcept>
 
 #include "engine/core/DirectXCommon.h"
 
 void SrvManager::Initialize(DirectXCommon* dxCommon) {
-	assert(dxCommon != nullptr);
+	if (dxCommon == nullptr || dxCommon->GetSRVDescriptorHeap() == nullptr) {
+		throw std::invalid_argument("SrvManager requires an initialized DirectXCommon instance.");
+	}
 	dxCommon_ = dxCommon;
-	descriptorHeap_ = dxCommon_->CreateDescriptorHeap(
-		dxCommon_->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kMaxSRVCount, true);
-	descriptorSize_ = dxCommon_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
 uint32_t SrvManager::Allocate() {
-	assert(useIndex_ < kMaxSRVCount);
+	if (useIndex_ >= kMaxSRVCount) {
+		throw std::runtime_error("The SRV descriptor heap is full.");
+	}
 	uint32_t index = useIndex_;
 	++useIndex_;
 	return index;
 }
 
 void SrvManager::PreDraw() {
-	assert(dxCommon_ != nullptr);
-	assert(descriptorHeap_ != nullptr);
-	ID3D12DescriptorHeap* descriptorHeaps[] = { descriptorHeap_.Get() };
+	if (dxCommon_ == nullptr || dxCommon_->GetSRVDescriptorHeap() == nullptr) {
+		throw std::logic_error("SrvManager is not initialized.");
+	}
+	ID3D12DescriptorHeap* descriptorHeaps[] = { dxCommon_->GetSRVDescriptorHeap() };
 	dxCommon_->GetCommandList()->SetDescriptorHeaps(1, descriptorHeaps);
 }
 
 void SrvManager::CreateSRVforTexture2D(uint32_t srvIndex, ID3D12Resource* resource, const DirectX::TexMetadata& metadata) {
-	assert(dxCommon_ != nullptr);
-	assert(resource != nullptr);
-	assert(srvIndex < kMaxSRVCount);
+	if (dxCommon_ == nullptr || resource == nullptr || srvIndex >= kMaxSRVCount) {
+		throw std::invalid_argument("Invalid texture SRV creation request.");
+	}
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 	srvDesc.Format = metadata.format;
@@ -41,15 +44,19 @@ void SrvManager::CreateSRVforTexture2D(uint32_t srvIndex, ID3D12Resource* resour
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE SrvManager::GetCPUDescriptorHandle(uint32_t index) const {
-	assert(descriptorHeap_ != nullptr);
-	return DirectXCommon::GetCPUDescriptorHandle(descriptorHeap_, descriptorSize_, index);
+	if (dxCommon_ == nullptr || index >= kMaxSRVCount) {
+		throw std::out_of_range("Invalid SRV descriptor index.");
+	}
+	return dxCommon_->GetCPUDescriptorHandleSRV(index);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE SrvManager::GetGPUDescriptorHandle(uint32_t index) const {
-	assert(descriptorHeap_ != nullptr);
-	return DirectXCommon::GetGPUDescriptorHandle(descriptorHeap_, descriptorSize_, index);
+	if (dxCommon_ == nullptr || index >= kMaxSRVCount) {
+		throw std::out_of_range("Invalid SRV descriptor index.");
+	}
+	return dxCommon_->GetGPUDescriptorHandleSRV(index);
 }
 
 ID3D12DescriptorHeap* SrvManager::GetDescriptorHeap() const {
-	return descriptorHeap_.Get();
+	return dxCommon_ != nullptr ? dxCommon_->GetSRVDescriptorHeap() : nullptr;
 }

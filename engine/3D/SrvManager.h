@@ -3,7 +3,6 @@
 #include <cstdint>
 
 #include <d3d12.h>
-#include <wrl.h>
 
 #include "externals/DirectXTex/DirectXTex.h"
 
@@ -24,7 +23,5 @@ public:
 
 private:
 	DirectXCommon* dxCommon_ = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap_;
-	uint32_t descriptorSize_ = 0;
 	uint32_t useIndex_ = 1;
 };

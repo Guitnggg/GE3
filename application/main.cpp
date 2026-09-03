@@ -15,6 +15,9 @@
 #include "engine/2d/Sprite.h"
 #include "engine/3d/Object3dCommon.h"
 #include "engine/3d/Object3d.h"
+#include "engine/3d/Camera.h"
+#include "engine/3d/SrvManager.h"
+#include "engine/3d/TextureManager.h"
 
 #pragma comment(lib,"dxcompiler.lib")
 
@@ -55,6 +58,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
 
+	SrvManager* srvManager = new SrvManager();
+	srvManager->Initialize(dxCommon);
+	TextureManager* textureManager = new TextureManager();
+	textureManager->Initialize(dxCommon, srvManager);
+
 #pragma endregion
 
 #pragma region Sprite系
@@ -71,66 +79,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
-	//textureを読んで転送
-	DirectX::ScratchImage mipImages2 = dxCommon->LoadTexture("resource/monsterBall.png");//モンスターボール
-	const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
-	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource2 = dxCommon->CrateTextureResource(dxCommon->GetDevice(), metadata2);
-	dxCommon->UploadTextureData(textureResource2, mipImages2);
-
-	// DSVようのヒープでディスクリプタの数1、shader内で触らないのでfalse
-	Microsoft::WRL::ComPtr < ID3D12DescriptorHeap> dsvDescriptorHeap2 = dxCommon->CreateDescriptorHeap(dxCommon->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
-
-	//DSV生成
-	D3D12_DEPTH_STENCIL_VIEW_DESC dscDesc2{};
-	dscDesc2.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	dscDesc2.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-	//DSVHeapの先頭
-	//device->CreateDepthStencilView(depthStencilResource2, &dscDesc2, dsvDescriptorHeap2->GetCPUDescriptorHandleForHeapStart());
-
-
-	//metadataを基にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2{};
-	srvDesc2.Format = metadata2.format;
-	srvDesc2.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc2.Texture2D.MipLevels = UINT(metadata2.mipLevels);
-
-	//SRVを作成するDescriptorHeap場所決め
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 = dxCommon->GetCPUDescriptorHandleSRV(2);
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = dxCommon->GetGPUDescriptorHandleSRV(2);
-
-
-
-	//SRVの生成
-	dxCommon->GetDevice()->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
-
-
-	//textureを読んで転送
-	DirectX::ScratchImage mipImages = dxCommon->LoadTexture("resource/uvChecker.png");
-	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = dxCommon->CrateTextureResource(dxCommon->GetDevice(), metadata);
-	dxCommon->UploadTextureData(textureResource, mipImages);
-
-	/*Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = CreateDepthStencilTextureResource(device, WinApp::kClientWidth, WinApp::kClientHeight);*/
-
-	//DSVようのヒープでディスクリプタの数1、shader内で触らないのでfalse
-	Microsoft::WRL::ComPtr < ID3D12DescriptorHeap> dsvDescriptorHeap = dxCommon->CreateDescriptorHeap(dxCommon->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
-
-
-	//metadataを基にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = metadata.format;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
-
-	//SRVを作成するDescriptorHeap場所決め
-	// SRV 0番はImGuiのフォント用に予約する
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = dxCommon->GetCPUDescriptorHandleSRV(1);
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = dxCommon->GetGPUDescriptorHandleSRV(1);
-
-	//SRVの生成
-	dxCommon->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
+	const uint32_t uvCheckerTexture = textureManager->Load("resource/uvChecker.png");
+	const uint32_t monsterBallTexture = textureManager->Load("resource/monsterBall.png");
+	const D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = textureManager->GetSrvHandleGPU(uvCheckerTexture);
+	const D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = textureManager->GetSrvHandleGPU(monsterBallTexture);
 
 	// Object3d共通部
 	Object3dCommon* object3dCommon = new Object3dCommon();  // 3D描画共通処理
@@ -139,6 +91,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// Object3d
 	Object3d* object3d = new Object3d();  // OBJモデル表示用オブジェクト
 	object3d->Initialize(object3dCommon);
+	Camera* camera = new Camera();
+	camera->Update();
 
 	uint32_t SphereVertexNum = 16 * 16 * 6;  // 球メッシュの頂点数
 
@@ -181,7 +135,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	TransformationMatrix* transformationMatrixDataSprite = sprite->GetTransformationMatrixData();
 
 	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	Transform cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f}, {0.0f,0.0f,-10.5f} };
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	Transform transformSphere{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	Transform transformL{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
@@ -286,17 +239,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(1280.0f) / float(720.0f), 0.1f, 100.0f);
-			Matrix4x4 WorldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+			camera->Update();
+			const Matrix4x4& viewProjectionMatrix = camera->GetViewProjectionMatrix();
+			Matrix4x4 WorldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 			object3d->GetTransformationMatrixData()->World = worldMatrix;
 			object3d->GetTransformationMatrixData()->WVP = WorldViewProjectionMatrix;
 			object3d->GetDirectionalLightData()->direction = Normalize(object3d->GetDirectionalLightData()->direction);
 
 			// 球体
 			Matrix4x4 worldMatrixSphere = MakeAffineMatrix(transformSphere.scale, transformSphere.rotate, transformSphere.translate);
-			Matrix4x4 WorldViewProjectionMatrixSphere = Multiply(worldMatrixSphere, Multiply(viewMatrix, projectionMatrix));
+			Matrix4x4 WorldViewProjectionMatrixSphere = Multiply(worldMatrixSphere, viewProjectionMatrix);
 
 			wvpDateSphere->World = worldMatrixSphere;
 			wvpDateSphere->WVP = WorldViewProjectionMatrixSphere;
@@ -321,6 +273,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::Render();
 
 			dxCommon->PreDraw();
+			srvManager->PreDraw();
 
 			// Object3d共通部の描画設定
 			object3dCommon->CommonDrawSetting();
@@ -403,6 +356,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// Object3d系解放
 	delete object3d;
 	delete object3dCommon;
+	delete camera;
+
+	delete textureManager;
+	delete srvManager;
 
 	// DirectXCommon解放
 	delete dxCommon;

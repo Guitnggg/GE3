@@ -649,13 +649,13 @@ void DirectXCommon::CreateDXC()
 	HRESULT hr;
 
 	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
-	assert(SUCCEEDED(hr));
+	ThrowIfFailed(hr, "Creating DXC utilities");
 
 	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
-	assert(SUCCEEDED(hr));
+	ThrowIfFailed(hr, "Creating the DXC compiler");
 
 	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
-	assert(SUCCEEDED(hr));
+	ThrowIfFailed(hr, "Creating the DXC include handler");
 }
 
 // ImGuiをDirectX 12とWin32向けに初期化する

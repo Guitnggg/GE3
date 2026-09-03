@@ -72,6 +72,8 @@ public:
 	/// SRV用のGPUディスクリプタハンドルを取得する
 	/// </summary>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandleSRV(uint32_t index);
+	ID3D12DescriptorHeap* GetSRVDescriptorHeap() const { return srvDescriptorHeap.Get(); }
+	uint32_t GetSRVDescriptorSize() const { return descriptorSizeSRV; }
 
 	/// <summary>
 	/// Direct3Dデバイスを取得する

@@ -173,7 +173,8 @@ ModelData Object3d::LoadObjectFile(const std::string& directoryPath, const std::
 			if (faceVertices.size() < 3) {
 				throw std::runtime_error("OBJ face has fewer than three vertices.");
 			}
-			const Vector3 faceNormal = CalculateFaceNormal(faceVertices[0].position, faceVertices[1].position, faceVertices[2].position);
+			// 出力時の反転後の頂点順と同じ向きで法線を生成する
+			const Vector3 faceNormal = CalculateFaceNormal(faceVertices[2].position, faceVertices[1].position, faceVertices[0].position);
 			for (size_t i = 0; i < faceVertices.size(); ++i) {
 				if (!hasNormals[i]) {
 					faceVertices[i].normal = faceNormal;

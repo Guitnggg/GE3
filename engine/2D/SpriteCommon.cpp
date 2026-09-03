@@ -1,10 +1,13 @@
 #include "SpriteCommon.h"
 
 #include <cassert>
+#include <stdexcept>
+
+#include "engine/core/Logger.h"
 
 // スプライト描画共通処理を初期化する
 void SpriteCommon::Initialize(DirectXCommon* directXCommon) {
-	assert(directXCommon != nullptr);
+	if (directXCommon == nullptr) { throw std::invalid_argument("SpriteCommon requires DirectXCommon."); }
 	dxCommon_ = directXCommon;
 
 	CreateGraphicsPipeline();
@@ -63,18 +66,19 @@ void SpriteCommon::CreateRootSignature() {
 	descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
 
 	HRESULT hr;
-	ID3DBlob* signatureBlob = nullptr;
-	ID3DBlob* errorBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
 	hr = D3D12SerializeRootSignature(
 		&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
 	if (FAILED(hr)) {
-		Logger::Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
-		assert(false);
+		const char* message = errorBlob ? reinterpret_cast<char*>(errorBlob->GetBufferPointer()) : "Unknown root signature error.";
+		Logger::Log(message);
+		throw std::runtime_error(message);
 	}
 
 	hr = dxCommon_->GetDevice()->CreateRootSignature(
 		0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
-	assert(SUCCEEDED(hr));
+	if (FAILED(hr)) { throw std::runtime_error("Failed to create the sprite root signature."); }
 }
 
 // スプライト描画用のグラフィックスパイプラインを作成する
@@ -110,11 +114,11 @@ void SpriteCommon::CreateGraphicsPipeline() {
 
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob =
 		dxCommon_->CompileShader(L"resource/shaders/Object3d.VS.hlsl", L"vs_6_0");
-	assert(vertexShaderBlob != nullptr);
+	if (vertexShaderBlob == nullptr) { throw std::runtime_error("Sprite vertex shader compilation returned no output."); }
 
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob =
 		dxCommon_->CompileShader(L"resource/shaders/Object3d.PS.hlsl", L"ps_6_0");
-	assert(pixelShaderBlob != nullptr);
+	if (pixelShaderBlob == nullptr) { throw std::runtime_error("Sprite pixel shader compilation returned no output."); }
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 	graphicsPipelineStateDesc.pRootSignature = rootSignature_.Get();
@@ -138,5 +142,5 @@ void SpriteCommon::CreateGraphicsPipeline() {
 
 	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(
 		&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState_));
-	assert(SUCCEEDED(hr));
+	if (FAILED(hr)) { throw std::runtime_error("Failed to create the sprite graphics pipeline."); }
 }
