@@ -4,6 +4,7 @@
 
 #include "DirectXCommon.h"
 #include "WinApp.h"
+#include "engine/audio/Audio.h"
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
@@ -65,7 +66,9 @@ void ImGuiManager::DrawDebugWindow(
 	Transform& sphereTransform,
 	DirectionalLight& directionalLight,
 	Transform& spriteTransform,
-	Transform& spriteUvTransform) {
+	Transform& spriteUvTransform,
+	Audio& audio,
+	uint32_t soundHandle) {
 	ImGui::Begin("Debug Controls");
 
 	if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -93,7 +96,79 @@ void ImGuiManager::DrawDebugWindow(
 		ImGui::SliderAngle("UV Rotation", &spriteUvTransform.rotate.z);
 	}
 
+	DrawAudioControls(audio, soundHandle);
+
 	ImGui::End();
+}
+
+void ImGuiManager::DrawAudioControls(Audio& audio, uint32_t soundHandle) {
+	// 再生が自然終了した場合はデバッグUI側のハンドルも無効化する。
+	if (debugVoiceHandle_ != Audio::kInvalidVoiceHandle &&
+		!debugAudioPaused_ && !audio.IsPlaying(debugVoiceHandle_)) {
+		debugVoiceHandle_ = Audio::kInvalidVoiceHandle;
+	}
+
+	if (!ImGui::CollapsingHeader("Audio", ImGuiTreeNodeFlags_DefaultOpen)) {
+		return;
+	}
+
+	ImGui::TextUnformatted("audio/fanfare.wav");
+	ImGui::Checkbox("Loop", &debugAudioLoop_);
+
+	if (ImGui::SliderFloat("Volume", &debugAudioVolume_, 0.0f, 1.0f, "%.2f") &&
+		debugVoiceHandle_ != Audio::kInvalidVoiceHandle) {
+		audio.SetVolume(debugVoiceHandle_, debugAudioVolume_);
+	}
+	if (ImGui::SliderFloat("Pitch", &debugAudioPitch_, 0.25f, 4.0f, "%.2fx", ImGuiSliderFlags_Logarithmic) &&
+		debugVoiceHandle_ != Audio::kInvalidVoiceHandle) {
+		audio.SetPitch(debugVoiceHandle_, debugAudioPitch_);
+	}
+	if (ImGui::SliderFloat("Master Volume", &debugMasterVolume_, 0.0f, 1.0f, "%.2f")) {
+		audio.SetMasterVolume(debugMasterVolume_);
+	}
+
+	if (ImGui::Button("Play / Restart")) {
+		if (debugVoiceHandle_ != Audio::kInvalidVoiceHandle) {
+			audio.Stop(debugVoiceHandle_);
+		}
+		debugVoiceHandle_ = audio.Play(
+			static_cast<Audio::SoundHandle>(soundHandle),
+			debugAudioLoop_, debugAudioVolume_, debugAudioPitch_);
+		debugAudioPaused_ = false;
+	}
+
+	ImGui::SameLine();
+	if (!debugAudioPaused_) {
+		if (ImGui::Button("Pause") && debugVoiceHandle_ != Audio::kInvalidVoiceHandle) {
+			audio.Pause(debugVoiceHandle_);
+			debugAudioPaused_ = true;
+		}
+	}
+	else if (ImGui::Button("Resume")) {
+		audio.Resume(debugVoiceHandle_);
+		debugAudioPaused_ = false;
+	}
+
+	ImGui::SameLine();
+	if (ImGui::Button("Stop") && debugVoiceHandle_ != Audio::kInvalidVoiceHandle) {
+		audio.Stop(debugVoiceHandle_);
+		debugVoiceHandle_ = Audio::kInvalidVoiceHandle;
+		debugAudioPaused_ = false;
+	}
+
+	ImGui::SameLine();
+	if (ImGui::Button("Stop All")) {
+		audio.StopAll();
+		debugVoiceHandle_ = Audio::kInvalidVoiceHandle;
+		debugAudioPaused_ = false;
+	}
+
+	const char* status = "Stopped";
+	if (debugVoiceHandle_ != Audio::kInvalidVoiceHandle) {
+		status = debugAudioPaused_ ? "Paused" : "Playing";
+	}
+	ImGui::Text("Status: %s", status);
+	ImGui::TextUnformatted("Keyboard shortcut: 0 = one-shot playback");
 }
 
 void ImGuiManager::EndFrame() {

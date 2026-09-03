@@ -12,6 +12,7 @@
 #include "engine/core/DirectXCommon.h"
 #include "engine/core/D3DResourceLeakChecker.h"
 #include "engine/core/ImGuiManager.h"
+#include "engine/audio/Audio.h"
 #include "engine/2d/SpriteCommon.h"
 #include "engine/2d/Sprite.h"
 #include "engine/3d/Object3dCommon.h"
@@ -47,6 +48,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 入力の初期化
 	input = new Input();
 	input->Initialize(winApp);
+
+	// 音声の初期化と読み込み（相対パスはaudioフォルダを基準にする）
+	Audio* audio = new Audio();
+	audio->Initialize();
+	const Audio::SoundHandle fanfareSound = audio->Load("fanfare.wav");
 
 #pragma endregion
 
@@ -172,7 +178,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			imguiManager.DrawDebugWindow(
 				isModel, isSphere, isRotate, isSprite, textureChange,
 				*materialDateSphere, transformSphere, *directionalLightSphereData,
-				transformSprite, uvTransformSprite);
+				transformSprite, uvTransformSprite, *audio, fanfareSound);
 #endif
 
 			//===============
@@ -180,9 +186,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//===============
 
 			input->Update();
+			audio->Update();
 
-			if (input->PushKey(DIK_0)) {
-				OutputDebugStringA("Hit 0\n");
+			if (input->TriggerKey(DIK_0)) {
+				// loop、volume、pitchの順。再生中のVoiceHandleでも後から変更できる。
+				audio->Play(fanfareSound, false, 1.0f, 1.0f);
 			}
 
 			if (isRotate) {
@@ -291,6 +299,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// 入力解放
 	delete input;
+
+	// 音声解放
+	delete audio;
 
 	// WindowsAPI解放
 	delete winApp;

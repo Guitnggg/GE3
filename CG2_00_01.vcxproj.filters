@@ -31,11 +31,17 @@
     <Filter Include="engine\3d">
       <UniqueIdentifier>{49a0ad24-3d59-4c92-a041-e8af0ca2bcf1}</UniqueIdentifier>
     </Filter>
+	<Filter Include="engine\audio">
+	  <UniqueIdentifier>{D25D0E1C-1217-4EEB-B6C1-03063382E64F}</UniqueIdentifier>
+	</Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application\main.cpp">
       <Filter>application</Filter>
     </ClCompile>
+	<ClCompile Include="engine\audio\Audio.cpp">
+	  <Filter>engine\audio</Filter>
+	</ClCompile>
     <ClCompile Include="externals\imgui\imgui.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
@@ -104,6 +110,9 @@
     <ClInclude Include="externals\imgui\imconfig.h">
       <Filter>imgui</Filter>
     </ClInclude>
+	<ClInclude Include="engine\audio\Audio.h">
+	  <Filter>engine\audio</Filter>
+	</ClInclude>
     <ClInclude Include="externals\imgui\imgui.h">
       <Filter>imgui</Filter>
     </ClInclude>
