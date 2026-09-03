@@ -1,6 +1,7 @@
 #include "WinApp.h"
 
 #include "externals/imgui/imgui.h"
+#include <stdexcept>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -27,6 +28,9 @@ void WinApp::Initialize()
 {
 	// COMライブラリをマルチスレッドで初期化する
 	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
+	if (FAILED(hr)) {
+		throw std::runtime_error("Failed to initialize COM.");
+	}
 
 	// ウィンドウクラスを設定する
 	wc.lpfnWndProc = WindowProc;
@@ -35,17 +39,20 @@ void WinApp::Initialize()
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 
 	// ウィンドウクラスを登録する
-	RegisterClass(&wc);
+	if (RegisterClass(&wc) == 0) {
+		throw std::runtime_error("Failed to register the window class.");
+	}
 
 	// クライアント領域のサイズから実際のウィンドウサイズを計算する
+	constexpr DWORD windowStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 	RECT wrc = { 0, 0,kClientWidth,kClientHeight };
-	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
+	AdjustWindowRect(&wrc, windowStyle, false);
 
 	// ウィンドウを生成する
-	hwnd = CreateWindow(
+		hwnd = CreateWindow(
 		wc.lpszClassName,
 		L"CG2",
-		WS_OVERLAPPEDWINDOW,
+		windowStyle,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
 		wrc.right - wrc.left,
@@ -53,7 +60,10 @@ void WinApp::Initialize()
 		nullptr,
 		nullptr,
 		wc.hInstance,
-		nullptr);
+			nullptr);
+	if (hwnd == nullptr) {
+		throw std::runtime_error("Failed to create the application window.");
+	}
 
 	// 生成したウィンドウを表示する
 	ShowWindow(hwnd, SW_SHOW);
@@ -75,14 +85,12 @@ bool WinApp::ProcessMessege()
 	MSG msg{};
 
 	// キューにあるWindowsメッセージを処理する
-	if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+		if (msg.message == WM_QUIT) {
+			return true;
+		}
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
-	}
-
-	// WM_QUITを受け取ったらアプリを終了する
-	if (msg.message == WM_QUIT) {
-		return true;
 	}
 
 	return false;

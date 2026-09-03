@@ -1,6 +1,7 @@
 #include "Input.h"
 
 #include <cassert>
+#include <stdexcept>
 
 // DirectInputとGUIDを使用するためのライブラリ
 #pragma comment(lib,"dinput8.lib")
@@ -16,19 +17,19 @@ void Input::Initialize(WinApp* winApp)
 	// DirectInputのインスタンスを生成する
 	result = DirectInput8Create(
 		winApp->GetHInstance(), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
-	assert(SUCCEEDED(result));
+	if (FAILED(result)) { throw std::runtime_error("Failed to initialize DirectInput."); }
 
 	// キーボードデバイスを生成する
 	result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
-	assert(SUCCEEDED(result));
+	if (FAILED(result)) { throw std::runtime_error("Failed to create the keyboard input device."); }
 
 	// 入力データ形式をキーボード用に設定する
 	result = keyboard->SetDataFormat(&c_dfDIKeyboard);
-	assert(SUCCEEDED(result));
+	if (FAILED(result)) { throw std::runtime_error("Failed to set the keyboard data format."); }
 
 	// アプリが前面の間だけ非排他で入力を受け取る
 	result = keyboard->SetCooperativeLevel(winApp->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
-	assert(SUCCEEDED(result));
+	if (FAILED(result)) { throw std::runtime_error("Failed to set the keyboard cooperative level."); }
 }
 
 void Input::Update()
@@ -37,10 +38,17 @@ void Input::Update()
 	memcpy(keyPre, key, sizeof(key));
 
 	// キーボード入力の取得を開始する
-	keyboard->Acquire();
+	HRESULT result = keyboard->Acquire();
+	if (FAILED(result) && result != DIERR_OTHERAPPHASPRIO) {
+		ZeroMemory(key, sizeof(key));
+		return;
+	}
 
 	// 全キーの入力状態を取得する
-	keyboard->GetDeviceState(sizeof(key), key);
+	result = keyboard->GetDeviceState(sizeof(key), key);
+	if (FAILED(result)) {
+		ZeroMemory(key, sizeof(key));
+	}
 }
 
 bool Input::PushKey(BYTE keyNumber)
@@ -57,10 +65,5 @@ bool Input::PushKey(BYTE keyNumber)
 bool Input::TriggerKey(BYTE keyNumber)
 {
 	// 指定キーが反応していればtrueを返す
-	if (key[keyNumber]) {
-		return true;
-	}
-
-	// 反応していなければfalseを返す
-	return false;
+	return (key[keyNumber] & 0x80) != 0 && (keyPre[keyNumber] & 0x80) == 0;
 }

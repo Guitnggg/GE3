@@ -4,16 +4,45 @@
 #include <fstream>
 #include <cstring>
 #include <sstream>
+#include <stdexcept>
 
 #include "Object3dCommon.h"
 
 // 3Dオブジェクトのモデル、マテリアル、行列、ライト用リソースを初期化する
-void Object3d::Initialize(Object3dCommon* object3dCommon) {
-	assert(object3dCommon != nullptr);
+namespace {
+size_t ResolveObjIndex(int32_t index, size_t count, const char* elementName) {
+	if (index == 0) {
+		throw std::runtime_error(std::string("OBJ ") + elementName + " index must not be zero.");
+	}
+	const auto resolved = index > 0
+		? static_cast<int64_t>(index - 1)
+		: static_cast<int64_t>(count) + index;
+	if (resolved < 0 || resolved >= static_cast<int64_t>(count)) {
+		throw std::runtime_error(std::string("OBJ ") + elementName + " index is out of range.");
+	}
+	return static_cast<size_t>(resolved);
+}
+
+Vector3 CalculateFaceNormal(const Vector4& a, const Vector4& b, const Vector4& c) {
+	const Vector3 ab{b.x - a.x, b.y - a.y, b.z - a.z};
+	const Vector3 ac{c.x - a.x, c.y - a.y, c.z - a.z};
+	const Vector3 cross{
+		ab.y * ac.z - ab.z * ac.y,
+		ab.z * ac.x - ab.x * ac.z,
+		ab.x * ac.y - ab.y * ac.x};
+	const float lengthSquared = cross.x * cross.x + cross.y * cross.y + cross.z * cross.z;
+	return lengthSquared > 0.0f ? Normalize(cross) : Vector3{0.0f, 0.0f, 1.0f};
+}
+}
+
+void Object3d::Initialize(Object3dCommon* object3dCommon, const std::string& directoryPath, const std::string& filename) {
+	if (object3dCommon == nullptr || object3dCommon->GetDxCommon() == nullptr) {
+		throw std::invalid_argument("Object3d requires a valid Object3dCommon instance.");
+	}
 	object3dCommon_ = object3dCommon;
 
 	// OBJモデルを読み込む
-	modelData_ = LoadObjectFile("resource", "axis.obj");
+	modelData_ = LoadObjectFile(directoryPath, filename);
 
 	// 頂点バッファを作成し、読み込んだ頂点データを転送する
 	auto* dxCommon = object3dCommon_->GetDxCommon();
@@ -51,7 +80,9 @@ MaterialData Object3d::LoadMaterialTemplateFile(const std::string& directoryPath
 	MaterialData materialData;
 	std::string line;
 	std::ifstream file(directoryPath + "/" + filename);
-	assert(file.is_open());
+	if (!file.is_open()) {
+		throw std::runtime_error("Failed to open material file: " + directoryPath + "/" + filename);
+	}
 
 	while (std::getline(file, line)) {
 		std::string identifier;
@@ -78,7 +109,9 @@ ModelData Object3d::LoadObjectFile(const std::string& directoryPath, const std::
 	std::string line;
 
 	std::ifstream file(directoryPath + "/" + filename);
-	assert(file.is_open());
+	if (!file.is_open()) {
+		throw std::runtime_error("Failed to open OBJ file: " + directoryPath + "/" + filename);
+	}
 
 	while (std::getline(file, line)) {
 		std::string identifier;
@@ -108,29 +141,51 @@ ModelData Object3d::LoadObjectFile(const std::string& directoryPath, const std::
 			normals.push_back(normal);
 		}
 		else if (identifier == "f") {
-			// 面情報を頂点データへ変換する
-			VertexData triangle[3];
-			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
-				std::string vertexDefinition;
-				s >> vertexDefinition;
+			// 三角形・四角形以上、v/vt/vn・v//vn・v、負インデックスを扱う
+			std::vector<VertexData> faceVertices;
+			std::vector<bool> hasNormals;
+			std::string vertexDefinition;
+			while (s >> vertexDefinition) {
+				std::istringstream definition(vertexDefinition);
+				std::string positionIndexText;
+				std::string texcoordIndexText;
+				std::string normalIndexText;
+				std::getline(definition, positionIndexText, '/');
+				std::getline(definition, texcoordIndexText, '/');
+				std::getline(definition, normalIndexText, '/');
 
-				std::istringstream v(vertexDefinition);
-				uint32_t elementIndices[3];
-				for (int32_t element = 0; element < 3; ++element) {
-					std::string index;
-					std::getline(v, index, '/');
-					elementIndices[element] = std::stoi(index);
+				if (positionIndexText.empty()) {
+					throw std::runtime_error("OBJ face is missing a position index.");
 				}
-
-				Vector4 position = positions[elementIndices[0] - 1];
-				Vector2 texcoord = texcoords[elementIndices[1] - 1];
-				Vector3 normal = normals[elementIndices[2] - 1];
-				triangle[faceVertex] = { position, texcoord, normal };
+				VertexData vertex{};
+				vertex.position = positions[ResolveObjIndex(std::stoi(positionIndexText), positions.size(), "position")];
+				if (!texcoordIndexText.empty()) {
+					vertex.texcoord = texcoords[ResolveObjIndex(std::stoi(texcoordIndexText), texcoords.size(), "texcoord")];
+				}
+				const bool hasNormal = !normalIndexText.empty();
+				if (hasNormal) {
+					vertex.normal = normals[ResolveObjIndex(std::stoi(normalIndexText), normals.size(), "normal")];
+				}
+				faceVertices.push_back(vertex);
+				hasNormals.push_back(hasNormal);
 			}
 
-			modelData.vertices.push_back(triangle[2]);
-			modelData.vertices.push_back(triangle[1]);
-			modelData.vertices.push_back(triangle[0]);
+			if (faceVertices.size() < 3) {
+				throw std::runtime_error("OBJ face has fewer than three vertices.");
+			}
+			const Vector3 faceNormal = CalculateFaceNormal(faceVertices[0].position, faceVertices[1].position, faceVertices[2].position);
+			for (size_t i = 0; i < faceVertices.size(); ++i) {
+				if (!hasNormals[i]) {
+					faceVertices[i].normal = faceNormal;
+				}
+			}
+
+			// 三角形ファンへ分割し、右手系から左手系への変換に合わせて頂点順を反転する
+			for (size_t i = 1; i + 1 < faceVertices.size(); ++i) {
+				modelData.vertices.push_back(faceVertices[i + 1]);
+				modelData.vertices.push_back(faceVertices[i]);
+				modelData.vertices.push_back(faceVertices[0]);
+			}
 		}
 		else if (identifier == "mtllib") {
 			// 使用するマテリアルファイルを読み込む

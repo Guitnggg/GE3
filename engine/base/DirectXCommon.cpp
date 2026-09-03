@@ -3,11 +3,20 @@
 #include "DirectXCommon.h"
 
 #include <cassert>
+#include <stdexcept>
 #include <thread>
 
 #include "externals/DirectXTex/DirectXTex.h"
 
 using namespace Microsoft::WRL;
+
+namespace {
+void ThrowIfFailed(HRESULT result, const char* operation) {
+	if (FAILED(result)) {
+		throw std::runtime_error(std::string(operation) + " failed (HRESULT " + std::to_string(static_cast<unsigned long>(result)) + ").");
+	}
+}
+}
 
 //===============
 // 初期化
@@ -16,7 +25,10 @@ using namespace Microsoft::WRL;
 // DirectXとImGuiで確保した終了処理を行う
 DirectXCommon::~DirectXCommon()
 {
-	CloseHandle(fenceEvent);
+	if (fenceEvent != nullptr) {
+		CloseHandle(fenceEvent);
+		fenceEvent = nullptr;
+	}
 
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
@@ -141,8 +153,7 @@ IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar
 
 	Microsoft::WRL::ComPtr <IDxcBlobEncoding> shaderSource = nullptr;
 	HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
-
-	assert(SUCCEEDED(hr));
+	ThrowIfFailed(hr, "Loading a shader file");
 
 	DxcBuffer shaderSourceBuffer;
 	shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
@@ -163,7 +174,7 @@ IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar
 	hr = dxcCompiler->Compile(&shaderSourceBuffer, arguments, _countof(arguments),
 		includeHandler.Get(), IID_PPV_ARGS(&shaderResult));
 
-	assert(SUCCEEDED(hr));
+	ThrowIfFailed(hr, "Compiling a shader");
 
 	//3.警告エラー
 	IDxcBlobUtf8* shaderError = nullptr;
@@ -172,13 +183,13 @@ IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar
 	{
 		Logger::Log(shaderError->GetStringPointer());
 		//警告エラーダメ絶対
-		assert(false);
+		throw std::runtime_error(std::string("Shader compilation failed: ") + shaderError->GetStringPointer());
 	}
 
 	//4.Complie結果
 	IDxcBlob* shaderBlob = nullptr;
 	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
-	assert(SUCCEEDED(hr));
+	ThrowIfFailed(hr, "Getting compiled shader output");
 
 	Logger::Log(StringUtility::ConvertString(std::format(L"Compile Succeeded,path:{},profile:{}\n", filePath, profile)));
 
@@ -219,7 +230,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CrateTextureResource(Micro
 	D3D12_RESOURCE_DESC resourceDesc{};
 	resourceDesc.Width = UINT(metadata.width);//幅
 	resourceDesc.Height = UINT(metadata.height);//高さ
-	resourceDesc.MipLevels = UINT16(metadata.miscFlags);//数
+	resourceDesc.MipLevels = static_cast<UINT16>(metadata.mipLevels);//数
 	resourceDesc.DepthOrArraySize = UINT(metadata.arraySize);//奥行き　Textureの配置数
 	resourceDesc.Format = metadata.format;//format
 	resourceDesc.SampleDesc.Count = 1;//サンプリングカウント(1固定)
@@ -274,12 +285,12 @@ DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
 	DirectX::ScratchImage image{};
 	std::wstring filePathW = StringUtility::ConvertString(filePath);
 	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
-	assert(SUCCEEDED(hr));
+	ThrowIfFailed(hr, "Loading a texture");
 
 	//ミップマップ　//拡大縮小で使う
 	DirectX::ScratchImage mipImages{};
 	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
-	assert(SUCCEEDED(hr));
+	ThrowIfFailed(hr, "Generating texture mipmaps");
 
 	//ミップマップ付きのデータを返す
 	return mipImages;
@@ -334,7 +345,7 @@ void DirectXCommon::PostDraw()
 
 	// コマンドリストの内容を確定させる。すべてのコマンドを詰んでからCloseする
 	hr = commandList->Close();
-	assert(SUCCEEDED(hr));
+	ThrowIfFailed(hr, "Closing the command list");
 
 	// GPUにコマンドリストの実行を行わせる
 	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList.Get() };
@@ -345,12 +356,18 @@ void DirectXCommon::PostDraw()
 	// Fenceの更新
 	fenceValue++;
 	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る
-	commandQueue->Signal(fence.Get(), fenceValue);
+	hr = commandQueue->Signal(fence.Get(), fenceValue);
+	if (FAILED(hr)) {
+		throw std::runtime_error("Failed to signal the Direct3D fence.");
+	}
 	// Fenceの値が指定したSignal値にたどり着いているか確認する
 	// GetCompletedValueの初期値はFence作成時に渡した初期値
 	if (fence->GetCompletedValue() < fenceValue) {
 		// 指定したSignalにたどりつかないので、たどり着くまで待つようにイベントを設定する
-		fence->SetEventOnCompletion(fenceValue, fenceEvent);
+		hr = fence->SetEventOnCompletion(fenceValue, fenceEvent);
+		if (FAILED(hr)) {
+			throw std::runtime_error("Failed to set the Direct3D fence event.");
+		}
 		// イベントを待つ
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
@@ -359,9 +376,9 @@ void DirectXCommon::PostDraw()
 
 	// 次のフレーム用のコマンドリストを準備
 	hr = commandAllocator->Reset();
-	assert(SUCCEEDED(hr));
+	ThrowIfFailed(hr, "Resetting the command allocator");
 	hr = commandList->Reset(commandAllocator.Get(), nullptr);
-	assert(SUCCEEDED(hr));
+	ThrowIfFailed(hr, "Resetting the command list");
 }
 
 //===============
@@ -594,12 +611,16 @@ void DirectXCommon::CreateFence()
 {
 	HRESULT hr;
 
-	uint64_t fenceValue = 0;
+	fenceValue = 0;
 	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
-	assert(SUCCEEDED(hr));
+	if (FAILED(hr)) {
+		throw std::runtime_error("Failed to create the Direct3D fence.");
+	}
 
-	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	assert(fenceEvent != nullptr);
+	fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+	if (fenceEvent == nullptr) {
+		throw std::runtime_error("Failed to create the Direct3D fence event.");
+	}
 }
 
 // 描画に使用するビューポートを設定する

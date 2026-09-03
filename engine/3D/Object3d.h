@@ -30,7 +30,9 @@ public:
 	/// 3Dオブジェクトに必要なGPUリソースを初期化する
 	/// </summary>
 	/// <param name="object3dCommon">3D描画共通処理</param>
-	void Initialize(Object3dCommon* object3dCommon);
+	void Initialize(Object3dCommon* object3dCommon,
+		const std::string& directoryPath = "resource",
+		const std::string& filename = "axis.obj");
 
 	/// <summary>
 	/// .mtlファイルを読み込む
