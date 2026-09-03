@@ -11,8 +11,6 @@
 #include "StringUtility.h"
 #include "Logger.h"
 
-#include "externals/imgui/imgui_impl_dx12.h"
-#include "externals/imgui/imgui_impl_win32.h"
 #include "externals/DirectXTex/DirectXTex.h"
 #include "externals/DirectXTex/d3dx12.h"
 
@@ -26,7 +24,7 @@
 class DirectXCommon {
 public:
 	/// <summary>
-	/// DirectXとImGui関連の終了処理を行う
+	/// DirectX関連の終了処理を行う
 	/// </summary>
 	~DirectXCommon();
 
@@ -74,6 +72,8 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandleSRV(uint32_t index);
 	ID3D12DescriptorHeap* GetSRVDescriptorHeap() const { return srvDescriptorHeap.Get(); }
 	uint32_t GetSRVDescriptorSize() const { return descriptorSizeSRV; }
+	uint32_t GetSwapChainBufferCount() const { return swapChainDesc.BufferCount; }
+	DXGI_FORMAT GetRenderTargetFormat() const { return rtvDesc.Format; }
 
 	/// <summary>
 	/// Direct3Dデバイスを取得する
@@ -135,7 +135,6 @@ private:
 	void CreateViewport();        // ビューポートを設定する
 	void CreateScissorRect();     // シザー矩形を設定する
 	void CreateDXC();             // DXCコンパイラ関連を初期化する
-	void CreateImGui();           // ImGuiを初期化する
 
 	// ===== FPS固定処理 =====
 

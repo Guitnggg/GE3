@@ -11,6 +11,7 @@
 #include "engine/core/WinApp.h"
 #include "engine/core/DirectXCommon.h"
 #include "engine/core/D3DResourceLeakChecker.h"
+#include "engine/core/ImGuiManager.h"
 #include "engine/2d/SpriteCommon.h"
 #include "engine/2d/Sprite.h"
 #include "engine/3d/Object3dCommon.h"
@@ -20,8 +21,6 @@
 #include "engine/3d/TextureManager.h"
 
 #pragma comment(lib,"dxcompiler.lib")
-
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //Windowsアプリのエントリーポイント(main関数)
 // Windowsアプリケーションのエントリーポイント
@@ -57,6 +56,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
+	ImGuiManager imguiManager;
+	imguiManager.Initialize(winApp, dxCommon);
 
 	SrvManager* srvManager = new SrvManager();
 	srvManager->Initialize(dxCommon);
@@ -144,15 +145,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{ 0.0f,0.0f,0.0f }
 	};
 
-	float* inputMaterialSphere[3] = { &materialDateSphere->color.x,&materialDateSphere->color.y,&materialDateSphere->color.z };
-	float* inputTransformSphere[3] = { &transformSphere.translate.x,&transformSphere.translate.y,&transformSphere.translate.z };
-	float* inputRotateSphere[3] = { &transformSphere.rotate.x,&transformSphere.rotate.y,&transformSphere.rotate.z };
-	float* inputScaleSphere[3] = { &transformSphere.scale.x,&transformSphere.scale.y,&transformSphere.scale.z };
 	bool textureChange = true;
-
-	float* inputMaterialLigth[3] = { &directionalLightSphereData->color.x,&directionalLightSphereData->color.y,&directionalLightSphereData->color.z };
-	float* inputDirectionLight[3] = { &directionalLightSphereData->direction.x,&directionalLightSphereData->direction.y,&directionalLightSphereData->direction.z };
-	float* intensity = &directionalLightSphereData->intensity;
 
 	bool isRotate = false;
 	bool isModel = false;
@@ -171,58 +164,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// DirectXの毎フレームの処理
 			//==============================
 
-			//// ImGui関連 ////
-
-			ImGui_ImplDX12_NewFrame();
-			ImGui_ImplWin32_NewFrame();
-			ImGui::NewFrame();
-
-			// Model //
-			ImGui::Text("Model");
-
-			ImGui::Checkbox("Model", &isModel);
-			ImGui::Checkbox("Sphere", &isSphere);
-
-			ImGui::InputFloat3("MaterialSphere", *inputMaterialSphere);
-			ImGui::SliderFloat3("SliderMaterialSphere", *inputMaterialSphere, 0.0f, 1.0f);
-
-			ImGui::InputFloat3("VertexSphere", *inputTransformSphere);
-			ImGui::SliderFloat3("SliderVertexSphere", *inputTransformSphere, -5.0f, 5.0f);
-
-			ImGui::Checkbox("Rotate", &isRotate);
-			ImGui::InputFloat3("RotateSphere", *inputRotateSphere);
-			ImGui::SliderFloat3("SliderRotateSphere", *inputRotateSphere, -10.0f, 10.0f);
-
-			ImGui::InputFloat3("ScaleSphere", *inputScaleSphere);
-			ImGui::SliderFloat3("SliderScaleSphere", *inputScaleSphere, 0.5f, 5.0f);
-
-			ImGui::Checkbox("MonsterBall", &textureChange);
-
-			// Lightng //
-			ImGui::Text("Ligth");
-			ImGui::InputFloat4("MaterialLigth", *inputMaterialLigth);
-			ImGui::SliderFloat4("SliderMaterialLigth", *inputMaterialLigth, 0.0f, 1.0f);
-
-			ImGui::InputFloat3("VertexLigth", *inputDirectionLight);
-			ImGui::SliderFloat3("SliderVertexLigth", *inputDirectionLight, -1.0f, 1.0f);
-
-			ImGui::InputFloat("intensity", intensity);
-
-			// Sprite //
-			ImGui::Text("Sprite");
-
-			ImGui::Checkbox("UI", &isSprite);
-
-			ImGui::InputFloat("SpriteX", &transformSprite.translate.x);
-			ImGui::SliderFloat("SliderSpriteX", &transformSprite.translate.x, 0.0f, 1000.0f);
-
-			ImGui::InputFloat("SpriteY", &transformSprite.translate.y);
-			ImGui::SliderFloat("SliderSpriteY", &transformSprite.translate.y, 0.0f, 600.0f);
-
-			ImGui::DragFloat2("UVTranlate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-
-			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
+			imguiManager.BeginFrame();
+			imguiManager.DrawDebugWindow(
+				isModel, isSphere, isRotate, isSprite, textureChange,
+				*materialDateSphere, transformSphere, *directionalLightSphereData,
+				transformSprite, uvTransformSprite);
 
 			//===============
 			//ゲームの処理
@@ -269,8 +215,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 			materialDateSprite->uvTransform = uvTransformMatrix;
 
-			// ImGuiの内部コマンド
-			ImGui::Render();
+			imguiManager.EndFrame();
 
 			dxCommon->PreDraw();
 			srvManager->PreDraw();
@@ -325,11 +270,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 
 			//実際のcommandListのImGui描画コマンドを挟む
-			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
+			imguiManager.Draw(dxCommon->GetCommandList());
 
 			dxCommon->PostDraw();
 		}
 	}
+
+	imguiManager.Finalize();
 
 	// 入力解放
 	delete input;

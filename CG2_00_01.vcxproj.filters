@@ -57,9 +57,12 @@
     <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="engine\core\Input.cpp">
+	<ClCompile Include="engine\core\Input.cpp">
       <Filter>engine\core</Filter>
-    </ClCompile>
+	</ClCompile>
+	<ClCompile Include="engine\core\ImGuiManager.cpp">
+		<Filter>engine\core</Filter>
+	</ClCompile>
     <ClCompile Include="engine\core\WinApp.cpp">
       <Filter>engine\core</Filter>
     </ClCompile>
@@ -128,9 +131,12 @@
     <ClInclude Include="engine\core\ResourceObject.h">
       <Filter>engine\core</Filter>
     </ClInclude>
-    <ClInclude Include="engine\core\Input.h">
+	<ClInclude Include="engine\core\Input.h">
       <Filter>engine\core</Filter>
-    </ClInclude>
+	</ClInclude>
+	<ClInclude Include="engine\core\ImGuiManager.h">
+		<Filter>engine\core</Filter>
+	</ClInclude>
     <ClInclude Include="engine\core\WinApp.h">
       <Filter>engine\core</Filter>
     </ClInclude>

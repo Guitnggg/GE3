@@ -30,10 +30,6 @@ DirectXCommon::~DirectXCommon()
 		fenceEvent = nullptr;
 	}
 
-	ImGui_ImplDX12_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
-
 	CoUninitialize();
 }
 
@@ -57,7 +53,6 @@ void DirectXCommon::Initialize(WinApp* winApp)
 	CreateViewport();
 	CreateScissorRect();
 	CreateDXC();
-	CreateImGui();
 }
 
 //===============
@@ -656,19 +651,6 @@ void DirectXCommon::CreateDXC()
 
 	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
 	ThrowIfFailed(hr, "Creating the DXC include handler");
-}
-
-// ImGuiをDirectX 12とWin32向けに初期化する
-void DirectXCommon::CreateImGui()
-{
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGui::StyleColorsDark();
-	ImGui_ImplWin32_Init(winApp->GetHwnd());
-	ImGui_ImplDX12_Init(device.Get(), swapChainDesc.BufferCount,
-		rtvDesc.Format, srvDescriptorHeap.Get(),
-		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 }
 
 // FPS固定処理で使う基準時間を初期化する
