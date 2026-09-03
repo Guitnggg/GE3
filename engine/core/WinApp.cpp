@@ -1,9 +1,12 @@
 #include "WinApp.h"
 
-#include "externals/imgui/imgui.h"
 #include <stdexcept>
 
+#ifdef _DEBUG
+#include "externals/imgui/imgui.h"
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#endif
 
 LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -15,10 +18,12 @@ LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 		return 0;
 	}
 
+#ifdef _DEBUG
 	// ImGuiが使用するメッセージを先に処理する
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
 		return true;
 	}
+#endif
 
 	// 標準のWindowsメッセージ処理を行う
 	return DefWindowProc(hwnd, msg, wparam, lparam);

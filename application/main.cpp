@@ -56,8 +56,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
+
+#ifdef _DEBUG
 	ImGuiManager imguiManager;
 	imguiManager.Initialize(winApp, dxCommon);
+#endif
 
 	SrvManager* srvManager = new SrvManager();
 	srvManager->Initialize(dxCommon);
@@ -164,11 +167,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// DirectXの毎フレームの処理
 			//==============================
 
+#ifdef _DEBUG
 			imguiManager.BeginFrame();
 			imguiManager.DrawDebugWindow(
 				isModel, isSphere, isRotate, isSprite, textureChange,
 				*materialDateSphere, transformSphere, *directionalLightSphereData,
 				transformSprite, uvTransformSprite);
+#endif
 
 			//===============
 			//ゲームの処理
@@ -215,7 +220,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 			materialDateSprite->uvTransform = uvTransformMatrix;
 
+#ifdef _DEBUG
 			imguiManager.EndFrame();
+#endif
 
 			dxCommon->PreDraw();
 			srvManager->PreDraw();
@@ -269,14 +276,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				dxCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 			}
 
-			//実際のcommandListのImGui描画コマンドを挟む
+#ifdef _DEBUG
+			// 実際のcommandListにImGuiの描画コマンドを積む
 			imguiManager.Draw(dxCommon->GetCommandList());
+#endif
 
 			dxCommon->PostDraw();
 		}
 	}
 
+#ifdef _DEBUG
 	imguiManager.Finalize();
+#endif
 
 	// 入力解放
 	delete input;
