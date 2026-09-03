@@ -5,12 +5,12 @@
 
 #include <cassert>
 
-#include "engine/base/Mymath.h"
+#include "engine/core/Mymath.h"
 
-#include "engine/base/Input.h"
-#include "engine/base/WinApp.h"
-#include "engine/base/DirectXCommon.h"
-#include "engine/base/D3DResourceLeakChecker.h"
+#include "engine/core/Input.h"
+#include "engine/core/WinApp.h"
+#include "engine/core/DirectXCommon.h"
+#include "engine/core/D3DResourceLeakChecker.h"
 #include "engine/2d/SpriteCommon.h"
 #include "engine/2d/Sprite.h"
 #include "engine/3d/Object3dCommon.h"

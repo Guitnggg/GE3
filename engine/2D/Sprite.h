@@ -5,7 +5,7 @@
 #include <d3d12.h>
 #include <wrl.h>
 
-#include "engine/base/Mymath.h"
+#include "engine/core/Mymath.h"
 #include "engine/2d/SpriteCommon.h"
 
 /// <summary>
