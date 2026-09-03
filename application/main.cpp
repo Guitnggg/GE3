@@ -90,7 +90,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// Object3d
 	Object3d* object3d = new Object3d();  // OBJモデル表示用オブジェクト
-	object3d->Initialize(object3dCommon);
+	object3d->Initialize(object3dCommon, textureManager);
 	Camera* camera = new Camera();
 	camera->Update();
 
@@ -297,19 +297,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			// model
 			if (isModel) {
-				const D3D12_VERTEX_BUFFER_VIEW objectVertexBufferView = object3d->GetVertexBufferView();
-				dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &objectVertexBufferView);
-				dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, object3d->GetMaterialResource()->GetGPUVirtualAddress());
-				dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, object3d->GetTransformationMatrixResource()->GetGPUVirtualAddress());
-
-				if (textureChange == 0) {
-					dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-				}
-				else {
-					dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU2);
-				}
-				dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, object3d->GetDirectionalLightResource()->GetGPUVirtualAddress());
-				dxCommon->GetCommandList()->DrawInstanced(UINT(object3d->GetModelData().vertices.size()), 1, 0, 0);
+				object3d->Draw();
 			}
 
 			// UI

@@ -7,6 +7,7 @@
 #include <stdexcept>
 
 #include "Object3dCommon.h"
+#include "TextureManager.h"
 
 // 3Dオブジェクトのモデル、マテリアル、行列、ライト用リソースを初期化する
 namespace {
@@ -35,14 +36,19 @@ Vector3 CalculateFaceNormal(const Vector4& a, const Vector4& b, const Vector4& c
 }
 }
 
-void Object3d::Initialize(Object3dCommon* object3dCommon, const std::string& directoryPath, const std::string& filename) {
-	if (object3dCommon == nullptr || object3dCommon->GetDxCommon() == nullptr) {
-		throw std::invalid_argument("Object3d requires a valid Object3dCommon instance.");
+void Object3d::Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager, const std::string& directoryPath, const std::string& filename) {
+	if (object3dCommon == nullptr || object3dCommon->GetDxCommon() == nullptr || textureManager == nullptr) {
+		throw std::invalid_argument("Object3d requires Object3dCommon and TextureManager.");
 	}
 	object3dCommon_ = object3dCommon;
+	textureManager_ = textureManager;
 
 	// OBJモデルを読み込む
 	modelData_ = LoadObjectFile(directoryPath, filename);
+	if (modelData_.material.textureFilePath.empty()) {
+		throw std::runtime_error("The model material does not specify a diffuse texture: " + filename);
+	}
+	textureIndex_ = textureManager_->Load(modelData_.material.textureFilePath);
 
 	// 頂点バッファを作成し、読み込んだ頂点データを転送する
 	auto* dxCommon = object3dCommon_->GetDxCommon();
@@ -73,6 +79,19 @@ void Object3d::Initialize(Object3dCommon* object3dCommon, const std::string& dir
 	directionalLightData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	directionalLightData_->direction = { 0.0f, -1.0f, 0.0f };
 	directionalLightData_->intensity = 1.0f;
+}
+
+void Object3d::Draw() const {
+	if (object3dCommon_ == nullptr || textureManager_ == nullptr) {
+		throw std::logic_error("Object3d is not initialized.");
+	}
+	auto* commandList = object3dCommon_->GetDxCommon()->GetCommandList();
+	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
+	commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource_->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootDescriptorTable(2, GetTextureSrvHandleGPU());
+	commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource_->GetGPUVirtualAddress());
+	commandList->DrawInstanced(static_cast<UINT>(modelData_.vertices.size()), 1, 0, 0);
 }
 
 // .mtlファイルからテクスチャファイルパスを読み込む
@@ -212,3 +231,10 @@ TransformationMatrix* Object3d::GetTransformationMatrixData() const { return tra
 DirectionalLight* Object3d::GetDirectionalLightData() const { return directionalLightData_; }
 
 const ModelData& Object3d::GetModelData() const { return modelData_; }
+
+D3D12_GPU_DESCRIPTOR_HANDLE Object3d::GetTextureSrvHandleGPU() const {
+	if (textureManager_ == nullptr) {
+		throw std::logic_error("Object3d is not initialized.");
+	}
+	return textureManager_->GetSrvHandleGPU(textureIndex_);
+}

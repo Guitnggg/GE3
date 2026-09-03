@@ -12,6 +12,7 @@
 /// Object3dCommonクラスの前方宣言
 /// </summary>
 class Object3dCommon;
+class TextureManager;
 
 /// <summary>
 /// OBJモデルから読み込んだ頂点情報とマテリアル情報
@@ -30,9 +31,14 @@ public:
 	/// 3Dオブジェクトに必要なGPUリソースを初期化する
 	/// </summary>
 	/// <param name="object3dCommon">3D描画共通処理</param>
-	void Initialize(Object3dCommon* object3dCommon,
+	void Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager,
 		const std::string& directoryPath = "resource",
 		const std::string& filename = "axis.obj");
+
+	/// <summary>
+	/// モデル固有のリソースとテクスチャを設定して描画する
+	/// </summary>
+	void Draw() const;
 
 	/// <summary>
 	/// .mtlファイルを読み込む
@@ -91,10 +97,13 @@ public:
 	/// </summary>
 	/// <returns>読み込み済みモデルデータ</returns>
 	const ModelData& GetModelData() const;
+	D3D12_GPU_DESCRIPTOR_HANDLE GetTextureSrvHandleGPU() const;
 
 private:
 	Object3dCommon* object3dCommon_ = nullptr;  // 3D描画共通処理
+	TextureManager* textureManager_ = nullptr;  // モデルのテクスチャ管理
 	ModelData modelData_;                       // objファイルから読み込んだモデルデータ
+	uint32_t textureIndex_ = 0;
 
 	// ===== 頂点データ =====
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;
@@ -113,7 +122,4 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource_;
 	DirectionalLight* directionalLightData_ = nullptr;
 
-	// ===== 座標変換用データ =====
-	Transform transform_{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
-	Transform cameraTransform_{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -10.5f} };
 };
