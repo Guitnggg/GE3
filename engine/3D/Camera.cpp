@@ -3,8 +3,11 @@
 #include <stdexcept>
 
 void Camera::Update() {
+	// カメラの姿勢からワールド行列と、その逆行列であるビュー行列を作る
 	worldMatrix_ = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
 	viewMatrix_ = Inverse(worldMatrix_);
+
+	// 投影行列を作成し、描画時に使いやすいようビュー行列と合成する
 	projectionMatrix_ = MakePerspectiveFovMatrix(fovY_, aspectRatio_, nearClip_, farClip_);
 	viewProjectionMatrix_ = Multiply(viewMatrix_, projectionMatrix_);
 }
@@ -14,6 +17,7 @@ void Camera::SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
 void Camera::SetTranslate(const Vector3& translate) { transform_.translate = translate; }
 
 void Camera::SetFovY(float fovY) {
+	// 0度や180度では正しい透視投影行列を作れないため除外する
 	if (fovY <= 0.0f || fovY >= std::numbers::pi_v<float>) { throw std::invalid_argument("Camera FOV must be between 0 and pi."); }
 	fovY_ = fovY;
 }
@@ -24,6 +28,7 @@ void Camera::SetAspectRatio(float aspectRatio) {
 }
 
 void Camera::SetNearClip(float nearClip) {
+	// Nearはカメラより前方、かつFarより手前である必要がある
 	if (nearClip <= 0.0f || nearClip >= farClip_) { throw std::invalid_argument("Camera near clip must be positive and less than the far clip."); }
 	nearClip_ = nearClip;
 }

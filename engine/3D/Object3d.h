@@ -97,13 +97,15 @@ public:
 	/// </summary>
 	/// <returns>読み込み済みモデルデータ</returns>
 	const ModelData& GetModelData() const;
+
+	/// <summary>モデルのテクスチャに対応するGPU用SRVハンドルを取得する。</summary>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetTextureSrvHandleGPU() const;
 
 private:
 	Object3dCommon* object3dCommon_ = nullptr;  // 3D描画共通処理
 	TextureManager* textureManager_ = nullptr;  // モデルのテクスチャ管理
 	ModelData modelData_;                       // objファイルから読み込んだモデルデータ
-	uint32_t textureIndex_ = 0;
+	uint32_t textureIndex_ = 0;                  // TextureManager内のテクスチャ番号
 
 	// ===== 頂点データ =====
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;

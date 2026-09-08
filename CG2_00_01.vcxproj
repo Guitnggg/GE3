@@ -94,6 +94,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="application\Framework.cpp" />
+    <ClCompile Include="application\MyGame.cpp" />
     <ClCompile Include="application\main.cpp" />
 	<ClCompile Include="engine\audio\Audio.cpp" />
     <ClCompile Include="engine\2d\Sprite.cpp" />
@@ -119,6 +121,8 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="application\Framework.h" />
+    <ClInclude Include="application\MyGame.h" />
     <ClInclude Include="engine\2d\Sprite.h" />
 	<ClInclude Include="engine\audio\Audio.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h" />

@@ -35,12 +35,15 @@ void Audio::Initialize(const std::filesystem::path& audioDirectory)
 		return;
 	}
 
+	// 相対パスで指定された音声ファイルの基準フォルダを保持する
 	audioDirectory_ = audioDirectory;
 
+	// Media FoundationはWAVやMP3などをPCMへデコードするために使用する
 	ThrowIfFailed(MFStartup(MF_VERSION), "Failed to initialize Media Foundation.");
 	mediaFoundationStarted_ = true;
 
 	try {
+		// XAudio2本体と、最終的な音声出力を担当するマスターボイスを作る
 		ThrowIfFailed(XAudio2Create(&xAudio2_, 0, XAUDIO2_DEFAULT_PROCESSOR), "Failed to initialize XAudio2.");
 		ThrowIfFailed(xAudio2_->CreateMasteringVoice(&masteringVoice_), "Failed to create the XAudio2 mastering voice.");
 		initialized_ = true;
@@ -53,10 +56,12 @@ void Audio::Initialize(const std::filesystem::path& audioDirectory)
 
 void Audio::Finalize()
 {
+	// 再生をすべて止めてから、読み込み済みデータを破棄する
 	StopAll();
 	sounds_.clear();
 	loadedPaths_.clear();
 
+	// XAudio2関連を先に解放し、最後にMedia Foundationを終了する
 	if (masteringVoice_ != nullptr) {
 		masteringVoice_->DestroyVoice();
 		masteringVoice_ = nullptr;
@@ -76,10 +81,12 @@ Audio::SoundHandle Audio::Load(const std::filesystem::path& fileName)
 	EnsureInitialized();
 	const std::filesystem::path path = ResolvePath(fileName).lexically_normal();
 
+	// 同じパスの音声はデコード済みデータを再利用する
 	if (const auto loaded = loadedPaths_.find(path); loaded != loadedPaths_.end()) {
 		return loaded->second;
 	}
 
+	// デコードした音声へ新しいハンドルを割り当てる
 	std::shared_ptr<SoundData> sound = Decode(path);
 	if (nextSoundHandle_ == kInvalidSoundHandle) {
 		throw std::overflow_error("Audio sound handle limit reached.");
@@ -118,6 +125,7 @@ Audio::VoiceHandle Audio::Play(SoundHandle soundHandle, bool loop, float volume,
 		throw std::overflow_error("Audio voice handle limit reached.");
 	}
 
+	// 1回の再生ごとに独立したSourceVoiceを作るため、同じ音声を重ねて再生できる
 	const auto* waveFormat = reinterpret_cast<const WAVEFORMATEX*>(sound->second->waveFormat.data());
 	IXAudio2SourceVoice* sourceVoice = nullptr;
 	ThrowIfFailed(
@@ -125,6 +133,7 @@ Audio::VoiceHandle Audio::Play(SoundHandle soundHandle, bool loop, float volume,
 		"Failed to create an XAudio2 source voice.");
 
 	try {
+		// 再生パラメーターとPCMデータをSourceVoiceへ設定する
 		ThrowIfFailed(sourceVoice->SetVolume((std::max)(0.0f, volume)), "Failed to set audio volume.");
 		ThrowIfFailed(sourceVoice->SetFrequencyRatio(std::clamp(pitch, XAUDIO2_MIN_FREQ_RATIO, 4.0f)), "Failed to set audio pitch.");
 
@@ -142,6 +151,7 @@ Audio::VoiceHandle Audio::Play(SoundHandle soundHandle, bool loop, float volume,
 		throw;
 	}
 
+	// 停止などの操作に使えるよう、再生中ボイスへハンドルを割り当てる
 	const VoiceHandle handle = nextVoiceHandle_++;
 	voices_.emplace(handle, PlayingVoice{ sourceVoice, sound->second, false });
 	return handle;
@@ -224,6 +234,7 @@ void Audio::SetMasterVolume(float volume)
 
 void Audio::Update()
 {
+	// 再生を終えたボイスを毎フレーム検出して解放する
 	for (auto it = voices_.begin(); it != voices_.end();) {
 		XAUDIO2_VOICE_STATE state{};
 		it->second.sourceVoice->GetState(&state, XAUDIO2_VOICE_NOSAMPLESPLAYED);
@@ -239,10 +250,12 @@ void Audio::Update()
 
 std::shared_ptr<Audio::SoundData> Audio::Decode(const std::filesystem::path& path) const
 {
+	// Media Foundationへ渡す前に、ファイルが存在することを確認する
 	if (!std::filesystem::is_regular_file(path)) {
 		throw std::runtime_error("Audio file was not found: " + path.string());
 	}
 
+	// SourceReaderを作成し、出力形式としてPCMを要求する
 	Microsoft::WRL::ComPtr<IMFSourceReader> reader;
 	ThrowIfFailed(
 		MFCreateSourceReaderFromURL(path.c_str(), nullptr, &reader),
@@ -256,6 +269,7 @@ std::shared_ptr<Audio::SoundData> Audio::Decode(const std::filesystem::path& pat
 		reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, requestedType.Get()),
 		"The audio format could not be decoded to PCM.");
 
+	// デコード後の音声形式をXAudio2用のWAVEFORMATEXへ変換する
 	Microsoft::WRL::ComPtr<IMFMediaType> outputType;
 	ThrowIfFailed(
 		reader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, &outputType),
@@ -273,6 +287,7 @@ std::shared_ptr<Audio::SoundData> Audio::Decode(const std::filesystem::path& pat
 		reinterpret_cast<uint8_t*>(allocatedWaveFormat) + waveFormatSize);
 	CoTaskMemFree(allocatedWaveFormat);
 
+	// ファイル終端までサンプルを読み、連続したPCMデータへまとめる
 	while (true) {
 		DWORD flags = 0;
 		Microsoft::WRL::ComPtr<IMFSample> sample;
@@ -330,6 +345,7 @@ const Audio::PlayingVoice* Audio::FindVoice(VoiceHandle voiceHandle) const
 
 void Audio::DestroyVoice(PlayingVoice& voice)
 {
+	// SourceVoiceを停止してキューを空にしてから破棄する
 	if (voice.sourceVoice != nullptr) {
 		voice.sourceVoice->Stop();
 		voice.sourceVoice->FlushSourceBuffers();

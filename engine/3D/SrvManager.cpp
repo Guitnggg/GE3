@@ -6,6 +6,7 @@
 #include "engine/core/DirectXCommon.h"
 
 void SrvManager::Initialize(DirectXCommon* dxCommon) {
+	// SRVヒープはDirectXCommonが生成済みである必要がある
 	if (dxCommon == nullptr || dxCommon->GetSRVDescriptorHeap() == nullptr) {
 		throw std::invalid_argument("SrvManager requires an initialized DirectXCommon instance.");
 	}
@@ -13,6 +14,7 @@ void SrvManager::Initialize(DirectXCommon* dxCommon) {
 }
 
 uint32_t SrvManager::Allocate() {
+	// ヒープの上限を超えない範囲で番号を順番に払い出す
 	if (useIndex_ >= kMaxSRVCount) {
 		throw std::runtime_error("The SRV descriptor heap is full.");
 	}
@@ -25,6 +27,7 @@ void SrvManager::PreDraw() {
 	if (dxCommon_ == nullptr || dxCommon_->GetSRVDescriptorHeap() == nullptr) {
 		throw std::logic_error("SrvManager is not initialized.");
 	}
+	// シェーダーからSRVを参照できるよう、使用するヒープを設定する
 	ID3D12DescriptorHeap* descriptorHeaps[] = { dxCommon_->GetSRVDescriptorHeap() };
 	dxCommon_->GetCommandList()->SetDescriptorHeaps(1, descriptorHeaps);
 }
@@ -34,12 +37,14 @@ void SrvManager::CreateSRVforTexture2D(uint32_t srvIndex, ID3D12Resource* resour
 		throw std::invalid_argument("Invalid texture SRV creation request.");
 	}
 
+	// 元画像の形式とミップ数を使って2Dテクスチャ用の設定を作る
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 	srvDesc.Format = metadata.format;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
 
+	// 指定されたディスクリプタ位置へSRVを書き込む
 	dxCommon_->GetDevice()->CreateShaderResourceView(resource, &srvDesc, GetCPUDescriptorHandle(srvIndex));
 }
 

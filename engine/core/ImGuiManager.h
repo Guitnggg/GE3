@@ -20,8 +20,19 @@ public:
 	ImGuiManager(const ImGuiManager&) = delete;
 	ImGuiManager& operator=(const ImGuiManager&) = delete;
 
+	/// <summary>
+	/// ImGuiのWin32・DirectX 12バックエンドを初期化する。
+	/// </summary>
 	void Initialize(WinApp* winApp, DirectXCommon* dxCommon);
+
+	/// <summary>
+	///	ImGuiの新しいフレームを開始する。
+	/// </summary>
 	void BeginFrame();
+
+	/// <summary>
+	/// ゲーム内の表示設定やパラメーターを操作するデバッグ画面を作成する。
+	/// </summary>
 	void DrawDebugWindow(
 		bool& isModel,
 		bool& isSphere,
@@ -35,19 +46,33 @@ public:
 		Transform& spriteUvTransform,
 		Audio& audio,
 		uint32_t soundHandle);
+
+	/// <summary>
+	/// ImGuiのUI構築を終了し、描画データを確定する。
+	/// </summary>
 	void EndFrame();
+
+	/// <summary>
+	/// 確定したImGuiの描画命令をコマンドリストへ追加する。
+	/// </summary>
 	void Draw(ID3D12GraphicsCommandList* commandList);
+
+	/// <summary>
+	/// ImGuiのバックエンドとコンテキストを終了する。
+	/// </summary>
 	void Finalize();
 
 private:
-	/// <summary>音声の再生状態とパラメーターを操作するUI項目を描画する。</summary>
+	/// <summary>
+	/// 音声の再生状態とパラメーターを操作するUI項目を描画する。
+	/// </summary>
 	void DrawAudioControls(Audio& audio, uint32_t soundHandle);
 
-	bool isInitialized_ = false;
-	uint64_t debugVoiceHandle_ = 0;
-	float debugAudioVolume_ = 1.0f;
-	float debugAudioPitch_ = 1.0f;
-	float debugMasterVolume_ = 1.0f;
-	bool debugAudioLoop_ = false;
-	bool debugAudioPaused_ = false;
+	bool isInitialized_ = false;          // ImGuiが初期化済みか
+	uint64_t debugVoiceHandle_ = 0;       // デバッグ画面から再生した音声の識別番号
+	float debugAudioVolume_ = 1.0f;       // デバッグ再生の音量
+	float debugAudioPitch_ = 1.0f;        // デバッグ再生のピッチ
+	float debugMasterVolume_ = 1.0f;      // 全体の音量
+	bool debugAudioLoop_ = false;         // ループ再生するか
+	bool debugAudioPaused_ = false;       // 一時停止中か
 };

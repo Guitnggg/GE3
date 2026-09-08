@@ -36,6 +36,12 @@
 	</Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="application\Framework.cpp">
+      <Filter>application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\MyGame.cpp">
+      <Filter>application</Filter>
+    </ClCompile>
     <ClCompile Include="application\main.cpp">
       <Filter>application</Filter>
     </ClCompile>
@@ -107,6 +113,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="application\Framework.h">
+      <Filter>application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\MyGame.h">
+      <Filter>application</Filter>
+    </ClInclude>
     <ClInclude Include="externals\imgui\imconfig.h">
       <Filter>imgui</Filter>
     </ClInclude>

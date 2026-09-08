@@ -14,6 +14,7 @@ ImGuiManager::~ImGuiManager() {
 }
 
 void ImGuiManager::Initialize(WinApp* winApp, DirectXCommon* dxCommon) {
+	// 二重初期化や、必要なDirectXリソースが揃っていない状態を防ぐ
 	if (isInitialized_) {
 		throw std::logic_error("ImGuiManager is already initialized.");
 	}
@@ -22,15 +23,18 @@ void ImGuiManager::Initialize(WinApp* winApp, DirectXCommon* dxCommon) {
 		throw std::invalid_argument("ImGuiManager requires initialized WinApp and DirectXCommon instances.");
 	}
 
+	// ImGui本体のコンテキストを作成し、標準のダークテーマを適用する
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
 
+	// Windowsからマウス・キーボード入力を受け取るバックエンドを初期化する
 	if (!ImGui_ImplWin32_Init(winApp->GetHwnd())) {
 		ImGui::DestroyContext();
 		throw std::runtime_error("Failed to initialize the ImGui Win32 backend.");
 	}
 
+	// SRVヒープの0番をImGuiのフォントテクスチャ用に使用する
 	const bool dx12Initialized = ImGui_ImplDX12_Init(
 		dxCommon->GetDevice().Get(),
 		dxCommon->GetSwapChainBufferCount(),
@@ -51,6 +55,7 @@ void ImGuiManager::BeginFrame() {
 	if (!isInitialized_) {
 		throw std::logic_error("ImGuiManager is not initialized.");
 	}
+	// DirectX、Win32、ImGui本体の順に新しいフレームを開始する
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
@@ -69,8 +74,10 @@ void ImGuiManager::DrawDebugWindow(
 	Transform& spriteUvTransform,
 	Audio& audio,
 	uint32_t soundHandle) {
+	// 用途別に折りたためるデバッグ操作画面を構築する
 	ImGui::Begin("Debug Controls");
 
+	// 3Dモデルと球体の表示・座標・マテリアル設定
 	if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::Checkbox("Model", &isModel);
 		ImGui::Checkbox("Sphere", &isSphere);
@@ -82,12 +89,14 @@ void ImGuiManager::DrawDebugWindow(
 		ImGui::Checkbox("Monster Ball Texture", &textureChange);
 	}
 
+	// 平行光源の色・方向・強度
 	if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::ColorEdit4("Light Color", &directionalLight.color.x);
 		ImGui::DragFloat3("Light Direction", &directionalLight.direction.x, 0.01f, -1.0f, 1.0f);
 		ImGui::DragFloat("Intensity", &directionalLight.intensity, 0.01f, 0.0f, 10.0f);
 	}
 
+	// スプライトの表示・座標・UV設定
 	if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::Checkbox("Show Sprite", &isSprite);
 		ImGui::DragFloat2("Sprite Position", &spriteTransform.translate.x, 1.0f, 0.0f, 1000.0f);
@@ -115,6 +124,7 @@ void ImGuiManager::DrawAudioControls(Audio& audio, uint32_t soundHandle) {
 	ImGui::TextUnformatted("audio/fanfare.wav");
 	ImGui::Checkbox("Loop", &debugAudioLoop_);
 
+	// スライダー操作は再生中のボイスへ即座に反映する
 	if (ImGui::SliderFloat("Volume", &debugAudioVolume_, 0.0f, 1.0f, "%.2f") &&
 		debugVoiceHandle_ != Audio::kInvalidVoiceHandle) {
 		audio.SetVolume(debugVoiceHandle_, debugAudioVolume_);
@@ -127,6 +137,7 @@ void ImGuiManager::DrawAudioControls(Audio& audio, uint32_t soundHandle) {
 		audio.SetMasterVolume(debugMasterVolume_);
 	}
 
+	// 再生中なら停止してから、現在のUI設定で先頭から再生する
 	if (ImGui::Button("Play / Restart")) {
 		if (debugVoiceHandle_ != Audio::kInvalidVoiceHandle) {
 			audio.Stop(debugVoiceHandle_);
@@ -192,6 +203,7 @@ void ImGuiManager::Finalize() {
 	if (!isInitialized_) {
 		return;
 	}
+	// 初期化とは逆順に各バックエンドとコンテキストを終了する
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
