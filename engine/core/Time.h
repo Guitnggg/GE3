@@ -8,8 +8,8 @@
 /// </summary>
 class Time {
 public:
-	static constexpr float kDefaultTimeScale = 1.0f;
-	static constexpr float kDefaultMaxDeltaTime = 0.1f;
+	static constexpr float kDefaultTimeScale = 1.0f;	 // ゲーム内時間の倍率。0で停止、1で通常速度
+	static constexpr float kDefaultMaxDeltaTime = 0.1f;  // デバッグ停止などによる極端な時間飛びを抑える上限秒数
 
 	Time() = default;
 	Time(const Time&) = delete;
@@ -30,6 +30,7 @@ public:
 	/// </summary>
 	void Finalize();
 
+public:
 	/// <summary>
 	/// 前フレームからの経過時間（秒）を返す。ゲーム内時間の倍率が適用される。
 	/// </summary>
