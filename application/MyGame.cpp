@@ -6,6 +6,7 @@
 #include "engine/3d/Object3dCommon.h"
 #include "engine/3d/TextureManager.h"
 #include "engine/core/DirectXCommon.h"
+#include "engine/core/FrameRateController.h"
 #include "engine/core/ImGuiManager.h"
 #include "engine/core/Input.h"
 #include "engine/core/Time.h"
@@ -90,7 +91,7 @@ void MyGame::Update() {
 	imguiManager_->BeginFrame();
 	imguiManager_->DrawDebugWindow(isModel_, isSphere_, isRotate_, isSprite_, textureChange_,
 		*materialDataSphere_, transformSphere_, *directionalLightSphereData_, transformSprite_,
-		uvTransformSprite_, *audio_, fanfareSound_);
+		uvTransformSprite_, *audio_, fanfareSound_, *frameRateController_);
 #endif
 
 	// 入力と音声など、ゲーム共通の毎フレーム処理

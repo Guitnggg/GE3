@@ -107,6 +107,7 @@
     <ClCompile Include="engine\3d\TextureManager.cpp" />
     <ClCompile Include="engine\core\D3DResourceLeakChecker.cpp" />
     <ClCompile Include="engine\core\DirectXCommon.cpp" />
+	<ClCompile Include="engine\core\FrameRateController.cpp" />
 	<ClCompile Include="engine\core\Input.cpp" />
 	<ClCompile Include="engine\core\ImGuiManager.cpp" />
     <ClCompile Include="engine\core\Logger.cpp" />
@@ -134,6 +135,7 @@
     <ClInclude Include="engine\3d\TextureManager.h" />
     <ClInclude Include="engine\core\D3DResourceLeakChecker.h" />
     <ClInclude Include="engine\core\DirectXCommon.h" />
+	<ClInclude Include="engine\core\FrameRateController.h" />
 	<ClInclude Include="engine\core\Input.h" />
 	<ClInclude Include="engine\core\ImGuiManager.h" />
     <ClInclude Include="engine\core\Logger.h" />

@@ -120,6 +120,10 @@ public:
 	/// </summary>
 	void PostDraw();
 
+	void SetVSyncEnabled(bool enabled) { vsyncEnabled_ = enabled; }
+	bool IsVSyncEnabled() const { return vsyncEnabled_; }
+	bool IsTearingSupported() const { return tearingSupported_; }
+
 private:
 	// ===== 初期化用メンバ関数 =====
 
@@ -152,6 +156,8 @@ private:
 
 	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain;                 // スワップチェーン
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};                             // スワップチェーン設定
+	bool vsyncEnabled_ = true;                                         // 垂直同期を使用するか
+	bool tearingSupported_ = false;                                    // 可変リフレッシュ表示に対応しているか
 	Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResources[2];      // バックバッファ
 	D3D12_RESOURCE_BARRIER barrier{};                                  // リソース状態遷移用バリア
 

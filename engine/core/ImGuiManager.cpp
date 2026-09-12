@@ -1,8 +1,10 @@
 #include "ImGuiManager.h"
 
 #include <stdexcept>
+#include <string>
 
 #include "DirectXCommon.h"
+#include "FrameRateController.h"
 #include "WinApp.h"
 #include "engine/audio/Audio.h"
 #include "externals/imgui/imgui.h"
@@ -73,7 +75,8 @@ void ImGuiManager::DrawDebugWindow(
 	Transform& spriteTransform,
 	Transform& spriteUvTransform,
 	Audio& audio,
-	uint32_t soundHandle) {
+	uint32_t soundHandle,
+	FrameRateController& frameRateController) {
 	// 用途別に折りたためるデバッグ操作画面を構築する
 	ImGui::Begin("Debug Controls");
 
@@ -106,8 +109,45 @@ void ImGuiManager::DrawDebugWindow(
 	}
 
 	DrawAudioControls(audio, soundHandle);
+	DrawFrameRateControls(frameRateController);
 
 	ImGui::End();
+}
+
+void ImGuiManager::DrawFrameRateControls(FrameRateController& frameRateController) {
+	if (!ImGui::CollapsingHeader("Frame Rate", ImGuiTreeNodeFlags_DefaultOpen)) {
+		return;
+	}
+
+	static constexpr const char* kModeNames[] = {"VSync", "Limited", "Unlimited"};
+	int modeIndex = static_cast<int>(frameRateController.GetMode());
+	if (ImGui::Combo("Mode", &modeIndex, kModeNames, IM_ARRAYSIZE(kModeNames))) {
+		frameRateController.SetMode(static_cast<FrameRateMode>(modeIndex));
+	}
+
+	float targetFPS = static_cast<float>(frameRateController.GetTargetFPS());
+	if (ImGui::SliderFloat("Target FPS", &targetFPS, 15.0f, 500.0f, "%.0f FPS")) {
+		frameRateController.SetTargetFPS(targetFPS);
+	}
+
+	static constexpr double kPresets[] = {30.0, 60.0, 120.0, 144.0, 165.0, 240.0};
+	for (int index = 0; index < IM_ARRAYSIZE(kPresets); ++index) {
+		if (index > 0) {
+			ImGui::SameLine();
+		}
+		const int preset = static_cast<int>(kPresets[index]);
+		const std::string label = std::to_string(preset);
+		if (ImGui::SmallButton(label.c_str())) {
+			frameRateController.SetTargetFPS(kPresets[index]);
+		}
+	}
+
+	ImGui::Text("Current: %.1f FPS (%.2f ms)",
+		frameRateController.GetCurrentFPS(),
+		frameRateController.GetFrameTimeMilliseconds());
+	if (frameRateController.GetMode() == FrameRateMode::VSync) {
+		ImGui::TextUnformatted("Target FPS is ignored while VSync is enabled.");
+	}
 }
 
 void ImGuiManager::DrawAudioControls(Audio& audio, uint32_t soundHandle) {

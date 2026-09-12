@@ -340,7 +340,10 @@ void DirectXCommon::PostDraw()
 	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList.Get() };
 	commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
 	// GPUとosに画面王交換を行うよう通知する
-	swapChain->Present(1, 0);
+	const UINT syncInterval = vsyncEnabled_ ? 1u : 0u;
+	const UINT presentFlags = !vsyncEnabled_ && tearingSupported_ ? DXGI_PRESENT_ALLOW_TEARING : 0u;
+	hr = swapChain->Present(syncInterval, presentFlags);
+	ThrowIfFailed(hr, "Presenting the swap chain");
 
 	// Fenceの更新
 	fenceValue++;
@@ -523,6 +526,12 @@ void DirectXCommon::CreateSwapChain()
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.BufferCount = 2;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	BOOL allowTearing = FALSE;
+	if (SUCCEEDED(dxgiFactory->CheckFeatureSupport(
+		DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing)))) {
+		tearingSupported_ = allowTearing == TRUE;
+	}
+	swapChainDesc.Flags = tearingSupported_ ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
 	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), winApp->GetHwnd(), &swapChainDesc, nullptr, nullptr, reinterpret_cast <IDXGISwapChain1**>(swapChain.GetAddressOf()));
 	assert(SUCCEEDED(hr));

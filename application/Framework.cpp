@@ -6,6 +6,7 @@
 #include "engine/3d/TextureManager.h"
 #include "engine/audio/Audio.h"
 #include "engine/core/DirectXCommon.h"
+#include "engine/core/FrameRateController.h"
 #include "engine/core/ImGuiManager.h"
 #include "engine/core/Input.h"
 #include "engine/core/Time.h"
@@ -21,7 +22,7 @@ Framework::~Framework() {
 
 void Framework::Initialize() {
 	if (initialized_ || winApp_ || input_ || audio_ || dxCommon_ || srvManager_ ||
-		textureManager_ || spriteCommon_ || object3dCommon_ || time_
+		textureManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_
 #ifdef _DEBUG
 		|| imguiManager_
 #endif
@@ -33,6 +34,8 @@ void Framework::Initialize() {
 	// ゲーム時間の計測を初期化する
 	time_ = std::make_unique<Time>();
 	time_->Initialize();
+	frameRateController_ = std::make_unique<FrameRateController>();
+	frameRateController_->Initialize();
 
 	// Windowsアプリケーションと入力の初期化
 	winApp_ = std::make_unique<WinApp>();
@@ -74,6 +77,7 @@ void Framework::Initialize() {
 
 void Framework::Update() {
 	// すべてのゲームで必要になる毎フレーム処理
+	frameRateController_->BeginFrame();
 	time_->Update();
 	input_->Update();
 	audio_->Update();
@@ -95,7 +99,9 @@ void Framework::EndDraw() {
 #endif
 
 	// 描画命令を実行して画面を表示する
+	dxCommon_->SetVSyncEnabled(frameRateController_->IsVSyncEnabled());
 	dxCommon_->PostDraw();
+	frameRateController_->EndFrame();
 }
 
 void Framework::Finalize() {
@@ -124,4 +130,8 @@ void Framework::Finalize() {
 		time_->Finalize();
 	}
 	time_.reset();
+	if (frameRateController_) {
+		frameRateController_->Finalize();
+	}
+	frameRateController_.reset();
 }

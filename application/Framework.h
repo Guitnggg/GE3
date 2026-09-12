@@ -3,6 +3,7 @@
 #include <memory>
 
 class DirectXCommon;
+class FrameRateController;
 class ImGuiManager;
 class Input;
 class Object3dCommon;
@@ -70,6 +71,7 @@ protected:
 	std::unique_ptr<SpriteCommon> spriteCommon_;
 	std::unique_ptr<Object3dCommon> object3dCommon_;
 	std::unique_ptr<Time> time_;
+	std::unique_ptr<FrameRateController> frameRateController_;
 
 #ifdef _DEBUG
 	std::unique_ptr<ImGuiManager> imguiManager_;

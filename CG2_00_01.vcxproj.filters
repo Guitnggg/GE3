@@ -81,6 +81,9 @@
     <ClCompile Include="engine\core\DirectXCommon.cpp">
       <Filter>engine\core</Filter>
     </ClCompile>
+    <ClCompile Include="engine\core\FrameRateController.cpp">
+      <Filter>engine\core</Filter>
+    </ClCompile>
     <ClCompile Include="engine\core\StringUtility.cpp">
       <Filter>engine\core</Filter>
     </ClCompile>
@@ -165,6 +168,9 @@
       <Filter>engine\core</Filter>
     </ClInclude>
     <ClInclude Include="engine\core\DirectXCommon.h">
+      <Filter>engine\core</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\FrameRateController.h">
       <Filter>engine\core</Filter>
     </ClInclude>
     <ClInclude Include="engine\core\StringUtility.h">

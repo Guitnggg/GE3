@@ -6,6 +6,7 @@
 #include "Mymath.h"
 
 class DirectXCommon;
+class FrameRateController;
 class WinApp;
 class Audio;
 
@@ -45,7 +46,8 @@ public:
 		Transform& spriteTransform,
 		Transform& spriteUvTransform,
 		Audio& audio,
-		uint32_t soundHandle);
+		uint32_t soundHandle,
+		FrameRateController& frameRateController);
 
 	/// <summary>
 	/// ImGuiのUI構築を終了し、描画データを確定する。
@@ -67,6 +69,7 @@ private:
 	/// 音声の再生状態とパラメーターを操作するUI項目を描画する。
 	/// </summary>
 	void DrawAudioControls(Audio& audio, uint32_t soundHandle);
+	void DrawFrameRateControls(FrameRateController& frameRateController);
 
 	bool isInitialized_ = false;          // ImGuiが初期化済みか
 	uint64_t debugVoiceHandle_ = 0;       // デバッグ画面から再生した音声の識別番号
