@@ -532,11 +532,12 @@ struct DirectionalLight {
 /// 3次元ベクトルを正規化する
 /// </summary>
 inline Vector3 Normalize(const Vector3& v) {
-	Vector3 result;
-	result.x = v.x / (float)sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
-	result.y = v.y / (float)sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
-	result.z = v.z / (float)sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
-	return result;
+	const float lengthSquared = v.x * v.x + v.y * v.y + v.z * v.z;
+	if (lengthSquared <= 0.0f) {
+		return {};
+	}
+	const float inverseLength = 1.0f / std::sqrt(lengthSquared);
+	return {v.x * inverseLength, v.y * inverseLength, v.z * inverseLength};
 }
 
 /// <summary>

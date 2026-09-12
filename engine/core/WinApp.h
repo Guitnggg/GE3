@@ -8,6 +8,8 @@
 /// </summary>
 class WinApp {
 public:
+	~WinApp();
+
 	// ===== 静的メンバ関数 =====
 
 	/// <summary>
@@ -59,4 +61,6 @@ private:
 
 	HWND hwnd = nullptr;  // ウィンドウハンドル
 	WNDCLASS wc{};        // ウィンドウクラス設定
+	bool comInitialized_ = false;
+	bool classRegistered_ = false;
 };

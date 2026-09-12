@@ -8,6 +8,10 @@
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif
 
+WinApp::~WinApp() {
+	Finalize();
+}
+
 LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	// Windowsメッセージに応じてアプリ固有の処理を行う
@@ -36,6 +40,7 @@ void WinApp::Initialize()
 	if (FAILED(hr)) {
 		throw std::runtime_error("Failed to initialize COM.");
 	}
+	comInitialized_ = true;
 
 	// ウィンドウクラスを設定する
 	wc.lpfnWndProc = WindowProc;
@@ -47,6 +52,7 @@ void WinApp::Initialize()
 	if (RegisterClass(&wc) == 0) {
 		throw std::runtime_error("Failed to register the window class.");
 	}
+	classRegistered_ = true;
 
 	// クライアント領域のサイズから実際のウィンドウサイズを計算する
 	constexpr DWORD windowStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
@@ -80,9 +86,19 @@ void WinApp::Update()
 
 void WinApp::Finalize()
 {
-	// ウィンドウとCOMライブラリを終了する
-	CloseWindow(hwnd);
-	CoUninitialize();
+	// 途中までしか初期化されていない場合も、完了した処理だけを元に戻す
+	if (hwnd != nullptr) {
+		DestroyWindow(hwnd);
+		hwnd = nullptr;
+	}
+	if (classRegistered_) {
+		UnregisterClass(wc.lpszClassName, wc.hInstance);
+		classRegistered_ = false;
+	}
+	if (comInitialized_) {
+		CoUninitialize();
+		comInitialized_ = false;
+	}
 }
 
 bool WinApp::ProcessMessege()

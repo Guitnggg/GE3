@@ -10,6 +10,8 @@
 #include "engine/core/Input.h"
 #include "engine/core/WinApp.h"
 
+MyGame::MyGame() = default;
+
 MyGame::~MyGame() { Finalize(); }
 
 void MyGame::Initialize() {
@@ -20,8 +22,8 @@ void MyGame::Initialize() {
 	fanfareSound_ = audio_->Load("fanfare.wav");
 
 	// このゲームで表示するスプライトの初期化
-	sprite_ = new Sprite();
-	sprite_->Initialize(spriteCommon_);
+	sprite_ = std::make_unique<Sprite>();
+	sprite_->Initialize(spriteCommon_.get());
 
 	// 描画で切り替えて使用するテクスチャを読み込む
 	const uint32_t uvCheckerTexture = textureManager_->Load("resource/uvChecker.png");
@@ -30,9 +32,9 @@ void MyGame::Initialize() {
 	textureSrvHandleGPU2_ = textureManager_->GetSrvHandleGPU(monsterBallTexture);
 
 	// 3Dオブジェクトとカメラの初期化
-	object3d_ = new Object3d();
-	object3d_->Initialize(object3dCommon_, textureManager_);
-	camera_ = new Camera();
+	object3d_ = std::make_unique<Object3d>();
+	object3d_->Initialize(object3dCommon_.get(), textureManager_.get());
+	camera_ = std::make_unique<Camera>();
 	camera_->Update();
 
 	// 球体の頂点バッファを作成し、CPUから書き込めるようにマップする
@@ -152,12 +154,9 @@ void MyGame::Finalize() {
 	// Finalizeの明示呼び出し後にデストラクタから再度呼ばれても何もしない
 	if (!initialized_) { return; }
 	// このゲーム固有のオブジェクトを先に解放する
-	delete sprite_;
-	sprite_ = nullptr;
-	delete object3d_;
-	object3d_ = nullptr;
-	delete camera_;
-	camera_ = nullptr;
+	sprite_.reset();
+	object3d_.reset();
+	camera_.reset();
 
 	// DirectXCommonを破棄する前にGPUリソースを解放する
 	vertexResourceSphere_.Reset();

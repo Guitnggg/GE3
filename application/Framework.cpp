@@ -10,39 +10,41 @@
 #include "engine/core/Input.h"
 #include "engine/core/WinApp.h"
 
+Framework::Framework() = default;
+
 Framework::~Framework() {
 	Finalize();
 }
 
 void Framework::Initialize() {
 	// Windowsアプリケーションと入力の初期化
-	winApp_ = new WinApp();
+	winApp_ = std::make_unique<WinApp>();
 	winApp_->Initialize();
-	input_ = new Input();
-	input_->Initialize(winApp_);
+	input_ = std::make_unique<Input>();
+	input_->Initialize(winApp_.get());
 
 	// ゲーム内で共有する音声システムの初期化
-	audio_ = new Audio();
+	audio_ = std::make_unique<Audio>();
 	audio_->Initialize("resource/audio");
 
 	// DirectXとGPUディスクリプタ管理の初期化
-	dxCommon_ = new DirectXCommon();
-	dxCommon_->Initialize(winApp_);
-	srvManager_ = new SrvManager();
-	srvManager_->Initialize(dxCommon_);
-	textureManager_ = new TextureManager();
-	textureManager_->Initialize(dxCommon_, srvManager_);
+	dxCommon_ = std::make_unique<DirectXCommon>();
+	dxCommon_->Initialize(winApp_.get());
+	srvManager_ = std::make_unique<SrvManager>();
+	srvManager_->Initialize(dxCommon_.get());
+	textureManager_ = std::make_unique<TextureManager>();
+	textureManager_->Initialize(dxCommon_.get(), srvManager_.get());
 
 	// 2D・3D描画で共通使用するパイプラインの初期化
-	spriteCommon_ = new SpriteCommon();
-	spriteCommon_->Initialize(dxCommon_);
-	object3dCommon_ = new Object3dCommon();
-	object3dCommon_->Initialize(dxCommon_);
+	spriteCommon_ = std::make_unique<SpriteCommon>();
+	spriteCommon_->Initialize(dxCommon_.get());
+	object3dCommon_ = std::make_unique<Object3dCommon>();
+	object3dCommon_->Initialize(dxCommon_.get());
 
 #ifdef _DEBUG
 	// デバッグビルド時のみImGuiを使用する
-	imguiManager_ = new ImGuiManager();
-	imguiManager_->Initialize(winApp_, dxCommon_);
+	imguiManager_ = std::make_unique<ImGuiManager>();
+	imguiManager_->Initialize(winApp_.get(), dxCommon_.get());
 #endif
 
 	initialized_ = true;
@@ -80,27 +82,19 @@ void Framework::Finalize() {
 
 #ifdef _DEBUG
 	imguiManager_->Finalize();
-	delete imguiManager_;
-	imguiManager_ = nullptr;
+	imguiManager_.reset();
 #endif
 
 	// 依存される側が後まで残る順序で共通機能を解放する
-	delete object3dCommon_;
-	object3dCommon_ = nullptr;
-	delete spriteCommon_;
-	spriteCommon_ = nullptr;
-	delete textureManager_;
-	textureManager_ = nullptr;
-	delete srvManager_;
-	srvManager_ = nullptr;
-	delete audio_;
-	audio_ = nullptr;
-	delete input_;
-	input_ = nullptr;
-	delete dxCommon_;
-	dxCommon_ = nullptr;
-	delete winApp_;
-	winApp_ = nullptr;
+	object3dCommon_.reset();
+	spriteCommon_.reset();
+	textureManager_.reset();
+	srvManager_.reset();
+	audio_.reset();
+	input_.reset();
+	dxCommon_.reset();
+	winApp_->Finalize();
+	winApp_.reset();
 
 	initialized_ = false;
 }

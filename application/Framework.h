@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 class DirectXCommon;
 class ImGuiManager;
 class Input;
@@ -15,7 +17,7 @@ class Audio;
 /// </summary>
 class Framework {
 public:
-	Framework() = default;
+	Framework();
 	virtual ~Framework();
 
 	Framework(const Framework&) = delete;
@@ -58,17 +60,17 @@ protected:
 	void EndDraw();
 
 	// 派生クラスから利用するゲーム共通機能
-	WinApp* winApp_ = nullptr;
-	Input* input_ = nullptr;
-	Audio* audio_ = nullptr;
-	DirectXCommon* dxCommon_ = nullptr;
-	SrvManager* srvManager_ = nullptr;
-	TextureManager* textureManager_ = nullptr;
-	SpriteCommon* spriteCommon_ = nullptr;
-	Object3dCommon* object3dCommon_ = nullptr;
+	std::unique_ptr<WinApp> winApp_;
+	std::unique_ptr<Input> input_;
+	std::unique_ptr<Audio> audio_;
+	std::unique_ptr<DirectXCommon> dxCommon_;
+	std::unique_ptr<SrvManager> srvManager_;
+	std::unique_ptr<TextureManager> textureManager_;
+	std::unique_ptr<SpriteCommon> spriteCommon_;
+	std::unique_ptr<Object3dCommon> object3dCommon_;
 
 #ifdef _DEBUG
-	ImGuiManager* imguiManager_ = nullptr;
+	std::unique_ptr<ImGuiManager> imguiManager_;
 #endif
 
 private:
