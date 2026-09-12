@@ -35,6 +35,11 @@ LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 void WinApp::Initialize()
 {
+	if (initialized_ || comInitialized_ || classRegistered_ || hwnd != nullptr) {
+		throw std::logic_error("WinApp is already initialized or partially initialized.");
+	}
+
+	try {
 	// COMライブラリをマルチスレッドで初期化する
 	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
 	if (FAILED(hr)) {
@@ -78,6 +83,12 @@ void WinApp::Initialize()
 
 	// 生成したウィンドウを表示する
 	ShowWindow(hwnd, SW_SHOW);
+	initialized_ = true;
+	}
+	catch (...) {
+		Finalize();
+		throw;
+	}
 }
 
 void WinApp::Update()
@@ -86,6 +97,8 @@ void WinApp::Update()
 
 void WinApp::Finalize()
 {
+	initialized_ = false;
+
 	// 途中までしか初期化されていない場合も、完了した処理だけを元に戻す
 	if (hwnd != nullptr) {
 		DestroyWindow(hwnd);
@@ -101,7 +114,7 @@ void WinApp::Finalize()
 	}
 }
 
-bool WinApp::ProcessMessege()
+bool WinApp::ProcessMessage()
 {
 	MSG msg{};
 

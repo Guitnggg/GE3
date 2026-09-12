@@ -533,7 +533,8 @@ struct DirectionalLight {
 /// </summary>
 inline Vector3 Normalize(const Vector3& v) {
 	const float lengthSquared = v.x * v.x + v.y * v.y + v.z * v.z;
-	if (lengthSquared <= 0.0f) {
+	constexpr float kLengthSquaredEpsilon = 1.0e-12f;
+	if (lengthSquared <= kLengthSquaredEpsilon) {
 		return {};
 	}
 	const float inverseLength = 1.0f / std::sqrt(lengthSquared);

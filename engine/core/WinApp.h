@@ -48,7 +48,7 @@ public:
 	/// <summary>
 	/// Windowsメッセージを処理し、終了要求の有無を返す
 	/// </summary>
-	bool ProcessMessege();
+	bool ProcessMessage();
 
 public:
 	// ===== 定数 =====
@@ -63,4 +63,5 @@ private:
 	WNDCLASS wc{};        // ウィンドウクラス設定
 	bool comInitialized_ = false;
 	bool classRegistered_ = false;
+	bool initialized_ = false;
 };

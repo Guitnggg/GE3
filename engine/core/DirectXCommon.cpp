@@ -30,7 +30,6 @@ DirectXCommon::~DirectXCommon()
 		fenceEvent = nullptr;
 	}
 
-	CoUninitialize();
 }
 
 // DirectX 12の描画に必要な各要素を順番に初期化する
@@ -42,11 +41,11 @@ void DirectXCommon::Initialize(WinApp* winApp)
 
 	this->winApp = winApp;
 
-	CreateInitialze();
+	CreateDevice();
 	CreateCommand();
 	CreateSwapChain();
 	CreateDepthBuffer();
-	CreateDescritorHeap();
+	CreateDescriptorHeaps();
 	CreateRenderTargetView();
 	CreateDepthStencilView();
 	CreateFence();
@@ -220,7 +219,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 }
 
 // 読み込んだ画像情報をもとにテクスチャリソースを作成する
-Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CrateTextureResource(Microsoft::WRL::ComPtr< ID3D12Device> device, const DirectX::TexMetadata& metadata)
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(Microsoft::WRL::ComPtr< ID3D12Device> device, const DirectX::TexMetadata& metadata)
 {
 	D3D12_RESOURCE_DESC resourceDesc{};
 	resourceDesc.Width = UINT(metadata.width);//幅
@@ -295,14 +294,14 @@ DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
 void DirectXCommon::PreDraw()
 {
 	// 書き込むバックバッファのインデックスの取得
-	UINT backBafferIndex = swapChain->GetCurrentBackBufferIndex();
+	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
 	// バリアを張る
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	// Noneにしておく
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 	// バリアを張るリソース。
-	barrier.Transition.pResource = swapChainResources[backBafferIndex].Get();
+	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
 	// 遷移前のResourceState
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 	// 遷移後のResourceState
@@ -311,13 +310,13 @@ void DirectXCommon::PreDraw()
 	commandList->ResourceBarrier(1, &barrier);
 
 	// 描画先のRTVとDSVを設定する
-	D3D12_CPU_DESCRIPTOR_HANDLE dsvHadle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	commandList->OMSetRenderTargets(1, &rtvHandles[backBafferIndex], false, &dsvHadle);
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
 	// 指定した色で画面全体をクリアする
 	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f }; // 青っぽい色。RGBAの順
-	commandList->ClearRenderTargetView(rtvHandles[backBafferIndex], clearColor, 0, nullptr);
+	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 	// 指定した震度で画面全体をクリアする
-	commandList->ClearDepthStencilView(dsvHadle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	// 描画用のDescriptorHeapの設定
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap.Get() };
 	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
@@ -330,8 +329,6 @@ void DirectXCommon::PostDraw()
 {
 	HRESULT hr;
 	// 書き込むバックバッファのインデックスの取得
-	UINT backBafferIndex = swapChain->GetCurrentBackBufferIndex();
-
 	// 画面に描画はすべて終わり、画面に移す
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
@@ -381,7 +378,7 @@ void DirectXCommon::PostDraw()
 //===============
 
 // デバッグレイヤー、DXGIファクトリ、Direct3Dデバイスを作成する
-void DirectXCommon::CreateInitialze()
+void DirectXCommon::CreateDevice()
 {
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr <ID3D12Debug1> debugController = nullptr;
@@ -543,7 +540,7 @@ void DirectXCommon::CreateDepthBuffer()
 }
 
 // SRV、RTV、DSV用のディスクリプタヒープを作成する
-void DirectXCommon::CreateDescritorHeap()
+void DirectXCommon::CreateDescriptorHeaps()
 {
 	// SRV用のディスクリプタヒープの作成
 	srvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);

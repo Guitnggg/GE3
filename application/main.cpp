@@ -1,30 +1,49 @@
 #include <Windows.h>
 
+#include <cstdlib>
+#include <exception>
+#include <string>
+
 #include "application/MyGame.h"
+#include "engine/core/Logger.h"
 
 #pragma comment(lib, "dxcompiler.lib")
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
-	MyGame game;
+	try {
+		MyGame game;
 
-	// ゲームの初期化
-	game.Initialize();
+		// ゲームの初期化
+		game.Initialize();
 
-	while (true) {
-		// ゲームの更新
-		game.Update();
+		while (true) {
+			// ゲームの更新
+			game.Update();
 
-		// 終了リクエストが来たら抜ける
-		if (game.IsEndRequest()) {
-			break;
+			// 終了リクエストが来たら抜ける
+			if (game.IsEndRequest()) {
+				break;
+			}
+
+			// 描画
+			game.Draw();
 		}
 
-		// 描画
-		game.Draw();
+		// ゲームの終了
+		game.Finalize();
+	}
+	catch (const std::exception& exception) {
+		const std::string message = std::string("Fatal error: ") + exception.what();
+		Logger::Log(message + "\n");
+		MessageBoxA(nullptr, message.c_str(), "MadeEngine Fatal Error", MB_OK | MB_ICONERROR);
+		return EXIT_FAILURE;
+	}
+	catch (...) {
+		constexpr char message[] = "Fatal error: unknown exception.";
+		Logger::Log(std::string(message) + "\n");
+		MessageBoxA(nullptr, message, "MadeEngine Fatal Error", MB_OK | MB_ICONERROR);
+		return EXIT_FAILURE;
 	}
 
-	// ゲームの終了
-	game.Finalize();
-
-	return 0;
+	return EXIT_SUCCESS;
 }

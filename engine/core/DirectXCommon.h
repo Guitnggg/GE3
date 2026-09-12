@@ -98,7 +98,7 @@ public:
 	/// <summary>
 	/// テクスチャ用リソースを生成する
 	/// </summary>
-	Microsoft::WRL::ComPtr<ID3D12Resource> CrateTextureResource(
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(
 		Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata);
 
 	/// <summary>
@@ -124,11 +124,11 @@ public:
 private:
 	// ===== 初期化用メンバ関数 =====
 
-	void CreateInitialze();       // デバイスとDXGIファクトリを生成する
+	void CreateDevice();          // デバイスとDXGIファクトリを生成する
 	void CreateCommand();         // コマンドキュー、アロケータ、リストを生成する
 	void CreateSwapChain();       // スワップチェーンを生成する
 	void CreateDepthBuffer();     // 深度バッファを生成する
-	void CreateDescritorHeap();   // 各種ディスクリプタヒープを生成する
+	void CreateDescriptorHeaps(); // 各種ディスクリプタヒープを生成する
 	void CreateRenderTargetView();// レンダーターゲットビューを生成する
 	void CreateDepthStencilView();// 深度ステンシルビューを生成する
 	void CreateFence();           // GPU同期用フェンスを生成する

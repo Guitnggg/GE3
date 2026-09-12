@@ -10,13 +10,21 @@
 #include "engine/core/Input.h"
 #include "engine/core/WinApp.h"
 
+#include <stdexcept>
+
 MyGame::MyGame() = default;
 
 MyGame::~MyGame() { Finalize(); }
 
 void MyGame::Initialize() {
-	// 最初にゲーム共通機能を初期化する
-	Framework::Initialize();
+	if (initialized_ || sprite_ || object3d_ || camera_ || vertexResourceSphere_ ||
+		wvpResourceSphere_ || materialResourceSphere_ || directionalLightSphereResource_) {
+		throw std::logic_error("MyGame is already initialized or partially initialized.");
+	}
+
+	try {
+		// 最初にゲーム共通機能を初期化する
+		Framework::Initialize();
 
 	// このゲームで使用する音声を読み込む
 	fanfareSound_ = audio_->Load("fanfare.wav");
@@ -67,7 +75,12 @@ void MyGame::Initialize() {
 	// 毎フレーム更新するスプライトの定数バッファを取得
 	materialDataSprite_ = sprite_->GetMaterialData();
 	transformationMatrixDataSprite_ = sprite_->GetTransformationMatrixData();
-	initialized_ = true;
+		initialized_ = true;
+	}
+	catch (...) {
+		Finalize();
+		throw;
+	}
 }
 
 void MyGame::Update() {
@@ -151,8 +164,8 @@ void MyGame::Draw() {
 }
 
 void MyGame::Finalize() {
-	// Finalizeの明示呼び出し後にデストラクタから再度呼ばれても何もしない
-	if (!initialized_) { return; }
+	initialized_ = false;
+
 	// このゲーム固有のオブジェクトを先に解放する
 	sprite_.reset();
 	object3d_.reset();
@@ -163,7 +176,16 @@ void MyGame::Finalize() {
 	wvpResourceSphere_.Reset();
 	materialResourceSphere_.Reset();
 	directionalLightSphereResource_.Reset();
-	initialized_ = false;
+	vertexBufferViewSphere_ = {};
+	wvpDataSphere_ = nullptr;
+	vertexDataSphere_ = nullptr;
+	materialDataSphere_ = nullptr;
+	directionalLightSphereData_ = nullptr;
+	materialDataSprite_ = nullptr;
+	transformationMatrixDataSprite_ = nullptr;
+	fanfareSound_ = Audio::kInvalidSoundHandle;
+	textureSrvHandleGPU_ = {};
+	textureSrvHandleGPU2_ = {};
 
 	// 最後にゲーム共通機能を解放する
 	Framework::Finalize();

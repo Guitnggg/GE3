@@ -10,6 +10,8 @@
 #include "engine/core/Input.h"
 #include "engine/core/WinApp.h"
 
+#include <stdexcept>
+
 Framework::Framework() = default;
 
 Framework::~Framework() {
@@ -17,6 +19,16 @@ Framework::~Framework() {
 }
 
 void Framework::Initialize() {
+	if (initialized_ || winApp_ || input_ || audio_ || dxCommon_ || srvManager_ ||
+		textureManager_ || spriteCommon_ || object3dCommon_
+#ifdef _DEBUG
+		|| imguiManager_
+#endif
+	) {
+		throw std::logic_error("Framework is already initialized or partially initialized.");
+	}
+
+	try {
 	// Windowsアプリケーションと入力の初期化
 	winApp_ = std::make_unique<WinApp>();
 	winApp_->Initialize();
@@ -48,6 +60,11 @@ void Framework::Initialize() {
 #endif
 
 	initialized_ = true;
+	}
+	catch (...) {
+		Framework::Finalize();
+		throw;
+	}
 }
 
 void Framework::Update() {
@@ -57,7 +74,7 @@ void Framework::Update() {
 }
 
 bool Framework::IsEndRequest() {
-	return winApp_->ProcessMessege();
+	return winApp_->ProcessMessage();
 }
 
 void Framework::BeginDraw() {
@@ -76,12 +93,12 @@ void Framework::EndDraw() {
 }
 
 void Framework::Finalize() {
-	if (!initialized_) {
-		return;
-	}
+	initialized_ = false;
 
 #ifdef _DEBUG
-	imguiManager_->Finalize();
+	if (imguiManager_) {
+		imguiManager_->Finalize();
+	}
 	imguiManager_.reset();
 #endif
 
@@ -93,8 +110,8 @@ void Framework::Finalize() {
 	audio_.reset();
 	input_.reset();
 	dxCommon_.reset();
-	winApp_->Finalize();
+	if (winApp_) {
+		winApp_->Finalize();
+	}
 	winApp_.reset();
-
-	initialized_ = false;
 }

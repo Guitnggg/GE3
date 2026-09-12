@@ -31,7 +31,7 @@ uint32_t TextureManager::Load(const std::string& filePath) {
 
 	TextureData textureData{};
 	textureData.metadata = metadata;
-	textureData.resource = dxCommon_->CrateTextureResource(dxCommon_->GetDevice(), metadata);
+	textureData.resource = dxCommon_->CreateTextureResource(dxCommon_->GetDevice(), metadata);
 	dxCommon_->UploadTextureData(textureData.resource, mipImages);
 	// 空いているディスクリプタを確保し、シェーダーから参照できるSRVを作る
 	textureData.srvIndex = srvManager_->Allocate();
