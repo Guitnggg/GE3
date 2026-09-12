@@ -4,7 +4,6 @@
 
 #include <cassert>
 #include <stdexcept>
-#include <thread>
 
 #include "externals/DirectXTex/DirectXTex.h"
 
@@ -36,8 +35,6 @@ DirectXCommon::~DirectXCommon()
 void DirectXCommon::Initialize(WinApp* winApp)
 {
 	assert(winApp);
-
-	CreateFixFPS();
 
 	this->winApp = winApp;
 
@@ -364,8 +361,6 @@ void DirectXCommon::PostDraw()
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
 
-	UpdateFixFPS();
-
 	// 次のフレーム用のコマンドリストを準備
 	hr = commandAllocator->Reset();
 	ThrowIfFailed(hr, "Resetting the command allocator");
@@ -648,37 +643,4 @@ void DirectXCommon::CreateDXC()
 
 	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
 	ThrowIfFailed(hr, "Creating the DXC include handler");
-}
-
-// FPS固定処理で使う基準時間を初期化する
-void DirectXCommon::CreateFixFPS()
-{
-	// 現在時間を記録する
-	reference_ = std::chrono::steady_clock::now();
-}
-
-// 60FPSになるようにフレーム時間を調整する
-void DirectXCommon::UpdateFixFPS()
-{
-	// 1/60秒ぴったりの時間
-	const std::chrono::microseconds kMinTime(uint64_t(1000000.0f / 60.0f));
-	// 1/60秒よりわすかに短い時間
-	const std::chrono::microseconds kMinCheckTime(uint64_t(1000000.0f / 65.0f));
-
-	// 現在時間を取得する
-	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-	// 前回記録からの経過時間を取得する
-	std::chrono::microseconds elapsep =
-		std::chrono::duration_cast<std::chrono::microseconds>(now - reference_);
-
-	// 1/60秒（よりわずかに短い時間）経っていない場合
-	if (elapsep < kMinCheckTime) {
-		// 1/60秒経過するまで微小なスリープを繰り返す
-		while (std::chrono::steady_clock::now() - reference_ < kMinTime) {
-			// 1マイク秒スリープ
-			std::this_thread::sleep_for(std::chrono::microseconds(1));
-		}
-	}
-	// 現在の時間を記録する
-	reference_ = std::chrono::steady_clock::now();
 }

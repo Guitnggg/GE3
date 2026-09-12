@@ -1,6 +1,5 @@
 #pragma once
 
-#include <chrono>
 #include <d3d12.h>
 #include <dxcapi.h>
 #include <dxgi1_6.h>
@@ -136,11 +135,6 @@ private:
 	void CreateScissorRect();     // シザー矩形を設定する
 	void CreateDXC();             // DXCコンパイラ関連を初期化する
 
-	// ===== FPS固定処理 =====
-
-	void CreateFixFPS();  // FPS固定用の基準時間を初期化する
-	void UpdateFixFPS();  // 60FPSになるよう待機時間を調整する
-
 private:
 	// ===== アプリケーション関連 =====
 
@@ -193,7 +187,4 @@ private:
 	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler;                 // DXCコンパイラ
 	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;         // include解決用ハンドラ
 
-	// ===== FPS固定用 =====
-
-	std::chrono::steady_clock::time_point reference_;                  // 前回フレームの基準時間
 };

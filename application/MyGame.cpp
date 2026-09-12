@@ -8,6 +8,7 @@
 #include "engine/core/DirectXCommon.h"
 #include "engine/core/ImGuiManager.h"
 #include "engine/core/Input.h"
+#include "engine/core/Time.h"
 #include "engine/core/WinApp.h"
 
 #include <stdexcept>
@@ -97,7 +98,10 @@ void MyGame::Update() {
 
 	// ここからこのゲーム固有の更新処理
 	if (input_->TriggerKey(DIK_0)) { audio_->Play(fanfareSound_, false, 1.0f, 1.0f); }
-	if (isRotate_) { transformSphere_.rotate.y -= 0.05f; }
+	constexpr float kSphereRotationSpeed = 3.0f; // radians per second
+	if (isRotate_) {
+		transformSphere_.rotate.y -= kSphereRotationSpeed * time_->GetDeltaTime();
+	}
 
 	// 3Dモデルのワールド・ビュー・プロジェクション行列を更新
 	const Matrix4x4 worldMatrix = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);

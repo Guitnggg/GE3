@@ -9,6 +9,7 @@ class Object3dCommon;
 class SpriteCommon;
 class SrvManager;
 class TextureManager;
+class Time;
 class WinApp;
 class Audio;
 
@@ -68,6 +69,7 @@ protected:
 	std::unique_ptr<TextureManager> textureManager_;
 	std::unique_ptr<SpriteCommon> spriteCommon_;
 	std::unique_ptr<Object3dCommon> object3dCommon_;
+	std::unique_ptr<Time> time_;
 
 #ifdef _DEBUG
 	std::unique_ptr<ImGuiManager> imguiManager_;

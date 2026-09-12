@@ -111,6 +111,7 @@
 	<ClCompile Include="engine\core\ImGuiManager.cpp" />
     <ClCompile Include="engine\core\Logger.cpp" />
     <ClCompile Include="engine\core\StringUtility.cpp" />
+	<ClCompile Include="engine\core\Time.cpp" />
     <ClCompile Include="engine\core\WinApp.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp" />
     <ClCompile Include="externals\imgui\imgui_demo.cpp" />
@@ -139,6 +140,7 @@
     <ClInclude Include="engine\core\Mymath.h" />
     <ClInclude Include="engine\core\ResourceObject.h" />
     <ClInclude Include="engine\core\StringUtility.h" />
+	<ClInclude Include="engine\core\Time.h" />
     <ClInclude Include="engine\core\WinApp.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
     <ClInclude Include="externals\imgui\imgui.h" />

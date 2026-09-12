@@ -8,6 +8,7 @@
 #include "engine/core/DirectXCommon.h"
 #include "engine/core/ImGuiManager.h"
 #include "engine/core/Input.h"
+#include "engine/core/Time.h"
 #include "engine/core/WinApp.h"
 
 #include <stdexcept>
@@ -20,7 +21,7 @@ Framework::~Framework() {
 
 void Framework::Initialize() {
 	if (initialized_ || winApp_ || input_ || audio_ || dxCommon_ || srvManager_ ||
-		textureManager_ || spriteCommon_ || object3dCommon_
+		textureManager_ || spriteCommon_ || object3dCommon_ || time_
 #ifdef _DEBUG
 		|| imguiManager_
 #endif
@@ -29,6 +30,10 @@ void Framework::Initialize() {
 	}
 
 	try {
+	// ゲーム時間の計測を初期化する
+	time_ = std::make_unique<Time>();
+	time_->Initialize();
+
 	// Windowsアプリケーションと入力の初期化
 	winApp_ = std::make_unique<WinApp>();
 	winApp_->Initialize();
@@ -69,6 +74,7 @@ void Framework::Initialize() {
 
 void Framework::Update() {
 	// すべてのゲームで必要になる毎フレーム処理
+	time_->Update();
 	input_->Update();
 	audio_->Update();
 }
@@ -114,4 +120,8 @@ void Framework::Finalize() {
 		winApp_->Finalize();
 	}
 	winApp_.reset();
+	if (time_) {
+		time_->Finalize();
+	}
+	time_.reset();
 }

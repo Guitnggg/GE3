@@ -87,6 +87,9 @@
     <ClCompile Include="engine\core\Logger.cpp">
       <Filter>engine\core</Filter>
     </ClCompile>
+    <ClCompile Include="engine\core\Time.cpp">
+      <Filter>engine\core</Filter>
+    </ClCompile>
     <ClCompile Include="engine\core\D3DResourceLeakChecker.cpp">
       <Filter>engine\core</Filter>
     </ClCompile>
@@ -168,6 +171,9 @@
       <Filter>engine\core</Filter>
     </ClInclude>
     <ClInclude Include="engine\core\Logger.h">
+      <Filter>engine\core</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\Time.h">
       <Filter>engine\core</Filter>
     </ClInclude>
     <ClInclude Include="engine\core\D3DResourceLeakChecker.h">
