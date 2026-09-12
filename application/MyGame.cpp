@@ -41,6 +41,7 @@ void MyGame::Initialize() {
 	vertexBufferViewSphere_.SizeInBytes = sizeof(VertexData) * kSphereVertexNum;
 	vertexBufferViewSphere_.StrideInBytes = sizeof(VertexData);
 	vertexResourceSphere_->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere_));
+	GenerateSphereMesh(vertexDataSphere_);
 
 	// 球体のワールド・WVP行列用定数バッファ
 	wvpResourceSphere_ = dxCommon_->CreateBufferResource(sizeof(TransformationMatrix));
@@ -91,11 +92,10 @@ void MyGame::Update() {
 	object3d_->GetTransformationMatrixData()->WVP = Multiply(worldMatrix, viewProjectionMatrix);
 	object3d_->GetDirectionalLightData()->direction = Normalize(object3d_->GetDirectionalLightData()->direction);
 
-	// 球体の行列と頂点データを更新
+	// 球体の行列を更新（頂点データは初期化時に一度だけ生成済み）
 	const Matrix4x4 worldMatrixSphere = MakeAffineMatrix(transformSphere_.scale, transformSphere_.rotate, transformSphere_.translate);
 	wvpDataSphere_->World = worldMatrixSphere;
 	wvpDataSphere_->WVP = Multiply(worldMatrixSphere, viewProjectionMatrix);
-	DrawSphere(vertexDataSphere_);
 	directionalLightSphereData_->direction = Normalize(directionalLightSphereData_->direction);
 
 	// 画面座標系でスプライトの行列を更新

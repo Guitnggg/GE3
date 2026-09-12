@@ -540,24 +540,9 @@ inline Vector3 Normalize(const Vector3& v) {
 }
 
 /// <summary>
-/// 2つの頂点データを加算する
-/// </summary>
-inline VertexData AddVert(const VertexData& v1, const VertexData& v2) {
-	VertexData result{};
-
-	result.position.x = v1.position.x + v2.position.x;
-	result.position.y = v1.position.y + v2.position.y;
-	result.position.z = v1.position.z + v2.position.z;
-	result.position.s = v1.position.s + v2.position.s;
-	result.texcoord.x = v1.texcoord.x + v2.texcoord.x;
-	result.texcoord.y = v1.texcoord.y + v2.texcoord.y;
-	return result;
-}
-
-/// <summary>
 /// 球メッシュの頂点データを作成する
 /// </summary>
-inline void DrawSphere(VertexData* vertexDataSphere) {
+inline void GenerateSphereMesh(VertexData* vertexDataSphere) {
 
 	const uint32_t kSubdivision = 16;
 
@@ -565,16 +550,6 @@ inline void DrawSphere(VertexData* vertexDataSphere) {
 
 	const float kLonEvery = pi * 2.0f / float(kSubdivision);
 	const float kLatEvery = pi / float(kSubdivision);
-
-
-	VertexData vertexDataBkaraA[kSubdivision]{};
-
-	VertexData vertexDataCkaraA[kSubdivision]{};
-
-	VertexData vertexDataDkaraA[kSubdivision][kSubdivision]{};
-
-	VertexData vertexDataDkaraC[kSubdivision]{};
-	VertexData vertexDataDkaraB[kSubdivision]{};
 
 
 	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
@@ -599,9 +574,7 @@ inline void DrawSphere(VertexData* vertexDataSphere) {
 				float(lonIndex) / float(kSubdivision),
 				1.0f - float(latIndex) / float(kSubdivision)
 			};
-			vertA.normal = {
-				0.0f,0.0f,-1.0f
-			};
+			vertA.normal = {vertA.position.x, vertA.position.y, vertA.position.z};
 
 
 			VertexData vertB{};
@@ -617,9 +590,7 @@ inline void DrawSphere(VertexData* vertexDataSphere) {
 				float(lonIndex) / float(kSubdivision),
 				1.0f - float(latIndex + 1) / float(kSubdivision)
 			};
-			vertB.normal = {
-				0.0f,0.0f,-1.0f
-			};
+			vertB.normal = {vertB.position.x, vertB.position.y, vertB.position.z};
 
 
 			VertexData vertC{};
@@ -635,9 +606,7 @@ inline void DrawSphere(VertexData* vertexDataSphere) {
 				float(lonIndex + 1) / float(kSubdivision),
 				1.0f - float(latIndex) / float(kSubdivision)
 			};
-			vertC.normal = {
-				0.0f,0.0f,-1.0f
-			};
+			vertC.normal = {vertC.position.x, vertC.position.y, vertC.position.z};
 
 
 			VertexData vertD{};
@@ -653,9 +622,7 @@ inline void DrawSphere(VertexData* vertexDataSphere) {
 				float(lonIndex + 1) / float(kSubdivision),
 				1.0f - float(latIndex + 1) / float(kSubdivision)
 			};
-			vertD.normal = {
-				0.0f,0.0f,-1.0f
-			};
+			vertD.normal = {vertD.position.x, vertD.position.y, vertD.position.z};
 
 			vertexDataSphere[start + 0] = vertA;
 			vertexDataSphere[start + 1] = vertB;
@@ -669,11 +636,6 @@ inline void DrawSphere(VertexData* vertexDataSphere) {
 
 	}
 
-	for (uint32_t index = 0; index < kSubdivision * kSubdivision * 6; index++) {
-		vertexDataSphere[index].normal.x = vertexDataSphere[index].position.x;
-		vertexDataSphere[index].normal.y = vertexDataSphere[index].position.y;
-		vertexDataSphere[index].normal.z = vertexDataSphere[index].position.z;
-	}
 }
 
 

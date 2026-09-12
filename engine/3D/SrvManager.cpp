@@ -23,15 +23,6 @@ uint32_t SrvManager::Allocate() {
 	return index;
 }
 
-void SrvManager::PreDraw() {
-	if (dxCommon_ == nullptr || dxCommon_->GetSRVDescriptorHeap() == nullptr) {
-		throw std::logic_error("SrvManager is not initialized.");
-	}
-	// シェーダーからSRVを参照できるよう、使用するヒープを設定する
-	ID3D12DescriptorHeap* descriptorHeaps[] = { dxCommon_->GetSRVDescriptorHeap() };
-	dxCommon_->GetCommandList()->SetDescriptorHeaps(1, descriptorHeaps);
-}
-
 void SrvManager::CreateSRVforTexture2D(uint32_t srvIndex, ID3D12Resource* resource, const DirectX::TexMetadata& metadata) {
 	if (dxCommon_ == nullptr || resource == nullptr || srvIndex >= kMaxSRVCount) {
 		throw std::invalid_argument("Invalid texture SRV creation request.");

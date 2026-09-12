@@ -27,11 +27,6 @@ public:
 	uint32_t Allocate();
 
 	/// <summary>
-	/// 描画で使用するSRVディスクリプタヒープをコマンドリストへ設定する。
-	/// </summary>
-	void PreDraw();
-
-	/// <summary>
 	/// 2Dテクスチャ用のSRVを指定位置に作成する。
 	/// </summary>
 	void CreateSRVforTexture2D(uint32_t srvIndex, ID3D12Resource* resource, const DirectX::TexMetadata& metadata);

@@ -59,9 +59,8 @@ bool Framework::IsEndRequest() {
 }
 
 void Framework::BeginDraw() {
-	// バックバッファを描画可能な状態にしてSRVヒープを設定する
+	// バックバッファを描画可能な状態にし、描画に必要な状態を設定する
 	dxCommon_->PreDraw();
-	srvManager_->PreDraw();
 }
 
 void Framework::EndDraw() {
