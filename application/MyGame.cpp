@@ -8,6 +8,7 @@
 #include "engine/3d/TextureManager.h"
 #include "engine/core/DirectXCommon.h"
 #include "engine/core/FrameRateController.h"
+#include "engine/core/HResult.h"
 #include "engine/core/ImGuiManager.h"
 #include "engine/core/Input.h"
 #include "engine/core/Time.h"
@@ -58,24 +59,32 @@ void MyGame::Initialize() {
 	vertexBufferViewSphere_.SizeInBytes = static_cast<UINT>(sizeof(VertexData) * sphereVertices.size());
 	vertexBufferViewSphere_.StrideInBytes = sizeof(VertexData);
 	VertexData* vertexDataSphere = nullptr;
-	vertexResourceSphere_->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere));
+	HResult::ThrowIfFailed(
+		vertexResourceSphere_->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere)),
+		"Mapping the sphere vertex buffer");
 	std::memcpy(vertexDataSphere, sphereVertices.data(), sizeof(VertexData) * sphereVertices.size());
 
 	// 球体のワールド・WVP行列用定数バッファ
 	wvpResourceSphere_ = dxCommon_->CreateBufferResource(sizeof(TransformationMatrix));
-	wvpResourceSphere_->Map(0, nullptr, reinterpret_cast<void**>(&wvpDataSphere_));
+	HResult::ThrowIfFailed(
+		wvpResourceSphere_->Map(0, nullptr, reinterpret_cast<void**>(&wvpDataSphere_)),
+		"Mapping the sphere transformation buffer");
 	wvpDataSphere_->World = MakeIdentity4x4();
 
 	// 球体のマテリアル用定数バッファ
 	materialResourceSphere_ = dxCommon_->CreateBufferResource(sizeof(Material));
-	materialResourceSphere_->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSphere_));
+	HResult::ThrowIfFailed(
+		materialResourceSphere_->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSphere_)),
+		"Mapping the sphere material buffer");
 	materialDataSphere_->color = {1.0f, 1.0f, 1.0f, 1.0f};
 	materialDataSphere_->enableLighting = true;
 	materialDataSphere_->uvTransform = MakeIdentity4x4();
 
 	// 球体に当てる平行光源用定数バッファ
 	directionalLightSphereResource_ = dxCommon_->CreateBufferResource(sizeof(DirectionalLight));
-	directionalLightSphereResource_->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightSphereData_));
+	HResult::ThrowIfFailed(
+		directionalLightSphereResource_->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightSphereData_)),
+		"Mapping the sphere directional-light buffer");
 	directionalLightSphereData_->color = {1.0f, 1.0f, 1.0f, 1.0f};
 	directionalLightSphereData_->direction = {0.0f, -1.0f, 0.0f};
 	directionalLightSphereData_->intensity = 1.0f;

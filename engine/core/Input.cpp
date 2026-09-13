@@ -1,6 +1,6 @@
 #include "Input.h"
 
-#include <stdexcept>
+#include "HResult.h"
 
 // DirectInputとGUIDを使用するためのライブラリ
 #pragma comment(lib,"dinput8.lib")
@@ -16,19 +16,19 @@ void Input::Initialize(WinApp* winApp)
 	// DirectInputのインスタンスを生成する
 	result = DirectInput8Create(
 		winApp->GetHInstance(), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
-	if (FAILED(result)) { throw std::runtime_error("Failed to initialize DirectInput."); }
+	HResult::ThrowIfFailed(result, "Initializing DirectInput");
 
 	// キーボードデバイスを生成する
 	result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
-	if (FAILED(result)) { throw std::runtime_error("Failed to create the keyboard input device."); }
+	HResult::ThrowIfFailed(result, "Creating the keyboard input device");
 
 	// 入力データ形式をキーボード用に設定する
 	result = keyboard->SetDataFormat(&c_dfDIKeyboard);
-	if (FAILED(result)) { throw std::runtime_error("Failed to set the keyboard data format."); }
+	HResult::ThrowIfFailed(result, "Setting the keyboard data format");
 
 	// アプリが前面の間だけ非排他で入力を受け取る
 	result = keyboard->SetCooperativeLevel(winApp->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
-	if (FAILED(result)) { throw std::runtime_error("Failed to set the keyboard cooperative level."); }
+	HResult::ThrowIfFailed(result, "Setting the keyboard cooperative level");
 }
 
 void Input::Update()

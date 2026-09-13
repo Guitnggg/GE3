@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "HResult.h"
+
 #ifdef _DEBUG
 #include "externals/imgui/imgui.h"
 
@@ -42,9 +44,7 @@ void WinApp::Initialize()
 	try {
 	// COMライブラリをマルチスレッドで初期化する
 	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
-	if (FAILED(hr)) {
-		throw std::runtime_error("Failed to initialize COM.");
-	}
+	HResult::ThrowIfFailed(hr, "Initializing COM");
 	comInitialized_ = true;
 
 	// ウィンドウクラスを設定する

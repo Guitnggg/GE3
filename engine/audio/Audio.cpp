@@ -1,5 +1,7 @@
 #include "Audio.h"
 
+#include "engine/core/HResult.h"
+
 #include <mfapi.h>
 #include <mferror.h>
 #include <mfidl.h>
@@ -15,14 +17,7 @@
 #pragma comment(lib, "mfreadwrite.lib")
 #pragma comment(lib, "mfuuid.lib")
 
-namespace {
-	void ThrowIfFailed(HRESULT result, const char* message)
-	{
-		if (FAILED(result)) {
-			throw std::runtime_error(message);
-		}
-	}
-}
+using HResult::ThrowIfFailed;
 
 Audio::~Audio()
 {

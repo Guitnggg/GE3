@@ -2,20 +2,12 @@
 
 #include "DirectXCommon.h"
 
-#include <cassert>
 #include <stdexcept>
 
+#include "HResult.h"
 #include "externals/DirectXTex/DirectXTex.h"
 
 using namespace Microsoft::WRL;
-
-namespace {
-void ThrowIfFailed(HRESULT result, const char* operation) {
-	if (FAILED(result)) {
-		throw std::runtime_error(std::string(operation) + " failed (HRESULT " + std::to_string(static_cast<unsigned long>(result)) + ").");
-	}
-}
-}
 
 //===============
 // 初期化
@@ -34,7 +26,9 @@ DirectXCommon::~DirectXCommon()
 // DirectX 12の描画に必要な各要素を順番に初期化する
 void DirectXCommon::Initialize(WinApp* winApp)
 {
-	assert(winApp);
+	if (winApp == nullptr) {
+		throw std::invalid_argument("DirectXCommon requires WinApp.");
+	}
 
 	this->winApp = winApp;
 
@@ -88,7 +82,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateDepthStencilTextureR
 		D3D12_RESOURCE_STATE_DEPTH_WRITE,
 		&depthClearValue,
 		IID_PPV_ARGS(&resource));
-	assert(SUCCEEDED(hr));
+	HResult::ThrowIfFailed(hr, "Creating the depth stencil texture");
 	return resource;
 }
 
@@ -104,7 +98,7 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::CreateDescriptorHeap
 	descriptorHeapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
 	HRESULT hr = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
-	assert(SUCCEEDED(hr));
+	HResult::ThrowIfFailed(hr, "Creating a descriptor heap");
 	return descriptorHeap;
 }
 
@@ -144,7 +138,7 @@ IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar
 
 	Microsoft::WRL::ComPtr <IDxcBlobEncoding> shaderSource = nullptr;
 	HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
-	ThrowIfFailed(hr, "Loading a shader file");
+	HResult::ThrowIfFailed(hr, "Loading a shader file");
 
 	DxcBuffer shaderSourceBuffer;
 	shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
@@ -165,7 +159,7 @@ IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar
 	hr = dxcCompiler->Compile(&shaderSourceBuffer, arguments, _countof(arguments),
 		includeHandler.Get(), IID_PPV_ARGS(&shaderResult));
 
-	ThrowIfFailed(hr, "Compiling a shader");
+	HResult::ThrowIfFailed(hr, "Compiling a shader");
 
 	//3.警告エラー
 	IDxcBlobUtf8* shaderError = nullptr;
@@ -180,7 +174,7 @@ IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar
 	//4.Complie結果
 	IDxcBlob* shaderBlob = nullptr;
 	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
-	ThrowIfFailed(hr, "Getting compiled shader output");
+	HResult::ThrowIfFailed(hr, "Getting compiled shader output");
 
 	Logger::Log(StringUtility::ConvertString(std::format(L"Compile Succeeded,path:{},profile:{}\n", filePath, profile)));
 
@@ -210,7 +204,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 	//実際に頂点リソースを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr;
 	HRESULT hr = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE, &vertexResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexResource));
-	assert(SUCCEEDED(hr));
+	HResult::ThrowIfFailed(hr, "Creating an upload buffer");
 
 	return vertexResource;
 }
@@ -245,7 +239,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(Micr
 		nullptr,
 		IID_PPV_ARGS(&resource)
 	);
-	assert(SUCCEEDED(hr));
+	HResult::ThrowIfFailed(hr, "Creating a texture resource");
 	return resource;
 }
 
@@ -265,7 +259,7 @@ void DirectXCommon::UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> tex
 			UINT(img->rowPitch), //1ラインサイズ
 			UINT(img->slicePitch)//1枚サイズ
 		);
-		assert(SUCCEEDED(hr));
+		HResult::ThrowIfFailed(hr, "Writing texture data to a subresource");
 	}
 }
 
@@ -276,12 +270,12 @@ DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
 	DirectX::ScratchImage image{};
 	std::wstring filePathW = StringUtility::ConvertString(filePath);
 	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
-	ThrowIfFailed(hr, "Loading a texture");
+	HResult::ThrowIfFailed(hr, "Loading a texture");
 
 	//ミップマップ　//拡大縮小で使う
 	DirectX::ScratchImage mipImages{};
 	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
-	ThrowIfFailed(hr, "Generating texture mipmaps");
+	HResult::ThrowIfFailed(hr, "Generating texture mipmaps");
 
 	//ミップマップ付きのデータを返す
 	return mipImages;
@@ -334,7 +328,7 @@ void DirectXCommon::PostDraw()
 
 	// コマンドリストの内容を確定させる。すべてのコマンドを詰んでからCloseする
 	hr = commandList->Close();
-	ThrowIfFailed(hr, "Closing the command list");
+	HResult::ThrowIfFailed(hr, "Closing the command list");
 
 	// GPUにコマンドリストの実行を行わせる
 	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList.Get() };
@@ -343,32 +337,28 @@ void DirectXCommon::PostDraw()
 	const UINT syncInterval = vsyncEnabled_ ? 1u : 0u;
 	const UINT presentFlags = !vsyncEnabled_ && tearingSupported_ ? DXGI_PRESENT_ALLOW_TEARING : 0u;
 	hr = swapChain->Present(syncInterval, presentFlags);
-	ThrowIfFailed(hr, "Presenting the swap chain");
+	HResult::ThrowIfFailed(hr, "Presenting the swap chain");
 
 	// Fenceの更新
 	fenceValue++;
 	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る
 	hr = commandQueue->Signal(fence.Get(), fenceValue);
-	if (FAILED(hr)) {
-		throw std::runtime_error("Failed to signal the Direct3D fence.");
-	}
+	HResult::ThrowIfFailed(hr, "Signaling the Direct3D fence");
 	// Fenceの値が指定したSignal値にたどり着いているか確認する
 	// GetCompletedValueの初期値はFence作成時に渡した初期値
 	if (fence->GetCompletedValue() < fenceValue) {
 		// 指定したSignalにたどりつかないので、たどり着くまで待つようにイベントを設定する
 		hr = fence->SetEventOnCompletion(fenceValue, fenceEvent);
-		if (FAILED(hr)) {
-			throw std::runtime_error("Failed to set the Direct3D fence event.");
-		}
+		HResult::ThrowIfFailed(hr, "Setting the Direct3D fence event");
 		// イベントを待つ
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
 
 	// 次のフレーム用のコマンドリストを準備
 	hr = commandAllocator->Reset();
-	ThrowIfFailed(hr, "Resetting the command allocator");
+	HResult::ThrowIfFailed(hr, "Resetting the command allocator");
 	hr = commandList->Reset(commandAllocator.Get(), nullptr);
-	ThrowIfFailed(hr, "Resetting the command list");
+	HResult::ThrowIfFailed(hr, "Resetting the command list");
 }
 
 //===============
@@ -396,7 +386,7 @@ void DirectXCommon::CreateDevice()
 
 	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
 
-	assert(SUCCEEDED(hr));
+	HResult::ThrowIfFailed(hr, "Creating the DXGI factory");
 
 #pragma endregion
 
@@ -405,11 +395,17 @@ void DirectXCommon::CreateDevice()
 	//使用するアダプタ用の変数。最初にnullptrを入れておく
 	Microsoft::WRL::ComPtr < IDXGIAdapter4> useAdapter = nullptr;
 	//良い順にアダプタを読む
-	for (UINT i = 0; dxgiFactory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&useAdapter)) != DXGI_ERROR_NOT_FOUND; i++) {
+	for (UINT i = 0;; ++i) {
+		hr = dxgiFactory->EnumAdapterByGpuPreference(
+			i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&useAdapter));
+		if (hr == DXGI_ERROR_NOT_FOUND) {
+			break;
+		}
+		HResult::ThrowIfFailed(hr, "Enumerating graphics adapters");
 		//アダプターの情報を取得する
 		DXGI_ADAPTER_DESC3 adapterDesc{};
 		hr = useAdapter->GetDesc3(&adapterDesc);
-		assert(SUCCEEDED(hr));
+		HResult::ThrowIfFailed(hr, "Reading graphics adapter information");
 		//ソフトウェアダプタでなければ採用
 		if (!(adapterDesc.Flags & DXGI_ADAPTER_FLAG3_SOFTWARE)) {
 			//採用したアダプタの情報をログに出力。wstringのほうなので注意
@@ -419,7 +415,9 @@ void DirectXCommon::CreateDevice()
 		useAdapter = nullptr;
 	}
 	//適切なアダプタが見つからなかったら起動できなくする
-	assert(useAdapter != nullptr);
+	if (useAdapter == nullptr) {
+		throw std::runtime_error("No compatible hardware graphics adapter was found.");
+	}
 
 #pragma endregion
 
@@ -438,7 +436,10 @@ void DirectXCommon::CreateDevice()
 		}
 	}
 
-	assert(device != nullptr);
+	if (device == nullptr) {
+		HResult::ThrowIfFailed(hr, "Creating the Direct3D 12 device");
+		throw std::runtime_error("Creating the Direct3D 12 device returned no device.");
+	}
 	Logger::Log("Complete create D3D12Device!!!\n");
 
 #pragma endregion
@@ -486,7 +487,7 @@ void DirectXCommon::CreateCommand()
 	hr = device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&commandQueue));
 	
 	//生成できない場合
-	assert(SUCCEEDED(hr));
+	HResult::ThrowIfFailed(hr, "Creating the Direct3D command queue");
 
 #pragma endregion
 
@@ -497,7 +498,7 @@ void DirectXCommon::CreateCommand()
 	hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator));
 	
 	//生成できない場合
-	assert(SUCCEEDED(hr));
+	HResult::ThrowIfFailed(hr, "Creating the Direct3D command allocator");
 
 #pragma endregion
 
@@ -508,7 +509,7 @@ void DirectXCommon::CreateCommand()
 	hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList));
 	
 	//生成できない場合
-	assert(SUCCEEDED(hr));
+	HResult::ThrowIfFailed(hr, "Creating the Direct3D command list");
 
 #pragma endregion
 }
@@ -534,7 +535,7 @@ void DirectXCommon::CreateSwapChain()
 	swapChainDesc.Flags = tearingSupported_ ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
 	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), winApp->GetHwnd(), &swapChainDesc, nullptr, nullptr, reinterpret_cast <IDXGISwapChain1**>(swapChain.GetAddressOf()));
-	assert(SUCCEEDED(hr));
+	HResult::ThrowIfFailed(hr, "Creating the swap chain");
 }
 
 // 深度バッファを作成する
@@ -566,10 +567,10 @@ void DirectXCommon::CreateRenderTargetView()
 
 	//SwapchainからResourceを引っ張ってくる
 	hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResources[0]));
-	assert(SUCCEEDED(hr));
+	HResult::ThrowIfFailed(hr, "Getting swap-chain buffer 0");
 
 	hr = swapChain->GetBuffer(1, IID_PPV_ARGS(&swapChainResources[1]));
-	assert(SUCCEEDED(hr));
+	HResult::ThrowIfFailed(hr, "Getting swap-chain buffer 1");
 
 	//RTV
 	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
@@ -609,9 +610,7 @@ void DirectXCommon::CreateFence()
 
 	fenceValue = 0;
 	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
-	if (FAILED(hr)) {
-		throw std::runtime_error("Failed to create the Direct3D fence.");
-	}
+	HResult::ThrowIfFailed(hr, "Creating the Direct3D fence");
 
 	fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 	if (fenceEvent == nullptr) {
@@ -645,11 +644,11 @@ void DirectXCommon::CreateDXC()
 	HRESULT hr;
 
 	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
-	ThrowIfFailed(hr, "Creating DXC utilities");
+	HResult::ThrowIfFailed(hr, "Creating DXC utilities");
 
 	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
-	ThrowIfFailed(hr, "Creating the DXC compiler");
+	HResult::ThrowIfFailed(hr, "Creating the DXC compiler");
 
 	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
-	ThrowIfFailed(hr, "Creating the DXC include handler");
+	HResult::ThrowIfFailed(hr, "Creating the DXC include handler");
 }

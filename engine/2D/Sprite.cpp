@@ -1,11 +1,14 @@
 #include "Sprite.h"
 
-#include <cassert>
+#include <stdexcept>
+
+#include "engine/core/HResult.h"
 
 // スプライト描画に必要な頂点、インデックス、マテリアル、行列リソースを初期化する
 void Sprite::Initialize(SpriteCommon* spriteCommon) {
-	assert(spriteCommon != nullptr);
-	assert(spriteCommon->GetDXCommon() != nullptr);
+	if (spriteCommon == nullptr || spriteCommon->GetDXCommon() == nullptr) {
+		throw std::invalid_argument("Sprite requires an initialized SpriteCommon.");
+	}
 
 	spriteCommon_ = spriteCommon;
 	DirectXCommon* dxCommon = spriteCommon_->GetDXCommon();
@@ -17,7 +20,9 @@ void Sprite::Initialize(SpriteCommon* spriteCommon) {
 	vertexBufferView_.StrideInBytes = sizeof(VertexData);
 
 	VertexData* vertexData = nullptr;
-	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	HResult::ThrowIfFailed(
+		vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)),
+		"Mapping the sprite vertex buffer");
 	vertexData[0].position = { 0.0f,360.0f,0.0f,1.0f };
 	vertexData[0].texcoord = { 0.0f,1.0f };
 	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f };
@@ -34,7 +39,9 @@ void Sprite::Initialize(SpriteCommon* spriteCommon) {
 	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 
 	uint32_t* indexData = nullptr;
-	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
+	HResult::ThrowIfFailed(
+		indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData)),
+		"Mapping the sprite index buffer");
 	indexData[0] = 0;
 	indexData[1] = 1;
 	indexData[2] = 2;
@@ -44,13 +51,17 @@ void Sprite::Initialize(SpriteCommon* spriteCommon) {
 
 	// 座標変換行列用定数バッファを作成する
 	transformationMatrixResource_ = dxCommon->CreateBufferResource(sizeof(TransformationMatrix));
-	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
+	HResult::ThrowIfFailed(
+		transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_)),
+		"Mapping the sprite transformation buffer");
 	transformationMatrixData_->World = MakeIdentity4x4();
 	transformationMatrixData_->WVP = MakeIdentity4x4();
 
 	// マテリアル用定数バッファを作成する
 	materialResource_ = dxCommon->CreateBufferResource(sizeof(Material));
-	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+	HResult::ThrowIfFailed(
+		materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_)),
+		"Mapping the sprite material buffer");
 	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialData_->enableLighting = false;
 	materialData_->uvTransform = MakeIdentity4x4();

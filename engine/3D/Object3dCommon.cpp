@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 
+#include "engine/core/HResult.h"
 #include "engine/core/Logger.h"
 
 // 3D描画共通処理を初期化する
@@ -70,13 +71,13 @@ void Object3dCommon::CreateRootSignature() {
 		&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
 	if (FAILED(hr)) {
 		const char* message = errorBlob ? reinterpret_cast<char*>(errorBlob->GetBufferPointer()) : "Unknown root signature error.";
-		Logger::Log(message);
-		throw std::runtime_error(message);
+		Logger::Log(std::string(message) + "\n");
+		HResult::ThrowIfFailed(hr, "Serializing the 3D root signature");
 	}
 
 	hr = dxCommon_->GetDevice()->CreateRootSignature(
 		0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
-	if (FAILED(hr)) { throw std::runtime_error("Failed to create the 3D root signature."); }
+	HResult::ThrowIfFailed(hr, "Creating the 3D root signature");
 }
 
 // 3D描画用のグラフィックスパイプラインを作成する
@@ -140,5 +141,5 @@ void Object3dCommon::CreateGraphicsPipeline() {
 
 	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(
 		&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState_));
-	if (FAILED(hr)) { throw std::runtime_error("Failed to create the 3D graphics pipeline."); }
+	HResult::ThrowIfFailed(hr, "Creating the 3D graphics pipeline");
 }

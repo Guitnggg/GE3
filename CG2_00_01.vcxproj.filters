@@ -84,6 +84,9 @@
     <ClCompile Include="engine\core\FrameRateController.cpp">
       <Filter>engine\core</Filter>
     </ClCompile>
+    <ClCompile Include="engine\core\HResult.cpp">
+      <Filter>engine\core</Filter>
+    </ClCompile>
     <ClCompile Include="engine\core\StringUtility.cpp">
       <Filter>engine\core</Filter>
     </ClCompile>
@@ -171,6 +174,9 @@
       <Filter>engine\core</Filter>
     </ClInclude>
     <ClInclude Include="engine\core\FrameRateController.h">
+      <Filter>engine\core</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\HResult.h">
       <Filter>engine\core</Filter>
     </ClInclude>
     <ClInclude Include="engine\core\StringUtility.h">

@@ -7,6 +7,7 @@
 
 #include "Object3dCommon.h"
 #include "TextureManager.h"
+#include "engine/core/HResult.h"
 
 // 3Dオブジェクトのモデル、マテリアル、行列、ライト用リソースを初期化する
 namespace {
@@ -52,7 +53,9 @@ void Object3d::Initialize(Object3dCommon* object3dCommon, TextureManager* textur
 	// 頂点バッファを作成し、読み込んだ頂点データを転送する
 	auto* dxCommon = object3dCommon_->GetDxCommon();
 	vertexResource_ = dxCommon->CreateBufferResource(sizeof(VertexData) * modelData_.vertices.size());
-	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
+	HResult::ThrowIfFailed(
+		vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_)),
+		"Mapping the 3D object vertex buffer");
 	std::memcpy(vertexData_, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
 
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
@@ -61,20 +64,26 @@ void Object3d::Initialize(Object3dCommon* object3dCommon, TextureManager* textur
 
 	// マテリアル用定数バッファを作成する
 	materialResource_ = dxCommon->CreateBufferResource(sizeof(Material));
-	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+	HResult::ThrowIfFailed(
+		materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_)),
+		"Mapping the 3D object material buffer");
 	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialData_->enableLighting = true;
 	materialData_->uvTransform = MakeIdentity4x4();
 
 	// 座標変換行列用定数バッファを作成する
 	transformationMatrixResource_ = dxCommon->CreateBufferResource(sizeof(TransformationMatrix));
-	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
+	HResult::ThrowIfFailed(
+		transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_)),
+		"Mapping the 3D object transformation buffer");
 	transformationMatrixData_->World = MakeIdentity4x4();
 	transformationMatrixData_->WVP = MakeIdentity4x4();
 
 	// 平行光源用定数バッファを作成する
 	directionalLightResource_ = dxCommon->CreateBufferResource(sizeof(DirectionalLight));
-	directionalLightResource_->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData_));
+	HResult::ThrowIfFailed(
+		directionalLightResource_->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData_)),
+		"Mapping the 3D object directional-light buffer");
 	directionalLightData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	directionalLightData_->direction = { 0.0f, -1.0f, 0.0f };
 	directionalLightData_->intensity = 1.0f;
