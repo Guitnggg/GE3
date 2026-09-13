@@ -69,7 +69,7 @@ void MyGame::Update() {
 	// ImGuiで描画対象や座標、ライト、音声を操作する
 	imguiManager_->BeginFrame();
 	imguiManager_->DrawDebugWindow(isModel_, isSphere_, isRotate_, isSprite_, textureChange_,
-		*sphere_->GetMaterialData(), transformSphere_, *sphere_->GetDirectionalLightData(), transformSprite_,
+		*sphere_->GetMaterialData(), sphere_->GetTransform(), *sphere_->GetDirectionalLightData(), transformSprite_,
 		uvTransformSprite_, *audio_, fanfareSound_, *frameRateController_);
 #endif
 
@@ -80,22 +80,13 @@ void MyGame::Update() {
 	if (input_->TriggerKey(DIK_0)) { audio_->Play(fanfareSound_, false, 1.0f, 1.0f); }
 	constexpr float kSphereRotationSpeed = 3.0f; // radians per second
 	if (isRotate_) {
-		transformSphere_.rotate.y -= kSphereRotationSpeed * time_->GetDeltaTime();
+		sphere_->GetTransform().rotate.y -= kSphereRotationSpeed * time_->GetDeltaTime();
 	}
 
-	// 3Dモデルのワールド・ビュー・プロジェクション行列を更新
-	const Matrix4x4 worldMatrix = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
+	// カメラを先に更新し、各3Dオブジェクトへ最新のViewProjectionを渡す
 	camera_->Update();
-	const Matrix4x4& viewProjectionMatrix = camera_->GetViewProjectionMatrix();
-	object3d_->GetTransformationMatrixData()->World = worldMatrix;
-	object3d_->GetTransformationMatrixData()->WVP = Multiply(worldMatrix, viewProjectionMatrix);
-	object3d_->GetDirectionalLightData()->direction = Normalize(object3d_->GetDirectionalLightData()->direction);
-
-	// 球体の行列を更新（頂点データは初期化時に一度だけ生成済み）
-	const Matrix4x4 worldMatrixSphere = MakeAffineMatrix(transformSphere_.scale, transformSphere_.rotate, transformSphere_.translate);
-	sphere_->GetTransformationMatrixData()->World = worldMatrixSphere;
-	sphere_->GetTransformationMatrixData()->WVP = Multiply(worldMatrixSphere, viewProjectionMatrix);
-	sphere_->GetDirectionalLightData()->direction = Normalize(sphere_->GetDirectionalLightData()->direction);
+	object3d_->Update(*camera_);
+	sphere_->Update(*camera_);
 
 	// 画面座標系でスプライトの行列を更新
 	const Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite_.scale, transformSprite_.rotate, transformSprite_.translate);

@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 
+#include "Camera.h"
 #include "Model.h"
 #include "Object3dCommon.h"
 #include "TextureManager.h"
@@ -45,6 +46,22 @@ void Object3d::Initialize(Object3dCommon* object3dCommon, TextureManager* textur
 	directionalLightData_->color = {1.0f, 1.0f, 1.0f, 1.0f};
 	directionalLightData_->direction = {0.0f, -1.0f, 0.0f};
 	directionalLightData_->intensity = 1.0f;
+}
+
+void Object3d::Update(const Camera& camera) {
+	// 初期化前は行列の書き込み先を持たないため更新を拒否する
+	if (transformationMatrixData_ == nullptr || directionalLightData_ == nullptr) {
+		throw std::logic_error("Object3d is not initialized.");
+	}
+
+	// 配置情報からワールド行列を作り、カメラのViewProjectionと合成する
+	const Matrix4x4 worldMatrix =
+		MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
+	transformationMatrixData_->World = worldMatrix;
+	transformationMatrixData_->WVP = Multiply(worldMatrix, camera.GetViewProjectionMatrix());
+
+	// シェーダーへ常に単位ベクトルを渡せるようライト方向を正規化する
+	directionalLightData_->direction = Normalize(directionalLightData_->direction);
 }
 
 void Object3d::Draw() const {

@@ -62,10 +62,8 @@ private:
 	Material* materialDataSprite_ = nullptr;
 	TransformationMatrix* transformationMatrixDataSprite_ = nullptr;
 
-	// 各オブジェクトの座標変換
-	Transform transform_{{1.0f, 1.0f, 1.0f}, {}, {}};
+	// スプライトとUVの座標変換（3DのTransformは各Object3dが所有する）
 	Transform transformSprite_{{1.0f, 1.0f, 1.0f}, {}, {}};
-	Transform transformSphere_{{1.0f, 1.0f, 1.0f}, {}, {}};
 	Transform uvTransformSprite_{{1.0f, 1.0f, 1.0f}, {}, {}};
 
 	// ImGuiから変更する表示・動作設定
