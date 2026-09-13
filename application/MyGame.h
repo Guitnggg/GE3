@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <d3d12.h>
 #include <memory>
-#include <wrl.h>
 #include "application/Framework.h"
 #include "engine/audio/Audio.h"
 #include "engine/core/Mymath.h"
@@ -46,24 +45,18 @@ private:
 	// このゲームで表示する2D・3Dオブジェクト
 	std::unique_ptr<Sprite> sprite_;
 	std::unique_ptr<Object3d> object3d_;
+	std::unique_ptr<Object3d> sphere_;
 	std::unique_ptr<Camera> camera_;
 
 	// 読み込み済み音声とテクスチャのハンドル
 	Audio::SoundHandle fanfareSound_{};
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU_{};
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2_{};
+	uint32_t uvCheckerTexture_ = 0;
+	uint32_t monsterBallTexture_ = 0;
 
-	// 球体描画用の頂点バッファと定数バッファ
+	// 手続き生成する球体のメッシュ設定
 	static constexpr uint32_t kSphereSubdivisions = 16;
-	uint32_t sphereVertexCount_ = 0;
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSphere_;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSphere_{};
-	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResourceSphere_;
-	TransformationMatrix* wvpDataSphere_ = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSphere_;
-	Material* materialDataSphere_ = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightSphereResource_;
-	DirectionalLight* directionalLightSphereData_ = nullptr;
 
 	// スプライトが所有する定数バッファへの参照
 	Material* materialDataSprite_ = nullptr;

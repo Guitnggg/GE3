@@ -1,7 +1,6 @@
 #include "Object3d.h"
 
 #include <fstream>
-#include <cstring>
 #include <sstream>
 #include <stdexcept>
 
@@ -44,23 +43,28 @@ void Object3d::Initialize(Object3dCommon* object3dCommon, TextureManager* textur
 	textureManager_ = textureManager;
 
 	// OBJモデルを読み込む
-	modelData_ = LoadObjectFile(directoryPath, filename);
-	if (modelData_.material.textureFilePath.empty()) {
+	const ModelData modelData = LoadObjectFile(directoryPath, filename);
+	if (modelData.material.textureFilePath.empty()) {
 		throw std::runtime_error("The model material does not specify a diffuse texture: " + filename);
 	}
-	textureIndex_ = textureManager_->Load(modelData_.material.textureFilePath);
+	textureIndex_ = textureManager_->Load(modelData.material.textureFilePath);
+	InitializeResources(modelData.vertices);
+}
 
-	// 頂点バッファを作成し、読み込んだ頂点データを転送する
+void Object3d::Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager,
+	const std::vector<VertexData>& vertices, uint32_t textureIndex) {
+	if (object3dCommon == nullptr || object3dCommon->GetDxCommon() == nullptr || textureManager == nullptr) {
+		throw std::invalid_argument("Object3d requires Object3dCommon and TextureManager.");
+	}
+	object3dCommon_ = object3dCommon;
+	textureManager_ = textureManager;
+	textureIndex_ = textureIndex;
+	InitializeResources(vertices);
+}
+
+void Object3d::InitializeResources(const std::vector<VertexData>& vertices) {
 	auto* dxCommon = object3dCommon_->GetDxCommon();
-	vertexResource_ = dxCommon->CreateBufferResource(sizeof(VertexData) * modelData_.vertices.size());
-	HResult::ThrowIfFailed(
-		vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_)),
-		"Mapping the 3D object vertex buffer");
-	std::memcpy(vertexData_, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
-
-	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
-	vertexBufferView_.SizeInBytes = static_cast<UINT>(sizeof(VertexData) * modelData_.vertices.size());
-	vertexBufferView_.StrideInBytes = sizeof(VertexData);
+	mesh_.Initialize(dxCommon, vertices);
 
 	// マテリアル用定数バッファを作成する
 	materialResource_ = dxCommon->CreateBufferResource(sizeof(Material));
@@ -94,12 +98,11 @@ void Object3d::Draw() const {
 		throw std::logic_error("Object3d is not initialized.");
 	}
 	auto* commandList = object3dCommon_->GetDxCommon()->GetCommandList();
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource_->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootDescriptorTable(2, GetTextureSrvHandleGPU());
 	commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource_->GetGPUVirtualAddress());
-	commandList->DrawInstanced(static_cast<UINT>(modelData_.vertices.size()), 1, 0, 0);
+	mesh_.Draw(commandList);
 }
 
 // .mtlファイルからテクスチャファイルパスを読み込む
@@ -229,6 +232,10 @@ ModelData Object3d::LoadObjectFile(const std::string& directoryPath, const std::
 TransformationMatrix* Object3d::GetTransformationMatrixData() const { return transformationMatrixData_; }
 
 DirectionalLight* Object3d::GetDirectionalLightData() const { return directionalLightData_; }
+
+Material* Object3d::GetMaterialData() const { return materialData_; }
+
+void Object3d::SetTextureIndex(uint32_t textureIndex) { textureIndex_ = textureIndex; }
 
 D3D12_GPU_DESCRIPTOR_HANDLE Object3d::GetTextureSrvHandleGPU() const {
 	if (textureManager_ == nullptr) {

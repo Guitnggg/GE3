@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "Mesh.h"
 #include "engine/core/Mymath.h"
 
 /// <summary>
@@ -34,6 +35,8 @@ public:
 	void Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager,
 		const std::string& directoryPath = "resource",
 		const std::string& filename = "axis.obj");
+	void Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager,
+		const std::vector<VertexData>& vertices, uint32_t textureIndex);
 
 	/// <summary>
 	/// モデル固有のリソースとテクスチャを設定して描画する
@@ -67,19 +70,18 @@ public:
 	/// </summary>
 	/// <returns>CPUから書き込む平行光源データ</returns>
 	DirectionalLight* GetDirectionalLightData() const;
+	Material* GetMaterialData() const;
+	void SetTextureIndex(uint32_t textureIndex);
 
 private:
+	void InitializeResources(const std::vector<VertexData>& vertices);
 	D3D12_GPU_DESCRIPTOR_HANDLE GetTextureSrvHandleGPU() const;
 
 	Object3dCommon* object3dCommon_ = nullptr;  // 3D描画共通処理
 	TextureManager* textureManager_ = nullptr;  // モデルのテクスチャ管理
-	ModelData modelData_;                       // objファイルから読み込んだモデルデータ
 	uint32_t textureIndex_ = 0;                  // TextureManager内のテクスチャ番号
 
-	// ===== 頂点データ =====
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;
-	VertexData* vertexData_ = nullptr;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+	Mesh mesh_;
 
 	// ===== マテリアル =====
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_;

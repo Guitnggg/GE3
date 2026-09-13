@@ -102,6 +102,7 @@
     <ClCompile Include="engine\2d\SpriteCommon.cpp" />
     <ClCompile Include="engine\3d\Camera.cpp" />
 	<ClCompile Include="engine\3d\MeshGenerator.cpp" />
+	<ClCompile Include="engine\3d\Mesh.cpp" />
     <ClCompile Include="engine\3d\Object3d.cpp" />
     <ClCompile Include="engine\3d\Object3dCommon.cpp" />
     <ClCompile Include="engine\3d\SrvManager.cpp" />
@@ -132,6 +133,7 @@
     <ClInclude Include="engine\2d\SpriteCommon.h" />
     <ClInclude Include="engine\3d\Camera.h" />
 	<ClInclude Include="engine\3d\MeshGenerator.h" />
+	<ClInclude Include="engine\3d\Mesh.h" />
     <ClInclude Include="engine\3d\Object3d.h" />
     <ClInclude Include="engine\3d\Object3dCommon.h" />
     <ClInclude Include="engine\3d\SrvManager.h" />

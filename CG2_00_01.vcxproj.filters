@@ -117,6 +117,9 @@
     <ClCompile Include="engine\3d\MeshGenerator.cpp">
       <Filter>engine\3d</Filter>
     </ClCompile>
+    <ClCompile Include="engine\3d\Mesh.cpp">
+      <Filter>engine\3d</Filter>
+    </ClCompile>
     <ClCompile Include="engine\3d\SrvManager.cpp">
       <Filter>engine\3d</Filter>
     </ClCompile>
@@ -207,6 +210,9 @@
       <Filter>engine\3d</Filter>
     </ClInclude>
     <ClInclude Include="engine\3d\MeshGenerator.h">
+      <Filter>engine\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\3d\Mesh.h">
       <Filter>engine\3d</Filter>
     </ClInclude>
     <ClInclude Include="engine\3d\SrvManager.h">

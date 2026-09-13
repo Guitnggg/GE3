@@ -8,22 +8,19 @@
 #include "engine/3d/TextureManager.h"
 #include "engine/core/DirectXCommon.h"
 #include "engine/core/FrameRateController.h"
-#include "engine/core/HResult.h"
 #include "engine/core/ImGuiManager.h"
 #include "engine/core/Input.h"
 #include "engine/core/Time.h"
 #include "engine/core/WinApp.h"
 
 #include <stdexcept>
-#include <cstring>
 
 MyGame::MyGame() = default;
 
 MyGame::~MyGame() { Finalize(); }
 
 void MyGame::Initialize() {
-	if (initialized_ || sprite_ || object3d_ || camera_ || vertexResourceSphere_ ||
-		wvpResourceSphere_ || materialResourceSphere_ || directionalLightSphereResource_) {
+	if (initialized_ || sprite_ || object3d_ || sphere_ || camera_) {
 		throw std::logic_error("MyGame is already initialized or partially initialized.");
 	}
 
@@ -39,10 +36,10 @@ void MyGame::Initialize() {
 	sprite_->Initialize(spriteCommon_.get());
 
 	// 描画で切り替えて使用するテクスチャを読み込む
-	const uint32_t uvCheckerTexture = textureManager_->Load("resource/uvChecker.png");
-	const uint32_t monsterBallTexture = textureManager_->Load("resource/monsterBall.png");
-	textureSrvHandleGPU_ = textureManager_->GetSrvHandleGPU(uvCheckerTexture);
-	textureSrvHandleGPU2_ = textureManager_->GetSrvHandleGPU(monsterBallTexture);
+	uvCheckerTexture_ = textureManager_->Load("resource/uvChecker.png");
+	monsterBallTexture_ = textureManager_->Load("resource/monsterBall.png");
+	textureSrvHandleGPU_ = textureManager_->GetSrvHandleGPU(uvCheckerTexture_);
+	textureSrvHandleGPU2_ = textureManager_->GetSrvHandleGPU(monsterBallTexture_);
 
 	// 3Dオブジェクトとカメラの初期化
 	object3d_ = std::make_unique<Object3d>();
@@ -50,44 +47,10 @@ void MyGame::Initialize() {
 	camera_ = std::make_unique<Camera>();
 	camera_->Update();
 
-	// 球体の頂点バッファを作成し、CPUから書き込めるようにマップする
-	const std::vector<VertexData> sphereVertices =
-		MeshGenerator::CreateSphere(kSphereSubdivisions);
-	sphereVertexCount_ = static_cast<uint32_t>(sphereVertices.size());
-	vertexResourceSphere_ = dxCommon_->CreateBufferResource(sizeof(VertexData) * sphereVertices.size());
-	vertexBufferViewSphere_.BufferLocation = vertexResourceSphere_->GetGPUVirtualAddress();
-	vertexBufferViewSphere_.SizeInBytes = static_cast<UINT>(sizeof(VertexData) * sphereVertices.size());
-	vertexBufferViewSphere_.StrideInBytes = sizeof(VertexData);
-	VertexData* vertexDataSphere = nullptr;
-	HResult::ThrowIfFailed(
-		vertexResourceSphere_->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere)),
-		"Mapping the sphere vertex buffer");
-	std::memcpy(vertexDataSphere, sphereVertices.data(), sizeof(VertexData) * sphereVertices.size());
-
-	// 球体のワールド・WVP行列用定数バッファ
-	wvpResourceSphere_ = dxCommon_->CreateBufferResource(sizeof(TransformationMatrix));
-	HResult::ThrowIfFailed(
-		wvpResourceSphere_->Map(0, nullptr, reinterpret_cast<void**>(&wvpDataSphere_)),
-		"Mapping the sphere transformation buffer");
-	wvpDataSphere_->World = MakeIdentity4x4();
-
-	// 球体のマテリアル用定数バッファ
-	materialResourceSphere_ = dxCommon_->CreateBufferResource(sizeof(Material));
-	HResult::ThrowIfFailed(
-		materialResourceSphere_->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSphere_)),
-		"Mapping the sphere material buffer");
-	materialDataSphere_->color = {1.0f, 1.0f, 1.0f, 1.0f};
-	materialDataSphere_->enableLighting = true;
-	materialDataSphere_->uvTransform = MakeIdentity4x4();
-
-	// 球体に当てる平行光源用定数バッファ
-	directionalLightSphereResource_ = dxCommon_->CreateBufferResource(sizeof(DirectionalLight));
-	HResult::ThrowIfFailed(
-		directionalLightSphereResource_->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightSphereData_)),
-		"Mapping the sphere directional-light buffer");
-	directionalLightSphereData_->color = {1.0f, 1.0f, 1.0f, 1.0f};
-	directionalLightSphereData_->direction = {0.0f, -1.0f, 0.0f};
-	directionalLightSphereData_->intensity = 1.0f;
+	// 手続き生成した頂点列も、OBJと同じObject3d経由で管理する
+	sphere_ = std::make_unique<Object3d>();
+	sphere_->Initialize(object3dCommon_.get(), textureManager_.get(),
+		MeshGenerator::CreateSphere(kSphereSubdivisions), uvCheckerTexture_);
 
 	// 毎フレーム更新するスプライトの定数バッファを取得
 	materialDataSprite_ = sprite_->GetMaterialData();
@@ -105,7 +68,7 @@ void MyGame::Update() {
 	// ImGuiで描画対象や座標、ライト、音声を操作する
 	imguiManager_->BeginFrame();
 	imguiManager_->DrawDebugWindow(isModel_, isSphere_, isRotate_, isSprite_, textureChange_,
-		*materialDataSphere_, transformSphere_, *directionalLightSphereData_, transformSprite_,
+		*sphere_->GetMaterialData(), transformSphere_, *sphere_->GetDirectionalLightData(), transformSprite_,
 		uvTransformSprite_, *audio_, fanfareSound_, *frameRateController_);
 #endif
 
@@ -129,9 +92,9 @@ void MyGame::Update() {
 
 	// 球体の行列を更新（頂点データは初期化時に一度だけ生成済み）
 	const Matrix4x4 worldMatrixSphere = MakeAffineMatrix(transformSphere_.scale, transformSphere_.rotate, transformSphere_.translate);
-	wvpDataSphere_->World = worldMatrixSphere;
-	wvpDataSphere_->WVP = Multiply(worldMatrixSphere, viewProjectionMatrix);
-	directionalLightSphereData_->direction = Normalize(directionalLightSphereData_->direction);
+	sphere_->GetTransformationMatrixData()->World = worldMatrixSphere;
+	sphere_->GetTransformationMatrixData()->WVP = Multiply(worldMatrixSphere, viewProjectionMatrix);
+	sphere_->GetDirectionalLightData()->direction = Normalize(sphere_->GetDirectionalLightData()->direction);
 
 	// 画面座標系でスプライトの行列を更新
 	const Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite_.scale, transformSprite_.rotate, transformSprite_.translate);
@@ -156,12 +119,8 @@ void MyGame::Draw() {
 
 	// 球体を描画
 	if (isSphere_) {
-		dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSphere_);
-		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSphere_->GetGPUVirtualAddress());
-		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResourceSphere_->GetGPUVirtualAddress());
-		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureChange_ ? textureSrvHandleGPU2_ : textureSrvHandleGPU_);
-		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightSphereResource_->GetGPUVirtualAddress());
-		dxCommon_->GetCommandList()->DrawInstanced(sphereVertexCount_, 1, 0, 0);
+		sphere_->SetTextureIndex(textureChange_ ? monsterBallTexture_ : uvCheckerTexture_);
+		sphere_->Draw();
 	}
 
 	// OBJモデルを描画
@@ -189,23 +148,16 @@ void MyGame::Finalize() {
 	// このゲーム固有のオブジェクトを先に解放する
 	sprite_.reset();
 	object3d_.reset();
+	sphere_.reset();
 	camera_.reset();
 
-	// DirectXCommonを破棄する前にGPUリソースを解放する
-	vertexResourceSphere_.Reset();
-	wvpResourceSphere_.Reset();
-	materialResourceSphere_.Reset();
-	directionalLightSphereResource_.Reset();
-	vertexBufferViewSphere_ = {};
-	sphereVertexCount_ = 0;
-	wvpDataSphere_ = nullptr;
-	materialDataSphere_ = nullptr;
-	directionalLightSphereData_ = nullptr;
 	materialDataSprite_ = nullptr;
 	transformationMatrixDataSprite_ = nullptr;
 	fanfareSound_ = Audio::kInvalidSoundHandle;
 	textureSrvHandleGPU_ = {};
 	textureSrvHandleGPU2_ = {};
+	uvCheckerTexture_ = 0;
+	monsterBallTexture_ = 0;
 
 	// 最後にゲーム共通機能を解放する
 	Framework::Finalize();
