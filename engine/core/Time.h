@@ -95,14 +95,14 @@ private:
 	/// 内部で使用する高精度クロックの型を定義
 	using Clock = std::chrono::steady_clock;
 
-	Clock::time_point previousTime_{};
-	float deltaTime_ = 0.0f;
-	float unscaledDeltaTime_ = 0.0f;
-	double elapsedTime_ = 0.0;
-	double unscaledElapsedTime_ = 0.0;
-	uint64_t frameCount_ = 0;
-	float timeScale_ = kDefaultTimeScale;
-	float maxDeltaTime_ = kDefaultMaxDeltaTime;
-	bool initialized_ = false;
-	bool hasPreviousFrame_ = false;
+	Clock::time_point previousTime_{};            // 前回Updateを実行した時刻
+	float deltaTime_ = 0.0f;                     // TimeScale適用後のフレーム経過秒
+	float unscaledDeltaTime_ = 0.0f;             // TimeScale適用前のフレーム経過秒
+	double elapsedTime_ = 0.0;                   // TimeScale適用後の累積時間
+	double unscaledElapsedTime_ = 0.0;           // 実時間ベースの累積時間
+	uint64_t frameCount_ = 0;                    // Updateが完了した回数
+	float timeScale_ = kDefaultTimeScale;        // ゲーム内時間へ適用する倍率
+	float maxDeltaTime_ = kDefaultMaxDeltaTime;  // 1フレームとして扱う最大秒数
+	bool initialized_ = false;                   // Initialize済みかを示す
+	bool hasPreviousFrame_ = false;              // 時間差を取れる前回時刻があるかを示す
 };

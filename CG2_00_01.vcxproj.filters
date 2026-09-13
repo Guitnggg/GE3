@@ -120,6 +120,12 @@
     <ClCompile Include="engine\3d\Mesh.cpp">
       <Filter>engine\3d</Filter>
     </ClCompile>
+    <ClCompile Include="engine\3d\Model.cpp">
+      <Filter>engine\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\3d\ModelManager.cpp">
+      <Filter>engine\3d</Filter>
+    </ClCompile>
     <ClCompile Include="engine\3d\SrvManager.cpp">
       <Filter>engine\3d</Filter>
     </ClCompile>
@@ -213,6 +219,12 @@
       <Filter>engine\3d</Filter>
     </ClInclude>
     <ClInclude Include="engine\3d\Mesh.h">
+      <Filter>engine\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\3d\Model.h">
+      <Filter>engine\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\3d\ModelManager.h">
       <Filter>engine\3d</Filter>
     </ClInclude>
     <ClInclude Include="engine\3d\SrvManager.h">

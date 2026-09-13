@@ -1,98 +1,57 @@
 #pragma once
 
+#include <cstdint>
 #include <d3d12.h>
+#include <memory>
 #include <wrl.h>
 
-#include <string>
-#include <vector>
-
-#include "Mesh.h"
 #include "engine/core/Mymath.h"
 
-/// <summary>
-/// Object3dCommonクラスの前方宣言
-/// </summary>
+class Model;
 class Object3dCommon;
 class TextureManager;
 
 /// <summary>
-/// OBJモデルから読み込んだ頂点情報とマテリアル情報
-/// </summary>
-struct ModelData {
-	std::vector<VertexData> vertices;  // モデルを構成する頂点データ
-	MaterialData material;             // モデルに紐づくマテリアルデータ
-};
-
-/// <summary>
-/// 3Dオブジェクトを管理するクラス
+/// シーン上に配置する3Dオブジェクトを管理するクラス。
+/// Modelのメッシュは共有し、配置ごとのマテリアル、座標変換、ライトを個別に所有する。
 /// </summary>
 class Object3d {
 public:
-	/// <summary>
-	/// 3Dオブジェクトに必要なGPUリソースを初期化する
-	/// </summary>
-	/// <param name="object3dCommon">3D描画共通処理</param>
+	/// <summary>共有モデルと描画管理クラスを受け取り、オブジェクト固有のGPUリソースを生成する。</summary>
+	/// <param name="object3dCommon">3D描画パイプラインを管理する共通処理</param>
+	/// <param name="textureManager">描画テクスチャのSRVを取得する管理クラス</param>
+	/// <param name="model">このオブジェクトが描画する共有モデル</param>
 	void Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager,
-		const std::string& directoryPath = "resource",
-		const std::string& filename = "axis.obj");
-	void Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager,
-		const std::vector<VertexData>& vertices, uint32_t textureIndex);
+		const std::shared_ptr<Model>& model);
 
-	/// <summary>
-	/// モデル固有のリソースとテクスチャを設定して描画する
-	/// </summary>
+	/// <summary>オブジェクト固有データを設定し、共有モデルを描画する。</summary>
 	void Draw() const;
 
-	/// <summary>
-	/// .mtlファイルを読み込む
-	/// </summary>
-	/// <param name="directoryPath">ファイルがあるディレクトリ</param>
-	/// <param name="filename">読み込む.mtlファイル名</param>
-	/// <returns>マテリアルデータ</returns>
-	static MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
+	/// <summary>CPUから更新可能な座標変換行列を取得する。</summary>
+	/// <returns>GPU定数バッファへマップされた座標変換データ</returns>
+	TransformationMatrix* GetTransformationMatrixData() const { return transformationMatrixData_; }
 
-	/// <summary>
-	/// .objファイルを読み込む
-	/// </summary>
-	/// <param name="directoryPath">ファイルがあるディレクトリ</param>
-	/// <param name="filename">読み込む.objファイル名</param>
-	/// <returns>モデルデータ</returns>
-	static ModelData LoadObjectFile(const std::string& directoryPath, const std::string& filename);
+	/// <summary>CPUから更新可能な平行光源情報を取得する。</summary>
+	/// <returns>GPU定数バッファへマップされた平行光源データ</returns>
+	DirectionalLight* GetDirectionalLightData() const { return directionalLightData_; }
 
-	/// <summary>
-	/// 座標変換行列データを取得する
-	/// </summary>
-	/// <returns>CPUから書き込む座標変換行列データ</returns>
-	TransformationMatrix* GetTransformationMatrixData() const;
+	/// <summary>CPUから更新可能なマテリアル情報を取得する。</summary>
+	/// <returns>GPU定数バッファへマップされたマテリアルデータ</returns>
+	Material* GetMaterialData() const { return materialData_; }
 
-	/// <summary>
-	/// 平行光源データを取得する
-	/// </summary>
-	/// <returns>CPUから書き込む平行光源データ</returns>
-	DirectionalLight* GetDirectionalLightData() const;
-	Material* GetMaterialData() const;
-	void SetTextureIndex(uint32_t textureIndex);
+	/// <summary>このオブジェクトの描画に使用するテクスチャを変更する。</summary>
+	/// <param name="textureIndex">TextureManagerが発行したテクスチャ番号</param>
+	void SetTextureIndex(uint32_t textureIndex) { textureIndex_ = textureIndex; }
 
 private:
-	void InitializeResources(const std::vector<VertexData>& vertices);
-	D3D12_GPU_DESCRIPTOR_HANDLE GetTextureSrvHandleGPU() const;
-
-	Object3dCommon* object3dCommon_ = nullptr;  // 3D描画共通処理
-	TextureManager* textureManager_ = nullptr;  // モデルのテクスチャ管理
-	uint32_t textureIndex_ = 0;                  // TextureManager内のテクスチャ番号
-
-	Mesh mesh_;
-
-	// ===== マテリアル =====
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_;
-	Material* materialData_ = nullptr;
-
-	// ===== 座標変換データ =====
-	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource_;
-	TransformationMatrix* transformationMatrixData_ = nullptr;
-
-	// ===== 平行光源 =====
-	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource_;
-	DirectionalLight* directionalLightData_ = nullptr;
-
+	Object3dCommon* object3dCommon_ = nullptr; // 3D描画パイプラインの参照
+	TextureManager* textureManager_ = nullptr; // テクスチャSRV管理の参照
+	std::shared_ptr<Model> model_;             // 複数オブジェクト間で共有するモデル資産
+	uint32_t textureIndex_ = 0;                // この配置で使用するテクスチャ番号
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_; // マテリアル定数バッファ
+	Material* materialData_ = nullptr;                          // マップ済みマテリアル書き込み先
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource_; // 行列定数バッファ
+	TransformationMatrix* transformationMatrixData_ = nullptr;             // マップ済み行列書き込み先
+	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource_; // 平行光源定数バッファ
+	DirectionalLight* directionalLightData_ = nullptr;                // マップ済みライト書き込み先
 };

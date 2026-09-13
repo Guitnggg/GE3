@@ -3,6 +3,7 @@
 #include "engine/2d/Sprite.h"
 #include "engine/3d/Camera.h"
 #include "engine/3d/MeshGenerator.h"
+#include "engine/3d/ModelManager.h"
 #include "engine/3d/Object3d.h"
 #include "engine/3d/Object3dCommon.h"
 #include "engine/3d/TextureManager.h"
@@ -43,14 +44,14 @@ void MyGame::Initialize() {
 
 	// 3Dオブジェクトとカメラの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Initialize(object3dCommon_.get(), textureManager_.get());
+	object3d_->Initialize(object3dCommon_.get(), textureManager_.get(), modelManager_->Load());
 	camera_ = std::make_unique<Camera>();
 	camera_->Update();
 
 	// 手続き生成した頂点列も、OBJと同じObject3d経由で管理する
 	sphere_ = std::make_unique<Object3d>();
 	sphere_->Initialize(object3dCommon_.get(), textureManager_.get(),
-		MeshGenerator::CreateSphere(kSphereSubdivisions), uvCheckerTexture_);
+		modelManager_->Create(MeshGenerator::CreateSphere(kSphereSubdivisions), uvCheckerTexture_));
 
 	// 毎フレーム更新するスプライトの定数バッファを取得
 	materialDataSprite_ = sprite_->GetMaterialData();

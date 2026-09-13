@@ -89,12 +89,12 @@ private:
 	// フレームレート計測用のクロック型を定義
 	using Clock = std::chrono::steady_clock;
 
-	FrameRateMode mode_ = FrameRateMode::VSync;
-	double targetFPS_ = 60.0;
-	double currentFPS_ = 0.0;
-	double frameTimeMilliseconds_ = 0.0;
-	Clock::time_point frameStartTime_{};
-	Clock::time_point previousFrameStartTime_{};
-	bool initialized_ = false;
-	bool hasPreviousFrame_ = false;
+	FrameRateMode mode_ = FrameRateMode::VSync; // 現在使用する同期方式
+	double targetFPS_ = 60.0;                   // Limitedモードの目標FPS
+	double currentFPS_ = 0.0;                  // 平滑化した実測FPS
+	double frameTimeMilliseconds_ = 0.0;       // 平滑化した1フレーム時間
+	Clock::time_point frameStartTime_{};        // 現在のフレームを開始した時刻
+	Clock::time_point previousFrameStartTime_{}; // FPS計測用の前フレーム開始時刻
+	bool initialized_ = false;                  // Initialize済みかを示す
+	bool hasPreviousFrame_ = false;             // FPS計算に使える前回時刻があるかを示す
 };

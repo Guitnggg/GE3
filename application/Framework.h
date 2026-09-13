@@ -6,6 +6,7 @@ class DirectXCommon;
 class FrameRateController;
 class ImGuiManager;
 class Input;
+class ModelManager;
 class Object3dCommon;
 class SpriteCommon;
 class SrvManager;
@@ -68,6 +69,7 @@ protected:
 	std::unique_ptr<DirectXCommon> dxCommon_;
 	std::unique_ptr<SrvManager> srvManager_;
 	std::unique_ptr<TextureManager> textureManager_;
+	std::unique_ptr<ModelManager> modelManager_;
 	std::unique_ptr<SpriteCommon> spriteCommon_;
 	std::unique_ptr<Object3dCommon> object3dCommon_;
 	std::unique_ptr<Time> time_;

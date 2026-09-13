@@ -7,6 +7,7 @@
 
 namespace MeshGenerator {
 std::vector<VertexData> CreateSphere(uint32_t subdivisions) {
+	// 球として成立しない分割数と、頂点数計算のオーバーフローを拒否する
 	if (subdivisions < 3) {
 		throw std::invalid_argument("Sphere subdivisions must be at least 3.");
 	}
@@ -19,6 +20,7 @@ std::vector<VertexData> CreateSphere(uint32_t subdivisions) {
 		throw std::overflow_error("Sphere mesh is too large.");
 	}
 
+	// 球面を緯度・経度方向へ等分する角度を計算する
 	std::vector<VertexData> vertices(static_cast<size_t>(vertexCount64));
 	constexpr float kPi = std::numbers::pi_v<float>;
 	const float longitudeStep = kPi * 2.0f / static_cast<float>(subdivisions);
@@ -31,6 +33,7 @@ std::vector<VertexData> CreateSphere(uint32_t subdivisions) {
 				(latitudeIndex * subdivisions + longitudeIndex) * kVerticesPerCell;
 			const float longitude = longitudeStep * static_cast<float>(longitudeIndex);
 
+			// 球面上の角度から位置、UV、外向き法線を持つ頂点を作る
 			auto createVertex = [subdivisions](float latitudeValue, float longitudeValue,
 				uint32_t latitudeUvIndex, uint32_t longitudeUvIndex) {
 				VertexData vertex{};
@@ -56,6 +59,7 @@ std::vector<VertexData> CreateSphere(uint32_t subdivisions) {
 				latitude + latitudeStep, longitude + longitudeStep,
 				latitudeIndex + 1, longitudeIndex + 1);
 
+			// 緯度・経度で囲まれた四角形を2枚の三角形へ分割する
 			vertices[start + 0] = vertexA;
 			vertices[start + 1] = vertexB;
 			vertices[start + 2] = vertexC;

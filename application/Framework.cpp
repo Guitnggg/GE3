@@ -2,6 +2,7 @@
 
 #include "engine/2d/SpriteCommon.h"
 #include "engine/3d/Object3dCommon.h"
+#include "engine/3d/ModelManager.h"
 #include "engine/3d/SrvManager.h"
 #include "engine/3d/TextureManager.h"
 #include "engine/audio/Audio.h"
@@ -22,7 +23,7 @@ Framework::~Framework() {
 
 void Framework::Initialize() {
 	if (initialized_ || winApp_ || input_ || audio_ || dxCommon_ || srvManager_ ||
-		textureManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_
+		textureManager_ || modelManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_
 #ifdef _DEBUG
 		|| imguiManager_
 #endif
@@ -54,6 +55,8 @@ void Framework::Initialize() {
 	srvManager_->Initialize(dxCommon_.get());
 	textureManager_ = std::make_unique<TextureManager>();
 	textureManager_->Initialize(dxCommon_.get(), srvManager_.get());
+	modelManager_ = std::make_unique<ModelManager>();
+	modelManager_->Initialize(dxCommon_.get(), textureManager_.get());
 
 	// 2D・3D描画で共通使用するパイプラインの初期化
 	spriteCommon_ = std::make_unique<SpriteCommon>();
@@ -117,6 +120,7 @@ void Framework::Finalize() {
 	// 依存される側が後まで残る順序で共通機能を解放する
 	object3dCommon_.reset();
 	spriteCommon_.reset();
+	modelManager_.reset();
 	textureManager_.reset();
 	srvManager_.reset();
 	audio_.reset();
