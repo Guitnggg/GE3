@@ -111,6 +111,9 @@
     <ClCompile Include="engine\3d\Camera.cpp">
       <Filter>engine\3d</Filter>
     </ClCompile>
+    <ClCompile Include="engine\3d\MeshGenerator.cpp">
+      <Filter>engine\3d</Filter>
+    </ClCompile>
     <ClCompile Include="engine\3d\SrvManager.cpp">
       <Filter>engine\3d</Filter>
     </ClCompile>
@@ -155,9 +158,6 @@
     <ClInclude Include="engine\core\Mymath.h">
       <Filter>engine\core</Filter>
     </ClInclude>
-    <ClInclude Include="engine\core\ResourceObject.h">
-      <Filter>engine\core</Filter>
-    </ClInclude>
 	<ClInclude Include="engine\core\Input.h">
       <Filter>engine\core</Filter>
 	</ClInclude>
@@ -198,6 +198,9 @@
       <Filter>engine\3d</Filter>
     </ClInclude>
     <ClInclude Include="engine\3d\Camera.h">
+      <Filter>engine\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\3d\MeshGenerator.h">
       <Filter>engine\3d</Filter>
     </ClInclude>
     <ClInclude Include="engine\3d\SrvManager.h">

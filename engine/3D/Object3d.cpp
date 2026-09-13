@@ -1,6 +1,5 @@
 #include "Object3d.h"
 
-#include <cassert>
 #include <fstream>
 #include <cstring>
 #include <sstream>
@@ -218,19 +217,9 @@ ModelData Object3d::LoadObjectFile(const std::string& directoryPath, const std::
 	return modelData;
 }
 
-D3D12_VERTEX_BUFFER_VIEW Object3d::GetVertexBufferView() const { return vertexBufferView_; }
-
-ID3D12Resource* Object3d::GetMaterialResource() const { return materialResource_.Get(); }
-
-ID3D12Resource* Object3d::GetTransformationMatrixResource() const { return transformationMatrixResource_.Get(); }
-
-ID3D12Resource* Object3d::GetDirectionalLightResource() const { return directionalLightResource_.Get(); }
-
 TransformationMatrix* Object3d::GetTransformationMatrixData() const { return transformationMatrixData_; }
 
 DirectionalLight* Object3d::GetDirectionalLightData() const { return directionalLightData_; }
-
-const ModelData& Object3d::GetModelData() const { return modelData_; }
 
 D3D12_GPU_DESCRIPTOR_HANDLE Object3d::GetTextureSrvHandleGPU() const {
 	if (textureManager_ == nullptr) {

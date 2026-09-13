@@ -41,11 +41,6 @@ public:
 	/// </summary>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(uint32_t index) const;
 	
-	/// <summary>
-	/// SRV用ディスクリプタヒープを取得する。
-	/// </summary>
-	ID3D12DescriptorHeap* GetDescriptorHeap() const;
-
 private:
 	DirectXCommon* dxCommon_ = nullptr; // DirectX共通処理
 	uint32_t useIndex_ = 1;             // 次に割り当てるSRV番号（0番はImGui用）

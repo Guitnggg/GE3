@@ -91,10 +91,6 @@ void WinApp::Initialize()
 	}
 }
 
-void WinApp::Update()
-{
-}
-
 void WinApp::Finalize()
 {
 	initialized_ = false;

@@ -26,11 +26,6 @@ public:
 	void Initialize();
 
 	/// <summary>
-	/// ウィンドウ関連の毎フレーム処理を行う
-	/// </summary>
-	void Update();
-
-	/// <summary>
 	/// ウィンドウとCOMを終了処理する
 	/// </summary>
 	void Finalize();

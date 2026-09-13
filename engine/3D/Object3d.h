@@ -57,30 +57,6 @@ public:
 	static ModelData LoadObjectFile(const std::string& directoryPath, const std::string& filename);
 
 	/// <summary>
-	/// 頂点バッファビューを取得する
-	/// </summary>
-	/// <returns>頂点バッファビュー</returns>
-	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const;
-
-	/// <summary>
-	/// マテリアルリソースを取得する
-	/// </summary>
-	/// <returns>マテリアル用GPUリソース</returns>
-	ID3D12Resource* GetMaterialResource() const;
-
-	/// <summary>
-	/// 座標変換行列リソースを取得する
-	/// </summary>
-	/// <returns>座標変換行列用GPUリソース</returns>
-	ID3D12Resource* GetTransformationMatrixResource() const;
-
-	/// <summary>
-	/// 平行光源リソースを取得する
-	/// </summary>
-	/// <returns>平行光源用GPUリソース</returns>
-	ID3D12Resource* GetDirectionalLightResource() const;
-
-	/// <summary>
 	/// 座標変換行列データを取得する
 	/// </summary>
 	/// <returns>CPUから書き込む座標変換行列データ</returns>
@@ -92,16 +68,9 @@ public:
 	/// <returns>CPUから書き込む平行光源データ</returns>
 	DirectionalLight* GetDirectionalLightData() const;
 
-	/// <summary>
-	/// モデルデータを取得する
-	/// </summary>
-	/// <returns>読み込み済みモデルデータ</returns>
-	const ModelData& GetModelData() const;
-
-	/// <summary>モデルのテクスチャに対応するGPU用SRVハンドルを取得する。</summary>
+private:
 	D3D12_GPU_DESCRIPTOR_HANDLE GetTextureSrvHandleGPU() const;
 
-private:
 	Object3dCommon* object3dCommon_ = nullptr;  // 3D描画共通処理
 	TextureManager* textureManager_ = nullptr;  // モデルのテクスチャ管理
 	ModelData modelData_;                       // objファイルから読み込んだモデルデータ

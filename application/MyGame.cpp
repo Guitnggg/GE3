@@ -2,6 +2,7 @@
 
 #include "engine/2d/Sprite.h"
 #include "engine/3d/Camera.h"
+#include "engine/3d/MeshGenerator.h"
 #include "engine/3d/Object3d.h"
 #include "engine/3d/Object3dCommon.h"
 #include "engine/3d/TextureManager.h"
@@ -13,6 +14,7 @@
 #include "engine/core/WinApp.h"
 
 #include <stdexcept>
+#include <cstring>
 
 MyGame::MyGame() = default;
 
@@ -48,12 +50,16 @@ void MyGame::Initialize() {
 	camera_->Update();
 
 	// 球体の頂点バッファを作成し、CPUから書き込めるようにマップする
-	vertexResourceSphere_ = dxCommon_->CreateBufferResource(sizeof(VertexData) * kSphereVertexNum);
+	const std::vector<VertexData> sphereVertices =
+		MeshGenerator::CreateSphere(kSphereSubdivisions);
+	sphereVertexCount_ = static_cast<uint32_t>(sphereVertices.size());
+	vertexResourceSphere_ = dxCommon_->CreateBufferResource(sizeof(VertexData) * sphereVertices.size());
 	vertexBufferViewSphere_.BufferLocation = vertexResourceSphere_->GetGPUVirtualAddress();
-	vertexBufferViewSphere_.SizeInBytes = sizeof(VertexData) * kSphereVertexNum;
+	vertexBufferViewSphere_.SizeInBytes = static_cast<UINT>(sizeof(VertexData) * sphereVertices.size());
 	vertexBufferViewSphere_.StrideInBytes = sizeof(VertexData);
-	vertexResourceSphere_->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere_));
-	GenerateSphereMesh(vertexDataSphere_);
+	VertexData* vertexDataSphere = nullptr;
+	vertexResourceSphere_->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere));
+	std::memcpy(vertexDataSphere, sphereVertices.data(), sizeof(VertexData) * sphereVertices.size());
 
 	// 球体のワールド・WVP行列用定数バッファ
 	wvpResourceSphere_ = dxCommon_->CreateBufferResource(sizeof(TransformationMatrix));
@@ -146,7 +152,7 @@ void MyGame::Draw() {
 		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResourceSphere_->GetGPUVirtualAddress());
 		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureChange_ ? textureSrvHandleGPU2_ : textureSrvHandleGPU_);
 		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightSphereResource_->GetGPUVirtualAddress());
-		dxCommon_->GetCommandList()->DrawInstanced(kSphereVertexNum, 1, 0, 0);
+		dxCommon_->GetCommandList()->DrawInstanced(sphereVertexCount_, 1, 0, 0);
 	}
 
 	// OBJモデルを描画
@@ -182,8 +188,8 @@ void MyGame::Finalize() {
 	materialResourceSphere_.Reset();
 	directionalLightSphereResource_.Reset();
 	vertexBufferViewSphere_ = {};
+	sphereVertexCount_ = 0;
 	wvpDataSphere_ = nullptr;
-	vertexDataSphere_ = nullptr;
 	materialDataSphere_ = nullptr;
 	directionalLightSphereData_ = nullptr;
 	materialDataSprite_ = nullptr;

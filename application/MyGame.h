@@ -54,12 +54,12 @@ private:
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2_{};
 
 	// 球体描画用の頂点バッファと定数バッファ
-	static constexpr uint32_t kSphereVertexNum = 16 * 16 * 6;
+	static constexpr uint32_t kSphereSubdivisions = 16;
+	uint32_t sphereVertexCount_ = 0;
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSphere_;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSphere_{};
 	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResourceSphere_;
 	TransformationMatrix* wvpDataSphere_ = nullptr;
-	VertexData* vertexDataSphere_ = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSphere_;
 	Material* materialDataSphere_ = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightSphereResource_;

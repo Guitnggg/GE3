@@ -4,9 +4,6 @@
 #include <cstdint>
 #include <string>
 
-#define _USE_MATH_DEFINES
-#include <math.h>
-
 /// <summary>
 /// 2次元ベクトル
 /// </summary>
@@ -32,13 +29,6 @@ struct Vector4 {
 	float y;
 	float z;
 	float s;
-};
-
-/// <summary>
-/// 3x3行列
-/// </summary>
-struct Matrix3x3 {
-	float m[3][3];
 };
 
 /// <summary>
@@ -487,14 +477,6 @@ struct VertexData {
 };
 
 /// <summary>
-/// 球の中心座標と半径
-/// </summary>
-struct Sphere {
-	Vector3 center;
-	float radius;
-};
-
-/// <summary>
 /// 描画用マテリアルデータ
 /// </summary>
 struct Material {
@@ -540,104 +522,4 @@ inline Vector3 Normalize(const Vector3& v) {
 	const float inverseLength = 1.0f / std::sqrt(lengthSquared);
 	return {v.x * inverseLength, v.y * inverseLength, v.z * inverseLength};
 }
-
-/// <summary>
-/// 球メッシュの頂点データを作成する
-/// </summary>
-inline void GenerateSphereMesh(VertexData* vertexDataSphere) {
-
-	const uint32_t kSubdivision = 16;
-
-	float pi = float(M_PI);
-
-	const float kLonEvery = pi * 2.0f / float(kSubdivision);
-	const float kLatEvery = pi / float(kSubdivision);
-
-
-	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-		float lat = -pi / 2.0f + kLatEvery * latIndex;//緯度 シ－タ
-
-		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-
-			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
-			float lon = lonIndex * kLonEvery;//経度　ファイ
-
-
-			VertexData vertA{};
-			vertA.position =
-			{
-				std::cos(lat) * std::cos(lon),
-				std::sin(lat),
-				std::cos(lat) * std::sin(lon),
-				1.0f
-			};
-			vertA.texcoord =
-			{
-				float(lonIndex) / float(kSubdivision),
-				1.0f - float(latIndex) / float(kSubdivision)
-			};
-			vertA.normal = {vertA.position.x, vertA.position.y, vertA.position.z};
-
-
-			VertexData vertB{};
-			vertB.position =
-			{
-				std::cos(lat + kLatEvery) * std::cos(lon),
-				std::sin(lat + kLatEvery),
-				std::cos(lat + kLatEvery) * std::sin(lon)
-				,1.0f
-			};
-			vertB.texcoord =
-			{
-				float(lonIndex) / float(kSubdivision),
-				1.0f - float(latIndex + 1) / float(kSubdivision)
-			};
-			vertB.normal = {vertB.position.x, vertB.position.y, vertB.position.z};
-
-
-			VertexData vertC{};
-			vertC.position =
-			{
-				std::cos(lat) * std::cos(lon + kLonEvery),
-				std::sin(lat),
-				std::cos(lat) * std::sin(lon + kLonEvery),
-				1.0f
-			};
-			vertC.texcoord =
-			{
-				float(lonIndex + 1) / float(kSubdivision),
-				1.0f - float(latIndex) / float(kSubdivision)
-			};
-			vertC.normal = {vertC.position.x, vertC.position.y, vertC.position.z};
-
-
-			VertexData vertD{};
-			vertD.position =
-			{
-				std::cos(lat + kLatEvery) * std::cos(lon + kLonEvery),
-				std::sin(lat + kLatEvery),
-				std::cos(lat + kLatEvery) * std::sin(lon + kLonEvery),
-				1.0f
-			};
-			vertD.texcoord =
-			{
-				float(lonIndex + 1) / float(kSubdivision),
-				1.0f - float(latIndex + 1) / float(kSubdivision)
-			};
-			vertD.normal = {vertD.position.x, vertD.position.y, vertD.position.z};
-
-			vertexDataSphere[start + 0] = vertA;
-			vertexDataSphere[start + 1] = vertB;
-			vertexDataSphere[start + 2] = vertC;
-
-			vertexDataSphere[start + 3] = vertC;
-			vertexDataSphere[start + 4] = vertB;
-			vertexDataSphere[start + 5] = vertD;
-
-		}
-
-	}
-
-}
-
 

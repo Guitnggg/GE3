@@ -1,6 +1,5 @@
 #include "Input.h"
 
-#include <cassert>
 #include <stdexcept>
 
 // DirectInputとGUIDを使用するためのライブラリ

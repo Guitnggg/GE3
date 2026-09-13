@@ -1,6 +1,5 @@
 #include "Object3dCommon.h"
 
-#include <cassert>
 #include <stdexcept>
 
 #include "engine/core/Logger.h"

@@ -1,6 +1,5 @@
 #include "TextureManager.h"
 
-#include <cassert>
 #include <stdexcept>
 
 #include "engine/3D/SrvManager.h"

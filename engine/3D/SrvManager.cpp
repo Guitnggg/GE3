@@ -1,6 +1,5 @@
 #include "SrvManager.h"
 
-#include <cassert>
 #include <stdexcept>
 
 #include "engine/core/DirectXCommon.h"
@@ -51,8 +50,4 @@ D3D12_GPU_DESCRIPTOR_HANDLE SrvManager::GetGPUDescriptorHandle(uint32_t index) c
 		throw std::out_of_range("Invalid SRV descriptor index.");
 	}
 	return dxCommon_->GetGPUDescriptorHandleSRV(index);
-}
-
-ID3D12DescriptorHeap* SrvManager::GetDescriptorHeap() const {
-	return dxCommon_ != nullptr ? dxCommon_->GetSRVDescriptorHeap() : nullptr;
 }

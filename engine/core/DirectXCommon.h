@@ -70,7 +70,6 @@ public:
 	/// </summary>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandleSRV(uint32_t index);
 	ID3D12DescriptorHeap* GetSRVDescriptorHeap() const { return srvDescriptorHeap.Get(); }
-	uint32_t GetSRVDescriptorSize() const { return descriptorSizeSRV; }
 	uint32_t GetSwapChainBufferCount() const { return swapChainDesc.BufferCount; }
 	DXGI_FORMAT GetRenderTargetFormat() const { return rtvDesc.Format; }
 
