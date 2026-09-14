@@ -13,7 +13,7 @@ class Enemy final {
 public:
 	void Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager,
 		const std::shared_ptr<Model>& model, const Vector3& position, float radius);
-	void Update(const Camera& camera);
+	void Update(const Camera& camera, float deltaTime, float rotationSpeed);
 	void Draw() const;
 	bool IsPassed(float cameraZ) const;
 	bool IntersectsRay(const Vector3& origin, const Vector3& direction, float& distance) const;

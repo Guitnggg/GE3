@@ -13,8 +13,8 @@ void Enemy::Initialize(Object3dCommon* object3dCommon, TextureManager* textureMa
 	radius_ = radius;
 }
 
-void Enemy::Update(const Camera& camera) {
-	object_->GetTransform().rotate.y += 0.025f;
+void Enemy::Update(const Camera& camera, float deltaTime, float rotationSpeed) {
+	object_->GetTransform().rotate.y += rotationSpeed * deltaTime;
 	object_->Update(camera);
 }
 

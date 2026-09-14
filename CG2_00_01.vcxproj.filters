@@ -28,6 +28,9 @@
     <Filter Include="application\core">
       <UniqueIdentifier>{84B37D22-1DFC-4C08-AEBE-68997723C73A}</UniqueIdentifier>
     </Filter>
+    <Filter Include="application\editor">
+      <UniqueIdentifier>{04A65FD4-3384-4574-B470-E784D9BDB05A}</UniqueIdentifier>
+    </Filter>
     <Filter Include="engine">
       <UniqueIdentifier>{0a00b4e5-8996-409a-bcc6-4e0f3b8cbd83}</UniqueIdentifier>
     </Filter>
@@ -84,6 +87,9 @@
 	</Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="application\editor\GameParameterEditor.cpp">
+      <Filter>application\editor</Filter>
+    </ClCompile>
     <ClCompile Include="application\characters\Enemy.cpp">
       <Filter>application\characters</Filter>
     </ClCompile>
@@ -197,6 +203,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="application\editor\GameParameterEditor.h">
+      <Filter>application\editor</Filter>
+    </ClInclude>
     <ClInclude Include="application\characters\Enemy.h">
       <Filter>application\characters</Filter>
     </ClInclude>

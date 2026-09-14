@@ -2,6 +2,7 @@
 
 #include "application/characters/Enemy.h"
 #include "application/characters/Player.h"
+#include "application/editor/GameParameterEditor.h"
 #include "engine/3D/object/Object3d.h"
 #include "engine/scene/IScene.h"
 #include <cstdint>
@@ -86,6 +87,8 @@ private:
 	std::unique_ptr<Player> player_;
 	std::vector<std::unique_ptr<Enemy>> enemies_;
 	std::vector<std::unique_ptr<Object3d>> railMarkers_;
+	GameParameters parameters_{};
+	GameParameterEditor parameterEditor_{};
 	uint32_t texture_ = 0;
 	uint32_t score_ = 0;
 	uint32_t spawnSequence_ = 0;

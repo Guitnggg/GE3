@@ -8,8 +8,6 @@
 #include <stdexcept>
 
 namespace {
-constexpr float kRailSpeed = 8.0f;
-constexpr float kAimSpeed = 520.0f;
 constexpr float kFovY = 0.70f;
 }
 
@@ -33,26 +31,26 @@ std::unique_ptr<Sprite> Player::CreateReticlePart(float width, float height, uin
 	return sprite;
 }
 
-void Player::Reset() {
+void Player::Reset(uint32_t startingLives) {
 	cameraZ_ = -10.5f;
 	aim_ = {WinApp::kClientWidth * 0.5f, WinApp::kClientHeight * 0.5f};
 	shotFlashTimer_ = 0.0f;
-	lives_ = 3;
+	lives_ = startingLives;
 	camera_.SetTranslate({0.0f, 0.0f, cameraZ_});
 	camera_.Update();
 	UpdateReticle();
 }
 
-bool Player::Update(float deltaTime) {
+bool Player::Update(float deltaTime, float railSpeed, float aimSpeed) {
 	float x = 0.0f;
 	float y = 0.0f;
 	if (input_->PushKey(DIK_A) || input_->PushKey(DIK_LEFT)) { x -= 1.0f; }
 	if (input_->PushKey(DIK_D) || input_->PushKey(DIK_RIGHT)) { x += 1.0f; }
 	if (input_->PushKey(DIK_W) || input_->PushKey(DIK_UP)) { y -= 1.0f; }
 	if (input_->PushKey(DIK_S) || input_->PushKey(DIK_DOWN)) { y += 1.0f; }
-	aim_.x = std::clamp(aim_.x + x * kAimSpeed * deltaTime, 20.0f, WinApp::kClientWidth - 20.0f);
-	aim_.y = std::clamp(aim_.y + y * kAimSpeed * deltaTime, 20.0f, WinApp::kClientHeight - 20.0f);
-	cameraZ_ += kRailSpeed * deltaTime;
+	aim_.x = std::clamp(aim_.x + x * aimSpeed * deltaTime, 20.0f, WinApp::kClientWidth - 20.0f);
+	aim_.y = std::clamp(aim_.y + y * aimSpeed * deltaTime, 20.0f, WinApp::kClientHeight - 20.0f);
+	cameraZ_ += railSpeed * deltaTime;
 	const bool fired = input_->TriggerKey(DIK_SPACE);
 	if (fired) { shotFlashTimer_ = 0.08f; }
 	shotFlashTimer_ = std::max(0.0f, shotFlashTimer_ - deltaTime);

@@ -17,8 +17,6 @@
 #include <stdexcept>
 
 namespace {
-constexpr float kEnemyInterval = 0.85f;
-constexpr float kEnemyAhead = 62.0f;
 constexpr uint32_t kSphereSubdivisions = 12;
 }
 
@@ -52,7 +50,8 @@ std::unique_ptr<Object3d> GameScene::CreateRailMarker(float x, float z) {
 
 void GameScene::ResetGame() {
 	enemies_.clear();
-	player_->Reset();
+	player_->Reset(parameters_.startingLives);
+	parameterEditor_.SetPaused(false);
 	score_ = 0;
 	spawnSequence_ = 0;
 	enemySpawnTimer_ = 0.2f;
@@ -67,10 +66,11 @@ void GameScene::SpawnEnemy() {
 	constexpr float yPositions[] = {-1.6f, 0.0f, 1.7f, -0.7f};
 	const uint32_t xIndex = (spawnSequence_ * 3u + spawnSequence_ / 2u) % 5u;
 	const uint32_t yIndex = (spawnSequence_ * 5u + 1u) % 4u;
-	const float radius = 0.8f + static_cast<float>(spawnSequence_ % 3u) * 0.14f;
+	const float radius = parameters_.enemyBaseRadius +
+		static_cast<float>(spawnSequence_ % 3u) * parameters_.enemyRadiusStep;
 	auto enemy = std::make_unique<Enemy>();
 	enemy->Initialize(context_.object3dCommon, context_.textureManager, sphereModel_,
-		{xPositions[xIndex], yPositions[yIndex], player_->GetCameraZ() + kEnemyAhead}, radius);
+		{xPositions[xIndex], yPositions[yIndex], player_->GetCameraZ() + parameters_.enemySpawnDistance}, radius);
 	enemies_.push_back(std::move(enemy));
 	++spawnSequence_;
 }
@@ -115,25 +115,33 @@ void GameScene::RemovePassedEnemies() {
 void GameScene::Update() {
 	const float deltaTime = context_.time->GetDeltaTime();
 	if (!gameOver_) {
-		if (player_->Update(deltaTime)) { Shoot(); }
-		RemovePassedEnemies();
-		enemySpawnTimer_ -= deltaTime;
-		if (enemySpawnTimer_ <= 0.0f) {
-			SpawnEnemy();
-			enemySpawnTimer_ = std::max(0.38f, kEnemyInterval - static_cast<float>(score_) * 0.012f);
+		if (!parameterEditor_.IsPaused()) {
+			if (player_->Update(deltaTime, parameters_.railSpeed, parameters_.aimSpeed)) { Shoot(); }
+			RemovePassedEnemies();
+			enemySpawnTimer_ -= deltaTime;
+			if (enemySpawnTimer_ <= 0.0f) {
+				SpawnEnemy();
+				enemySpawnTimer_ = std::max(parameters_.minimumSpawnInterval,
+					parameters_.enemySpawnInterval - static_cast<float>(score_) * parameters_.spawnAccelerationPerScore);
+			}
 		}
 	} else if (context_.input->TriggerKey(DIK_R)) { ResetGame(); }
 	UpdateRail();
-	for (auto& enemy : enemies_) { enemy->Update(player_->GetCamera()); }
+	const float enemyDeltaTime = (!gameOver_ && !parameterEditor_.IsPaused()) ? deltaTime : 0.0f;
+	for (auto& enemy : enemies_) {
+		enemy->Update(player_->GetCamera(), enemyDeltaTime, parameters_.enemyRotationSpeed);
+	}
 
 #ifdef _DEBUG
 	context_.imguiManager->BeginFrame();
+	if (parameterEditor_.Draw(parameters_)) { ResetGame(); UpdateRail(); }
 	ImGui::SetNextWindowPos({12.0f, 12.0f}, ImGuiCond_Always);
 	ImGui::SetNextWindowBgAlpha(0.72f);
 	ImGui::Begin("3D RAIL SHOOTER", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 	ImGui::Text("SCORE  %u", score_);
 	ImGui::Text("LIVES  %u", player_->GetLives());
 	ImGui::TextUnformatted("AIM: WASD / Arrow Keys    FIRE: Space");
+	if (parameterEditor_.IsPaused()) { ImGui::TextColored({1.0f, 0.8f, 0.2f, 1.0f}, "PAUSED"); }
 	if (gameOver_) { ImGui::Separator(); ImGui::TextColored({1.0f, 0.25f, 0.2f, 1.0f}, "GAME OVER"); ImGui::TextUnformatted("Press R to restart"); }
 	ImGui::End();
 	context_.imguiManager->EndFrame();

@@ -15,8 +15,8 @@ class TextureManager;
 class Player final {
 public:
 	void Initialize(SpriteCommon* spriteCommon, TextureManager* textureManager, Input* input, uint32_t texture);
-	void Reset();
-	bool Update(float deltaTime);
+	void Reset(uint32_t startingLives = 3);
+	bool Update(float deltaTime, float railSpeed, float aimSpeed);
 	void DrawReticle() const;
 	void Damage();
 
