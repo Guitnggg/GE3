@@ -65,6 +65,9 @@ public:
 	/// <param name="textureIndex">TextureManagerが発行したテクスチャ番号</param>
 	void SetTextureIndex(uint32_t textureIndex) { textureIndex_ = textureIndex; }
 
+	/// <summary>テクスチャへ乗算する表示色を設定する。</summary>
+	void SetColor(const Vector4& color) { materialData_->color = color; }
+
 private:
 	/// <summary>
 	/// サイズと基準点から矩形の4頂点を書き換える。

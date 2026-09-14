@@ -131,7 +131,7 @@ Audio::VoiceHandle Audio::Play(SoundHandle soundHandle, bool loop, float volume,
 
 	try {
 		// 再生パラメーターとPCMデータをSourceVoiceへ設定する
-		ThrowIfFailed(sourceVoice->SetVolume((std::max)(0.0f, volume)), "Failed to set audio volume.");
+		ThrowIfFailed(sourceVoice->SetVolume(std::max(0.0f, volume)), "Failed to set audio volume.");
 		ThrowIfFailed(sourceVoice->SetFrequencyRatio(std::clamp(pitch, XAUDIO2_MIN_FREQ_RATIO, 4.0f)), "Failed to set audio pitch.");
 
 		XAUDIO2_BUFFER buffer{};
@@ -192,7 +192,7 @@ void Audio::SetVolume(VoiceHandle voiceHandle, float volume)
 	// 負の音量は無音として扱い、有効なボイスへ即時反映する
 	PlayingVoice* voice = FindVoice(voiceHandle);
 	if (voice != nullptr) {
-		ThrowIfFailed(voice->sourceVoice->SetVolume((std::max)(0.0f, volume)), "Failed to set audio volume.");
+		ThrowIfFailed(voice->sourceVoice->SetVolume(std::max(0.0f, volume)), "Failed to set audio volume.");
 	}
 }
 
@@ -235,7 +235,7 @@ void Audio::SetMasterVolume(float volume)
 {
 	// マスターボイスへ、負値を除外した全体音量を設定する
 	EnsureInitialized();
-	ThrowIfFailed(masteringVoice_->SetVolume((std::max)(0.0f, volume)), "Failed to set master audio volume.");
+	ThrowIfFailed(masteringVoice_->SetVolume(std::max(0.0f, volume)), "Failed to set master audio volume.");
 }
 
 void Audio::Update()
@@ -309,7 +309,7 @@ std::shared_ptr<Audio::SoundData> Audio::Decode(const std::filesystem::path& pat
 			DWORD byteCount = 0;
 			ThrowIfFailed(buffer->Lock(&bytes, nullptr, &byteCount), "Failed to lock decoded audio data.");
 			try {
-				if (sound->pcmData.size() > (std::numeric_limits<UINT32>::max)() - byteCount) {
+				if (sound->pcmData.size() > std::numeric_limits<UINT32>::max() - byteCount) {
 					throw std::runtime_error("The decoded audio file is too large for one XAudio2 buffer.");
 				}
 				sound->pcmData.insert(sound->pcmData.end(), bytes, bytes + byteCount);

@@ -11,8 +11,8 @@ void Mesh::Initialize(DirectXCommon* dxCommon, const std::vector<VertexData>& ve
 	// 無効な依存先や空の頂点列からGPUリソースを生成しないよう検証する
 	if (dxCommon == nullptr) { throw std::invalid_argument("Mesh requires DirectXCommon."); }
 	if (vertices.empty()) { throw std::invalid_argument("Mesh requires at least one vertex."); }
-	if (vertices.size() > (std::numeric_limits<uint32_t>::max)() ||
-		vertices.size() > (std::numeric_limits<UINT>::max)() / sizeof(VertexData)) {
+	if (vertices.size() > std::numeric_limits<uint32_t>::max() ||
+		vertices.size() > std::numeric_limits<UINT>::max() / sizeof(VertexData)) {
 		throw std::overflow_error("Mesh vertex data is too large.");
 	}
 

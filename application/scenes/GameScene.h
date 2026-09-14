@@ -1,64 +1,57 @@
 #pragma once
 
-#include "engine/audio/Audio.h"
+#include "engine/2D/Sprite.h"
+#include "engine/3D/camera/Camera.h"
+#include "engine/3D/object/Object3d.h"
+#include "engine/math/Mymath.h"
 #include "engine/scene/IScene.h"
-
 #include <cstdint>
 #include <memory>
+#include <vector>
 
-class Camera;
-class Object3d;
-class Sprite;
+class Model;
 
-/// <summary>
-/// 現在のサンプルゲーム内容を管理するシーン。
-/// </summary>
+/// <summary>自動でコースを進む3Dレールシューティング。</summary>
 class GameScene final : public IScene {
 public:
-	GameScene();
 	~GameScene() override;
-
-	/// <summary>
-	/// シーンが利用する共通機能を受け取り、描画オブジェクトを生成する。
-	/// </summary>
 	void Initialize(const SceneContext& context) override;
-
-	/// <summary>
-	/// 入力に応じてオブジェクトの状態を更新する。
-	/// </summary>
 	void Update() override;
-
-	/// <summary>
-	/// 一定時間間隔でシーンのゲームロジックを更新する。
-	/// </summary>
 	void FixedUpdate() override;
-
-	/// <summary>
-	/// シーン内の2D・3Dオブジェクトを描画する。
-	/// </summary>
 	void Draw() override;
-
-	/// <summary>
-	/// シーンが所有するオブジェクトと参照を解放する。
-	/// </summary>
 	void Finalize() override;
 
 private:
+	struct Target {
+		std::unique_ptr<Object3d> object;
+		float radius = 1.0f;
+	};
+
+	std::unique_ptr<Object3d> CreateObject(float x, float y, float z, float scale);
+	std::unique_ptr<Sprite> CreateReticlePart(float width, float height);
+	void ResetGame();
+	void SpawnTarget();
+	void Shoot();
+	void UpdateRail(float deltaTime);
+	void UpdateObjects();
+	static bool RayHitsSphere(const Vector3& origin, const Vector3& direction, const Vector3& center,
+		float radius, float& distance);
+
 	SceneContext context_{};
-	std::unique_ptr<Sprite> sprite_;
-	std::unique_ptr<Object3d> object3d_;
-	std::unique_ptr<Object3d> sphere_;
+	std::shared_ptr<Model> sphereModel_;
 	std::unique_ptr<Camera> camera_;
+	std::vector<Target> targets_;
+	std::vector<std::unique_ptr<Object3d>> railMarkers_;
+	std::vector<std::unique_ptr<Sprite>> reticle_;
 
-	Audio::SoundHandle fanfareSound_{};
-	uint32_t uvCheckerTexture_ = 0;
-	uint32_t monsterBallTexture_ = 0;
-	static constexpr uint32_t kSphereSubdivisions = 16;
-
-	bool textureChange_ = true;
-	bool isRotate_ = false;
-	bool isModel_ = false;
-	bool isSphere_ = true;
-	bool isSprite_ = false;
+	uint32_t texture_ = 0;
+	uint32_t score_ = 0;
+	uint32_t lives_ = 3;
+	uint32_t spawnSequence_ = 0;
+	float cameraZ_ = -10.5f;
+	float targetSpawnTimer_ = 0.0f;
+	float shotFlashTimer_ = 0.0f;
+	Vector2 aim_{640.0f, 360.0f};
+	bool gameOver_ = false;
 	bool initialized_ = false;
 };
