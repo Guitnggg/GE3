@@ -19,6 +19,9 @@
     <Filter Include="application">
       <UniqueIdentifier>{b8f0197f-f56d-4c83-b1b4-1cc0b8cc3901}</UniqueIdentifier>
     </Filter>
+    <Filter Include="application\scenes">
+      <UniqueIdentifier>{386E3448-DAC1-437F-A5C1-C67F47A788C5}</UniqueIdentifier>
+    </Filter>
     <Filter Include="engine">
       <UniqueIdentifier>{0a00b4e5-8996-409a-bcc6-4e0f3b8cbd83}</UniqueIdentifier>
     </Filter>
@@ -55,6 +58,9 @@
 	<Filter Include="engine\input">
 	  <UniqueIdentifier>{49CFFDE7-CC4D-4DA9-9E02-D681740761DD}</UniqueIdentifier>
 	</Filter>
+	<Filter Include="engine\scene">
+	  <UniqueIdentifier>{C8B60755-EBAA-483A-AB4C-F2A6893F9690}</UniqueIdentifier>
+	</Filter>
 	<Filter Include="engine\3d\camera">
 	  <UniqueIdentifier>{B4114EAE-9159-4789-B72B-63330160C68F}</UniqueIdentifier>
 	</Filter>
@@ -71,6 +77,9 @@
   <ItemGroup>
     <ClCompile Include="application\Framework.cpp">
       <Filter>application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\scenes\GameScene.cpp">
+      <Filter>application\scenes</Filter>
     </ClCompile>
     <ClCompile Include="application\MyGame.cpp">
       <Filter>application</Filter>
@@ -104,6 +113,9 @@
     </ClCompile>
 	<ClCompile Include="engine\input\Input.cpp">
       <Filter>engine\input</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\scene\SceneManager.cpp">
+	  <Filter>engine\scene</Filter>
 	</ClCompile>
 	<ClCompile Include="engine\graphics\debug\ImGuiManager.cpp">
 		<Filter>engine\graphics\debug</Filter>
@@ -170,6 +182,9 @@
     <ClInclude Include="application\Framework.h">
       <Filter>application</Filter>
     </ClInclude>
+    <ClInclude Include="application\scenes\GameScene.h">
+      <Filter>application\scenes</Filter>
+    </ClInclude>
     <ClInclude Include="application\MyGame.h">
       <Filter>application</Filter>
     </ClInclude>
@@ -205,6 +220,15 @@
     </ClInclude>
 	<ClInclude Include="engine\input\Input.h">
       <Filter>engine\input</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\scene\IScene.h">
+	  <Filter>engine\scene</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\scene\SceneContext.h">
+	  <Filter>engine\scene</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\scene\SceneManager.h">
+	  <Filter>engine\scene</Filter>
 	</ClInclude>
 	<ClInclude Include="engine\graphics\debug\ImGuiManager.h">
 		<Filter>engine\graphics\debug</Filter>

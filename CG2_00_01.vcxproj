@@ -95,6 +95,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="application\Framework.cpp" />
+    <ClCompile Include="application\scenes\GameScene.cpp" />
     <ClCompile Include="application\MyGame.cpp" />
     <ClCompile Include="application\main.cpp" />
 	<ClCompile Include="engine\audio\Audio.cpp" />
@@ -113,7 +114,8 @@
     <ClCompile Include="engine\core\DirectXCommon.cpp" />
     <ClCompile Include="engine\core\timing\FrameRateController.cpp" />
 	<ClCompile Include="engine\core\diagnostics\HResult.cpp" />
-	<ClCompile Include="engine\input\Input.cpp" />
+    <ClCompile Include="engine\input\Input.cpp" />
+	<ClCompile Include="engine\scene\SceneManager.cpp" />
 	<ClCompile Include="engine\graphics\debug\ImGuiManager.cpp" />
     <ClCompile Include="engine\core\diagnostics\Logger.cpp" />
     <ClCompile Include="engine\core\utility\StringUtility.cpp" />
@@ -129,6 +131,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Framework.h" />
+    <ClInclude Include="application\scenes\GameScene.h" />
     <ClInclude Include="application\MyGame.h" />
     <ClInclude Include="engine\2d\Sprite.h" />
 	<ClInclude Include="engine\audio\Audio.h" />
@@ -146,7 +149,10 @@
     <ClInclude Include="engine\core\DirectXCommon.h" />
     <ClInclude Include="engine\core\timing\FrameRateController.h" />
 	<ClInclude Include="engine\core\diagnostics\HResult.h" />
-	<ClInclude Include="engine\input\Input.h" />
+    <ClInclude Include="engine\input\Input.h" />
+	<ClInclude Include="engine\scene\IScene.h" />
+	<ClInclude Include="engine\scene\SceneContext.h" />
+	<ClInclude Include="engine\scene\SceneManager.h" />
 	<ClInclude Include="engine\graphics\debug\ImGuiManager.h" />
     <ClInclude Include="engine\core\diagnostics\Logger.h" />
     <ClInclude Include="engine\math\Mymath.h" />
