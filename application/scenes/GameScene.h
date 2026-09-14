@@ -1,9 +1,8 @@
 #pragma once
 
-#include "engine/2D/Sprite.h"
-#include "engine/3D/camera/Camera.h"
+#include "application/game/Enemy.h"
+#include "application/game/Player.h"
 #include "engine/3D/object/Object3d.h"
-#include "engine/math/Mymath.h"
 #include "engine/scene/IScene.h"
 #include <cstdint>
 #include <memory>
@@ -11,47 +10,86 @@
 
 class Model;
 
-/// <summary>自動でコースを進む3Dレールシューティング。</summary>
+/// <summary>
+/// 3Dレールシューティング全体の進行と得点を管理する。
+/// </summary>
 class GameScene final : public IScene {
 public:
+	/// <summary>
+	/// 
+	/// </summary>
 	~GameScene() override;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="context"></param>
 	void Initialize(const SceneContext& context) override;
+
+	/// <summary>
+	/// 毎フレーム呼び出されるメソッド。ゲームの状態を更新するためにオーバーライドされます。
+	/// </summary>
 	void Update() override;
+
+	/// <summary>
+	/// 固定更新時に呼び出されるメソッド。物理演算や時間に依存する更新処理を一定間隔で行うためにオーバーライドされます。
+	/// </summary>
 	void FixedUpdate() override;
+
+	/// <summary>
+	/// 
+	/// </summary>
 	void Draw() override;
+
+	/// <summary>
+	/// 
+	/// </summary>
 	void Finalize() override;
 
 private:
-	struct Target {
-		std::unique_ptr<Object3d> object;
-		float radius = 1.0f;
-	};
+	/// <summary>
+	/// レールマーカーを作成する。
+	/// </summary>
+	/// <param name="x"></param>
+	/// <param name="z"></param>
+	/// <returns></returns>
+	std::unique_ptr<Object3d> CreateRailMarker(float x, float z);
 
-	std::unique_ptr<Object3d> CreateObject(float x, float y, float z, float scale);
-	std::unique_ptr<Sprite> CreateReticlePart(float width, float height);
+	/// <summary>
+	/// 
+	/// </summary>
 	void ResetGame();
-	void SpawnTarget();
-	void Shoot();
-	void UpdateRail(float deltaTime);
-	void UpdateObjects();
-	static bool RayHitsSphere(const Vector3& origin, const Vector3& direction, const Vector3& center,
-		float radius, float& distance);
 
+	/// <summary>
+	/// 
+	/// </summary>
+	void SpawnEnemy();
+
+	/// <summary>
+	/// 
+	/// </summary>
+	void Shoot();
+
+	/// <summary>
+	/// 
+	/// </summary>
+	void UpdateRail();
+
+	/// <summary>
+	/// 
+	/// </summary>
+	void RemovePassedEnemies();
+
+private:
 	SceneContext context_{};
 	std::shared_ptr<Model> sphereModel_;
-	std::unique_ptr<Camera> camera_;
-	std::vector<Target> targets_;
+	std::unique_ptr<Player> player_;
+	std::vector<std::unique_ptr<Enemy>> enemies_;
 	std::vector<std::unique_ptr<Object3d>> railMarkers_;
-	std::vector<std::unique_ptr<Sprite>> reticle_;
-
 	uint32_t texture_ = 0;
 	uint32_t score_ = 0;
-	uint32_t lives_ = 3;
 	uint32_t spawnSequence_ = 0;
-	float cameraZ_ = -10.5f;
-	float targetSpawnTimer_ = 0.0f;
-	float shotFlashTimer_ = 0.0f;
-	Vector2 aim_{640.0f, 360.0f};
+	float enemySpawnTimer_ = 0.0f;
 	bool gameOver_ = false;
 	bool initialized_ = false;
 };

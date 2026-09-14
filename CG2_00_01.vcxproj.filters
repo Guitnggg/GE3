@@ -22,6 +22,9 @@
     <Filter Include="application\scenes">
       <UniqueIdentifier>{386E3448-DAC1-437F-A5C1-C67F47A788C5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="application\game">
+      <UniqueIdentifier>{A3CDA732-593A-4C78-BDAE-E8B320B6191F}</UniqueIdentifier>
+    </Filter>
     <Filter Include="engine">
       <UniqueIdentifier>{0a00b4e5-8996-409a-bcc6-4e0f3b8cbd83}</UniqueIdentifier>
     </Filter>
@@ -78,6 +81,12 @@
 	</Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="application\game\Enemy.cpp">
+      <Filter>application\game</Filter>
+    </ClCompile>
+    <ClCompile Include="application\game\Player.cpp">
+      <Filter>application\game</Filter>
+    </ClCompile>
     <ClCompile Include="application\Framework.cpp">
       <Filter>application</Filter>
     </ClCompile>
@@ -185,6 +194,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="application\game\Enemy.h">
+      <Filter>application\game</Filter>
+    </ClInclude>
+    <ClInclude Include="application\game\Player.h">
+      <Filter>application\game</Filter>
+    </ClInclude>
     <ClInclude Include="application\Framework.h">
       <Filter>application</Filter>
     </ClInclude>

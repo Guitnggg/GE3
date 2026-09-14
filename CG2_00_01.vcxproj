@@ -94,6 +94,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="application\game\Enemy.cpp" />
+    <ClCompile Include="application\game\Player.cpp" />
     <ClCompile Include="application\Framework.cpp" />
     <ClCompile Include="application\scenes\GameScene.cpp" />
     <ClCompile Include="application\MyGame.cpp" />
@@ -131,6 +133,8 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="application\game\Enemy.h" />
+    <ClInclude Include="application\game\Player.h" />
     <ClInclude Include="application\Framework.h" />
     <ClInclude Include="application\scenes\GameScene.h" />
     <ClInclude Include="application\MyGame.h" />
