@@ -25,6 +25,9 @@
     <Filter Include="engine">
       <UniqueIdentifier>{0a00b4e5-8996-409a-bcc6-4e0f3b8cbd83}</UniqueIdentifier>
     </Filter>
+    <Filter Include="engine\collision">
+      <UniqueIdentifier>{4FBD2209-294F-4C1D-B94B-CB9BA92E958A}</UniqueIdentifier>
+    </Filter>
     <Filter Include="engine\core">
       <UniqueIdentifier>{e1d46a1a-33d3-4afa-8b0f-cd83e0500c56}</UniqueIdentifier>
     </Filter>
@@ -90,6 +93,9 @@
 	<ClCompile Include="engine\audio\Audio.cpp">
 	  <Filter>engine\audio</Filter>
 	</ClCompile>
+    <ClCompile Include="engine\collision\Collision.cpp">
+      <Filter>engine\collision</Filter>
+    </ClCompile>
     <ClCompile Include="externals\imgui\imgui.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
@@ -194,6 +200,9 @@
 	<ClInclude Include="engine\audio\Audio.h">
 	  <Filter>engine\audio</Filter>
 	</ClInclude>
+    <ClInclude Include="engine\collision\Collision.h">
+      <Filter>engine\collision</Filter>
+    </ClInclude>
     <ClInclude Include="externals\imgui\imgui.h">
       <Filter>imgui</Filter>
     </ClInclude>

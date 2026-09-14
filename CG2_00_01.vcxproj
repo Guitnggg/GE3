@@ -99,6 +99,7 @@
     <ClCompile Include="application\MyGame.cpp" />
     <ClCompile Include="application\main.cpp" />
 	<ClCompile Include="engine\audio\Audio.cpp" />
+    <ClCompile Include="engine\collision\Collision.cpp" />
     <ClCompile Include="engine\2d\Sprite.cpp" />
     <ClCompile Include="engine\2d\SpriteCommon.cpp" />
     <ClCompile Include="engine\3d\camera\Camera.cpp" />
@@ -135,6 +136,7 @@
     <ClInclude Include="application\MyGame.h" />
     <ClInclude Include="engine\2d\Sprite.h" />
 	<ClInclude Include="engine\audio\Audio.h" />
+    <ClInclude Include="engine\collision\Collision.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h" />
     <ClInclude Include="engine\3d\camera\Camera.h" />
 	<ClInclude Include="engine\3d\model\MeshGenerator.h" />
