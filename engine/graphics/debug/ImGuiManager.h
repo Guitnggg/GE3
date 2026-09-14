@@ -71,6 +71,10 @@ private:
 	/// 音声の再生状態とパラメーターを操作するUI項目を描画する。
 	/// </summary>
 	void DrawAudioControls(Audio& audio, uint32_t soundHandle);
+
+	/// <summary>
+	/// 描画同期方法、FPS上限、実測値を操作・表示するUI項目を描画する。
+	/// </summary>
 	void DrawFrameRateControls(FrameRateController& frameRateController);
 
 	/// <summary>固定更新間隔、追いつき上限、実行状況を操作・表示する。</summary>

@@ -18,10 +18,29 @@ public:
 	GameScene();
 	~GameScene() override;
 
+	/// <summary>
+	/// シーンが利用する共通機能を受け取り、描画オブジェクトを生成する。
+	/// </summary>
 	void Initialize(const SceneContext& context) override;
+
+	/// <summary>
+	/// 入力に応じてオブジェクトの状態を更新する。
+	/// </summary>
 	void Update() override;
+
+	/// <summary>
+	/// 一定時間間隔でシーンのゲームロジックを更新する。
+	/// </summary>
 	void FixedUpdate() override;
+
+	/// <summary>
+	/// シーン内の2D・3Dオブジェクトを描画する。
+	/// </summary>
 	void Draw() override;
+
+	/// <summary>
+	/// シーンが所有するオブジェクトと参照を解放する。
+	/// </summary>
 	void Finalize() override;
 
 private:

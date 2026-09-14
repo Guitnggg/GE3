@@ -7,6 +7,7 @@
 
 // スプライト描画共通処理を初期化する
 void SpriteCommon::Initialize(DirectXCommon* directXCommon) {
+	// GPUデバイスとコマンドリストを提供する共通処理を検証して保持する
 	if (directXCommon == nullptr) { throw std::invalid_argument("SpriteCommon requires DirectXCommon."); }
 	dxCommon_ = directXCommon;
 
@@ -15,6 +16,7 @@ void SpriteCommon::Initialize(DirectXCommon* directXCommon) {
 
 // スプライト描画で共通して使うパイプライン設定をコマンドリストへ設定する
 void SpriteCommon::CommonDrawSetting() {
+	// 後続のSpriteが共有するルートシグネチャ、PSO、プリミティブ形式を設定する
 	auto* commandList = dxCommon_->GetCommandList();
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	commandList->SetPipelineState(graphicsPipelineState_.Get());
@@ -23,15 +25,18 @@ void SpriteCommon::CommonDrawSetting() {
 
 // スプライト描画用のルートシグネチャを作成する
 void SpriteCommon::CreateRootSignature() {
+	// 入力アセンブラーを使用できるスプライト用ルートシグネチャを定義する
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
+	// ピクセルシェーダーからテクスチャ1枚を参照するSRVテーブルを設定する
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0;
 	descriptorRange[0].NumDescriptors = 1;
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
+	// マテリアル、座標変換、テクスチャ、ライトの順にルート引数を配置する
 	D3D12_ROOT_PARAMETER rootParameters[4] = {};
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
@@ -53,6 +58,7 @@ void SpriteCommon::CreateRootSignature() {
 	descriptionRootSignature.pParameters = rootParameters;
 	descriptionRootSignature.NumParameters = _countof(rootParameters);
 
+	// UV範囲外を繰り返し、線形補間する静的サンプラーを設定する
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
 	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -65,6 +71,7 @@ void SpriteCommon::CreateRootSignature() {
 	descriptionRootSignature.pStaticSamplers = staticSamplers;
 	descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
 
+	// 定義をバイナリ化し、失敗時は詳細をログへ残す
 	HRESULT hr;
 	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob;
 	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
@@ -76,6 +83,7 @@ void SpriteCommon::CreateRootSignature() {
 		HResult::ThrowIfFailed(hr, "Serializing the sprite root signature");
 	}
 
+	// シリアライズ済みデータからGPUルートシグネチャを生成する
 	hr = dxCommon_->GetDevice()->CreateRootSignature(
 		0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
 	HResult::ThrowIfFailed(hr, "Creating the sprite root signature");
@@ -83,8 +91,10 @@ void SpriteCommon::CreateRootSignature() {
 
 // スプライト描画用のグラフィックスパイプラインを作成する
 void SpriteCommon::CreateGraphicsPipeline() {
+	// PSOが参照するルートシグネチャを先に生成する
 	CreateRootSignature();
 
+	// 頂点バッファ内の位置、UV、法線のレイアウトを定義する
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
@@ -105,6 +115,7 @@ void SpriteCommon::CreateGraphicsPipeline() {
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
 	inputLayoutDesc.NumElements = _countof(inputElementDescs);
 
+	// 全色成分を書き込み、背面カリングを行う基本描画状態を設定する
 	D3D12_BLEND_DESC blendDesc{};
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
@@ -112,6 +123,7 @@ void SpriteCommon::CreateGraphicsPipeline() {
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
+	// スプライト描画で使用する頂点・ピクセルシェーダーをコンパイルする
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob =
 		dxCommon_->CompileShader(L"resource/shaders/Object3d.VS.hlsl", L"vs_6_0");
 	if (vertexShaderBlob == nullptr) { throw std::runtime_error("Sprite vertex shader compilation returned no output."); }
@@ -120,6 +132,7 @@ void SpriteCommon::CreateGraphicsPipeline() {
 		dxCommon_->CompileShader(L"resource/shaders/Object3d.PS.hlsl", L"ps_6_0");
 	if (pixelShaderBlob == nullptr) { throw std::runtime_error("Sprite pixel shader compilation returned no output."); }
 
+	// これまでの設定を1つのグラフィックスPSO記述へまとめる
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 	graphicsPipelineStateDesc.pRootSignature = rootSignature_.Get();
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
@@ -133,6 +146,7 @@ void SpriteCommon::CreateGraphicsPipeline() {
 	graphicsPipelineStateDesc.SampleDesc.Count = 1;
 	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
 
+	// 深度が手前または同一位置のピクセルを描画する
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
 	depthStencilDesc.DepthEnable = true;
 	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
@@ -140,6 +154,7 @@ void SpriteCommon::CreateGraphicsPipeline() {
 	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
+	// 完成した記述から再利用可能なパイプラインステートを生成する
 	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(
 		&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState_));
 	HResult::ThrowIfFailed(hr, "Creating the sprite graphics pipeline");

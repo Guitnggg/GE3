@@ -69,8 +69,20 @@ public:
 	/// SRV用のGPUディスクリプタハンドルを取得する
 	/// </summary>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandleSRV(uint32_t index);
+
+	/// <summary>
+	/// シェーダーから参照できるSRVディスクリプタヒープを取得する。
+	/// </summary>
 	ID3D12DescriptorHeap* GetSRVDescriptorHeap() const { return srvDescriptorHeap.Get(); }
+
+	/// <summary>
+	/// スワップチェーンが所有するバックバッファ数を取得する。
+	/// </summary>
 	uint32_t GetSwapChainBufferCount() const { return swapChainDesc.BufferCount; }
+
+	/// <summary>
+	/// レンダーターゲットのピクセルフォーマットを取得する。
+	/// </summary>
 	DXGI_FORMAT GetRenderTargetFormat() const { return rtvDesc.Format; }
 
 	/// <summary>
@@ -119,8 +131,19 @@ public:
 	/// </summary>
 	void PostDraw();
 
+	/// <summary>
+	/// 垂直同期の有効・無効を設定する。
+	/// </summary>
 	void SetVSyncEnabled(bool enabled) { vsyncEnabled_ = enabled; }
+
+	/// <summary>
+	/// 垂直同期が有効かを取得する。
+	/// </summary>
 	bool IsVSyncEnabled() const { return vsyncEnabled_; }
+
+	/// <summary>
+	/// ディスプレイのティアリング表示に対応しているかを取得する。
+	/// </summary>
 	bool IsTearingSupported() const { return tearingSupported_; }
 
 private:

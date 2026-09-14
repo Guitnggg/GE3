@@ -95,11 +95,13 @@ Audio::SoundHandle Audio::Load(const std::filesystem::path& fileName)
 
 void Audio::Unload(SoundHandle soundHandle)
 {
+	// 未登録ハンドルの解放要求は何もせず終了する
 	const auto sound = sounds_.find(soundHandle);
 	if (sound == sounds_.end()) {
 		return;
 	}
 
+	// パス検索表から対応する項目を外してから、デコード済みデータを解放する
 	for (auto it = loadedPaths_.begin(); it != loadedPaths_.end(); ++it) {
 		if (it->second == soundHandle) {
 			loadedPaths_.erase(it);
@@ -154,6 +156,7 @@ Audio::VoiceHandle Audio::Play(SoundHandle soundHandle, bool loop, float volume,
 
 void Audio::Stop(VoiceHandle voiceHandle)
 {
+	// 指定ボイスをXAudio2から破棄し、再生中一覧からも除去する
 	const auto voice = voices_.find(voiceHandle);
 	if (voice == voices_.end()) {
 		return;
@@ -164,6 +167,7 @@ void Audio::Stop(VoiceHandle voiceHandle)
 
 void Audio::Pause(VoiceHandle voiceHandle)
 {
+	// 存在しないボイスと、既に一時停止中のボイスは状態を変更しない
 	PlayingVoice* voice = FindVoice(voiceHandle);
 	if (voice == nullptr || voice->paused) {
 		return;
@@ -174,6 +178,7 @@ void Audio::Pause(VoiceHandle voiceHandle)
 
 void Audio::Resume(VoiceHandle voiceHandle)
 {
+	// 一時停止中のボイスだけを再開する
 	PlayingVoice* voice = FindVoice(voiceHandle);
 	if (voice == nullptr || !voice->paused) {
 		return;
@@ -184,6 +189,7 @@ void Audio::Resume(VoiceHandle voiceHandle)
 
 void Audio::SetVolume(VoiceHandle voiceHandle, float volume)
 {
+	// 負の音量は無音として扱い、有効なボイスへ即時反映する
 	PlayingVoice* voice = FindVoice(voiceHandle);
 	if (voice != nullptr) {
 		ThrowIfFailed(voice->sourceVoice->SetVolume((std::max)(0.0f, volume)), "Failed to set audio volume.");
@@ -192,6 +198,7 @@ void Audio::SetVolume(VoiceHandle voiceHandle, float volume)
 
 void Audio::SetPitch(VoiceHandle voiceHandle, float pitch)
 {
+	// XAudio2が受け付ける範囲へ制限して再生周波数比を変更する
 	PlayingVoice* voice = FindVoice(voiceHandle);
 	if (voice != nullptr) {
 		ThrowIfFailed(
@@ -202,11 +209,13 @@ void Audio::SetPitch(VoiceHandle voiceHandle, float pitch)
 
 bool Audio::IsPlaying(VoiceHandle voiceHandle) const
 {
+	// 一時停止中または登録されていないボイスは再生中とみなさない
 	const PlayingVoice* voice = FindVoice(voiceHandle);
 	if (voice == nullptr || voice->paused) {
 		return false;
 	}
 
+	// XAudio2のバッファキューが残っているかで再生状態を判定する
 	XAUDIO2_VOICE_STATE state{};
 	voice->sourceVoice->GetState(&state, XAUDIO2_VOICE_NOSAMPLESPLAYED);
 	return state.BuffersQueued != 0;
@@ -214,6 +223,7 @@ bool Audio::IsPlaying(VoiceHandle voiceHandle) const
 
 void Audio::StopAll()
 {
+	// すべてのSourceVoiceを破棄してから管理表を空にする
 	for (auto& [handle, voice] : voices_) {
 		(void)handle;
 		DestroyVoice(voice);
@@ -223,6 +233,7 @@ void Audio::StopAll()
 
 void Audio::SetMasterVolume(float volume)
 {
+	// マスターボイスへ、負値を除外した全体音量を設定する
 	EnsureInitialized();
 	ThrowIfFailed(masteringVoice_->SetVolume((std::max)(0.0f, volume)), "Failed to set master audio volume.");
 }
@@ -323,17 +334,20 @@ std::shared_ptr<Audio::SoundData> Audio::Decode(const std::filesystem::path& pat
 
 std::filesystem::path Audio::ResolvePath(const std::filesystem::path& fileName) const
 {
+	// 絶対パスはそのまま使い、相対パスだけ基準フォルダと結合する
 	return fileName.is_absolute() ? fileName : audioDirectory_ / fileName;
 }
 
 Audio::PlayingVoice* Audio::FindVoice(VoiceHandle voiceHandle)
 {
+	// ハンドルに対応する再生状態へのポインターを返す
 	const auto voice = voices_.find(voiceHandle);
 	return voice == voices_.end() ? nullptr : &voice->second;
 }
 
 const Audio::PlayingVoice* Audio::FindVoice(VoiceHandle voiceHandle) const
 {
+	// constアクセス用に、ハンドルに対応する再生状態を検索する
 	const auto voice = voices_.find(voiceHandle);
 	return voice == voices_.end() ? nullptr : &voice->second;
 }
@@ -352,6 +366,7 @@ void Audio::DestroyVoice(PlayingVoice& voice)
 
 void Audio::EnsureInitialized() const
 {
+	// XAudio2を必要とする操作が初期化前に呼ばれたことを通知する
 	if (!initialized_) {
 		throw std::logic_error("Audio must be initialized before use.");
 	}
