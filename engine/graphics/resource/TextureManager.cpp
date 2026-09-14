@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#include "engine/3D/SrvManager.h"
+#include "engine/graphics/resource/SrvManager.h"
 #include "engine/core/DirectXCommon.h"
 
 void TextureManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager) {

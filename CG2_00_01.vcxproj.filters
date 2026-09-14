@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="ソース ファイル">
@@ -31,6 +31,39 @@
     <Filter Include="engine\3d">
       <UniqueIdentifier>{49a0ad24-3d59-4c92-a041-e8af0ca2bcf1}</UniqueIdentifier>
     </Filter>
+	<Filter Include="engine\core\diagnostics">
+	  <UniqueIdentifier>{D22A4894-97D0-4E58-993A-EF62451B048E}</UniqueIdentifier>
+	</Filter>
+	<Filter Include="engine\core\timing">
+	  <UniqueIdentifier>{B2A5E39F-BC3A-4BCE-B9AE-2CB3F89A7DB2}</UniqueIdentifier>
+	</Filter>
+	<Filter Include="engine\core\utility">
+	  <UniqueIdentifier>{58D8EE0B-923F-4EC4-B6AC-F6ACACACCFB7}</UniqueIdentifier>
+	</Filter>
+	<Filter Include="engine\graphics">
+	  <UniqueIdentifier>{5410893B-9F78-4C4A-BDD2-C2FC5D784657}</UniqueIdentifier>
+	</Filter>
+	<Filter Include="engine\graphics\resource">
+	  <UniqueIdentifier>{52BC3A21-F692-4934-938A-D4D216C5F57E}</UniqueIdentifier>
+	</Filter>
+	<Filter Include="engine\graphics\debug">
+	  <UniqueIdentifier>{A885B46D-27EF-4036-B16D-947E58E38C04}</UniqueIdentifier>
+	</Filter>
+	<Filter Include="engine\math">
+	  <UniqueIdentifier>{E83158EE-F3B8-4016-81C5-5C4DF8F37146}</UniqueIdentifier>
+	</Filter>
+	<Filter Include="engine\input">
+	  <UniqueIdentifier>{49CFFDE7-CC4D-4DA9-9E02-D681740761DD}</UniqueIdentifier>
+	</Filter>
+	<Filter Include="engine\3d\camera">
+	  <UniqueIdentifier>{B4114EAE-9159-4789-B72B-63330160C68F}</UniqueIdentifier>
+	</Filter>
+	<Filter Include="engine\3d\model">
+	  <UniqueIdentifier>{A8B121D0-C4F5-4C93-BA94-9D8D9FA4F31F}</UniqueIdentifier>
+	</Filter>
+	<Filter Include="engine\3d\object">
+	  <UniqueIdentifier>{FEC1F184-A2EE-4EA0-9B7A-E7398C06B175}</UniqueIdentifier>
+	</Filter>
 	<Filter Include="engine\audio">
 	  <UniqueIdentifier>{D25D0E1C-1217-4EEB-B6C1-03063382E64F}</UniqueIdentifier>
 	</Filter>
@@ -69,11 +102,11 @@
     <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-	<ClCompile Include="engine\core\Input.cpp">
-      <Filter>engine\core</Filter>
+	<ClCompile Include="engine\input\Input.cpp">
+      <Filter>engine\input</Filter>
 	</ClCompile>
-	<ClCompile Include="engine\core\ImGuiManager.cpp">
-		<Filter>engine\core</Filter>
+	<ClCompile Include="engine\graphics\debug\ImGuiManager.cpp">
+		<Filter>engine\graphics\debug</Filter>
 	</ClCompile>
     <ClCompile Include="engine\core\WinApp.cpp">
       <Filter>engine\core</Filter>
@@ -81,23 +114,23 @@
     <ClCompile Include="engine\core\DirectXCommon.cpp">
       <Filter>engine\core</Filter>
     </ClCompile>
-    <ClCompile Include="engine\core\FrameRateController.cpp">
-      <Filter>engine\core</Filter>
+    <ClCompile Include="engine\core\timing\FrameRateController.cpp">
+      <Filter>engine\core\timing</Filter>
     </ClCompile>
-    <ClCompile Include="engine\core\HResult.cpp">
-      <Filter>engine\core</Filter>
+    <ClCompile Include="engine\core\diagnostics\HResult.cpp">
+      <Filter>engine\core\diagnostics</Filter>
     </ClCompile>
-    <ClCompile Include="engine\core\StringUtility.cpp">
-      <Filter>engine\core</Filter>
+    <ClCompile Include="engine\core\utility\StringUtility.cpp">
+      <Filter>engine\core\utility</Filter>
     </ClCompile>
-    <ClCompile Include="engine\core\Logger.cpp">
-      <Filter>engine\core</Filter>
+    <ClCompile Include="engine\core\diagnostics\Logger.cpp">
+      <Filter>engine\core\diagnostics</Filter>
     </ClCompile>
-    <ClCompile Include="engine\core\Time.cpp">
-      <Filter>engine\core</Filter>
+    <ClCompile Include="engine\core\timing\Time.cpp">
+      <Filter>engine\core\timing</Filter>
     </ClCompile>
-    <ClCompile Include="engine\core\D3DResourceLeakChecker.cpp">
-      <Filter>engine\core</Filter>
+    <ClCompile Include="engine\core\diagnostics\D3DResourceLeakChecker.cpp">
+      <Filter>engine\core\diagnostics</Filter>
     </ClCompile>
     <ClCompile Include="engine\2d\SpriteCommon.cpp">
       <Filter>engine\2d</Filter>
@@ -105,32 +138,32 @@
     <ClCompile Include="engine\2d\Sprite.cpp">
       <Filter>engine\2d</Filter>
     </ClCompile>
-    <ClCompile Include="engine\3d\Object3dCommon.cpp">
-      <Filter>engine\3d</Filter>
+    <ClCompile Include="engine\3d\object\Object3dCommon.cpp">
+      <Filter>engine\3d\object</Filter>
     </ClCompile>
-    <ClCompile Include="engine\3d\Object3d.cpp">
-      <Filter>engine\3d</Filter>
+    <ClCompile Include="engine\3d\object\Object3d.cpp">
+      <Filter>engine\3d\object</Filter>
     </ClCompile>
-    <ClCompile Include="engine\3d\Camera.cpp">
-      <Filter>engine\3d</Filter>
+    <ClCompile Include="engine\3d\camera\Camera.cpp">
+      <Filter>engine\3d\camera</Filter>
     </ClCompile>
-    <ClCompile Include="engine\3d\MeshGenerator.cpp">
-      <Filter>engine\3d</Filter>
+    <ClCompile Include="engine\3d\model\MeshGenerator.cpp">
+      <Filter>engine\3d\model</Filter>
     </ClCompile>
-    <ClCompile Include="engine\3d\Mesh.cpp">
-      <Filter>engine\3d</Filter>
+    <ClCompile Include="engine\3d\model\Mesh.cpp">
+      <Filter>engine\3d\model</Filter>
     </ClCompile>
-    <ClCompile Include="engine\3d\Model.cpp">
-      <Filter>engine\3d</Filter>
+    <ClCompile Include="engine\3d\model\Model.cpp">
+      <Filter>engine\3d\model</Filter>
     </ClCompile>
-    <ClCompile Include="engine\3d\ModelManager.cpp">
-      <Filter>engine\3d</Filter>
+    <ClCompile Include="engine\3d\model\ModelManager.cpp">
+      <Filter>engine\3d\model</Filter>
     </ClCompile>
-    <ClCompile Include="engine\3d\SrvManager.cpp">
-      <Filter>engine\3d</Filter>
+    <ClCompile Include="engine\graphics\resource\SrvManager.cpp">
+      <Filter>engine\graphics\resource</Filter>
     </ClCompile>
-    <ClCompile Include="engine\3d\TextureManager.cpp">
-      <Filter>engine\3d</Filter>
+    <ClCompile Include="engine\graphics\resource\TextureManager.cpp">
+      <Filter>engine\graphics\resource</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -167,14 +200,14 @@
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="engine\core\Mymath.h">
-      <Filter>engine\core</Filter>
+    <ClInclude Include="engine\math\Mymath.h">
+      <Filter>engine\math</Filter>
     </ClInclude>
-	<ClInclude Include="engine\core\Input.h">
-      <Filter>engine\core</Filter>
+	<ClInclude Include="engine\input\Input.h">
+      <Filter>engine\input</Filter>
 	</ClInclude>
-	<ClInclude Include="engine\core\ImGuiManager.h">
-		<Filter>engine\core</Filter>
+	<ClInclude Include="engine\graphics\debug\ImGuiManager.h">
+		<Filter>engine\graphics\debug</Filter>
 	</ClInclude>
     <ClInclude Include="engine\core\WinApp.h">
       <Filter>engine\core</Filter>
@@ -182,23 +215,23 @@
     <ClInclude Include="engine\core\DirectXCommon.h">
       <Filter>engine\core</Filter>
     </ClInclude>
-    <ClInclude Include="engine\core\FrameRateController.h">
-      <Filter>engine\core</Filter>
+    <ClInclude Include="engine\core\timing\FrameRateController.h">
+      <Filter>engine\core\timing</Filter>
     </ClInclude>
-    <ClInclude Include="engine\core\HResult.h">
-      <Filter>engine\core</Filter>
+    <ClInclude Include="engine\core\diagnostics\HResult.h">
+      <Filter>engine\core\diagnostics</Filter>
     </ClInclude>
-    <ClInclude Include="engine\core\StringUtility.h">
-      <Filter>engine\core</Filter>
+    <ClInclude Include="engine\core\utility\StringUtility.h">
+      <Filter>engine\core\utility</Filter>
     </ClInclude>
-    <ClInclude Include="engine\core\Logger.h">
-      <Filter>engine\core</Filter>
+    <ClInclude Include="engine\core\diagnostics\Logger.h">
+      <Filter>engine\core\diagnostics</Filter>
     </ClInclude>
-    <ClInclude Include="engine\core\Time.h">
-      <Filter>engine\core</Filter>
+    <ClInclude Include="engine\core\timing\Time.h">
+      <Filter>engine\core\timing</Filter>
     </ClInclude>
-    <ClInclude Include="engine\core\D3DResourceLeakChecker.h">
-      <Filter>engine\core</Filter>
+    <ClInclude Include="engine\core\diagnostics\D3DResourceLeakChecker.h">
+      <Filter>engine\core\diagnostics</Filter>
     </ClInclude>
     <ClInclude Include="engine\2d\SpriteCommon.h">
       <Filter>engine\2d</Filter>
@@ -206,32 +239,32 @@
     <ClInclude Include="engine\2d\Sprite.h">
       <Filter>engine\2d</Filter>
     </ClInclude>
-    <ClInclude Include="engine\3d\Object3dCommon.h">
-      <Filter>engine\3d</Filter>
+    <ClInclude Include="engine\3d\object\Object3dCommon.h">
+      <Filter>engine\3d\object</Filter>
     </ClInclude>
-    <ClInclude Include="engine\3d\Object3d.h">
-      <Filter>engine\3d</Filter>
+    <ClInclude Include="engine\3d\object\Object3d.h">
+      <Filter>engine\3d\object</Filter>
     </ClInclude>
-    <ClInclude Include="engine\3d\Camera.h">
-      <Filter>engine\3d</Filter>
+    <ClInclude Include="engine\3d\camera\Camera.h">
+      <Filter>engine\3d\camera</Filter>
     </ClInclude>
-    <ClInclude Include="engine\3d\MeshGenerator.h">
-      <Filter>engine\3d</Filter>
+    <ClInclude Include="engine\3d\model\MeshGenerator.h">
+      <Filter>engine\3d\model</Filter>
     </ClInclude>
-    <ClInclude Include="engine\3d\Mesh.h">
-      <Filter>engine\3d</Filter>
+    <ClInclude Include="engine\3d\model\Mesh.h">
+      <Filter>engine\3d\model</Filter>
     </ClInclude>
-    <ClInclude Include="engine\3d\Model.h">
-      <Filter>engine\3d</Filter>
+    <ClInclude Include="engine\3d\model\Model.h">
+      <Filter>engine\3d\model</Filter>
     </ClInclude>
-    <ClInclude Include="engine\3d\ModelManager.h">
-      <Filter>engine\3d</Filter>
+    <ClInclude Include="engine\3d\model\ModelManager.h">
+      <Filter>engine\3d\model</Filter>
     </ClInclude>
-    <ClInclude Include="engine\3d\SrvManager.h">
-      <Filter>engine\3d</Filter>
+    <ClInclude Include="engine\graphics\resource\SrvManager.h">
+      <Filter>engine\graphics\resource</Filter>
     </ClInclude>
-    <ClInclude Include="engine\3d\TextureManager.h">
-      <Filter>engine\3d</Filter>
+    <ClInclude Include="engine\graphics\resource\TextureManager.h">
+      <Filter>engine\graphics\resource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

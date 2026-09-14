@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 
-#include "HResult.h"
+#include "engine/core/diagnostics/HResult.h"
 #include "externals/DirectXTex/DirectXTex.h"
 
 using namespace Microsoft::WRL;

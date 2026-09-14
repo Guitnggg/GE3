@@ -4,7 +4,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "TextureManager.h"
+#include "engine/graphics/resource/TextureManager.h"
 
 namespace {
 // OBJ解析中だけ使用し、GPU転送後は破棄する一時データ

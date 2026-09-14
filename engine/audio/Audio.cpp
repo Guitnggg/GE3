@@ -1,6 +1,6 @@
 #include "Audio.h"
 
-#include "engine/core/HResult.h"
+#include "engine/core/diagnostics/HResult.h"
 
 #include <mfapi.h>
 #include <mferror.h>

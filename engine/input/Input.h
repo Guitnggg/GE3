@@ -6,7 +6,7 @@
 #define DIRECTINPUT_VERSION 0x0800  // 使用するDirectInputのバージョン
 #include <dinput.h>
 
-#include "WinApp.h"
+#include "engine/core/WinApp.h"
 
 /// <summary>
 /// キーボード入力を管理するクラス

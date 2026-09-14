@@ -1,6 +1,6 @@
 #include "Input.h"
 
-#include "HResult.h"
+#include "engine/core/diagnostics/HResult.h"
 
 // DirectInputとGUIDを使用するためのライブラリ
 #pragma comment(lib,"dinput8.lib")

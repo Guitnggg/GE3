@@ -5,7 +5,7 @@
 #include <string>
 
 #include "application/MyGame.h"
-#include "engine/core/Logger.h"
+#include "engine/core/diagnostics/Logger.h"
 
 #pragma comment(lib, "dxcompiler.lib")
 

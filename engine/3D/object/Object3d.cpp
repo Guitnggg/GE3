@@ -2,11 +2,11 @@
 
 #include <stdexcept>
 
-#include "Camera.h"
-#include "Model.h"
+#include "engine/3D/camera/Camera.h"
+#include "engine/3D/model/Model.h"
 #include "Object3dCommon.h"
-#include "TextureManager.h"
-#include "engine/core/HResult.h"
+#include "engine/graphics/resource/TextureManager.h"
+#include "engine/core/diagnostics/HResult.h"
 
 void Object3d::Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager,
 	const std::shared_ptr<Model>& model) {

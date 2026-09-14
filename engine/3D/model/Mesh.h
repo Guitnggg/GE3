@@ -5,7 +5,7 @@
 #include <wrl.h>
 #include <vector>
 
-#include "engine/core/Mymath.h"
+#include "engine/math/Mymath.h"
 
 class DirectXCommon;
 

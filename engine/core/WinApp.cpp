@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#include "HResult.h"
+#include "engine/core/diagnostics/HResult.h"
 
 #ifdef _DEBUG
 #include "externals/imgui/imgui.h"

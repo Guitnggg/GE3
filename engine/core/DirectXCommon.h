@@ -7,8 +7,8 @@
 #include <wrl.h>
 
 #include "WinApp.h"
-#include "StringUtility.h"
-#include "Logger.h"
+#include "engine/core/utility/StringUtility.h"
+#include "engine/core/diagnostics/Logger.h"
 
 #include "externals/DirectXTex/DirectXTex.h"
 #include "externals/DirectXTex/d3dx12.h"

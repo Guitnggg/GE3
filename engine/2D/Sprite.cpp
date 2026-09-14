@@ -4,8 +4,8 @@
 #include <stdexcept>
 
 #include "SpriteCommon.h"
-#include "engine/3D/TextureManager.h"
-#include "engine/core/HResult.h"
+#include "engine/graphics/resource/TextureManager.h"
+#include "engine/core/diagnostics/HResult.h"
 
 void Sprite::Initialize(SpriteCommon* spriteCommon, TextureManager* textureManager, uint32_t textureIndex) {
 	// 描画パイプラインとテクスチャ管理の両方が利用可能か確認する

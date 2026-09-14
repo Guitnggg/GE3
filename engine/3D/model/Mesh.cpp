@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 #include "engine/core/DirectXCommon.h"
-#include "engine/core/HResult.h"
+#include "engine/core/diagnostics/HResult.h"
 
 void Mesh::Initialize(DirectXCommon* dxCommon, const std::vector<VertexData>& vertices) {
 	// 無効な依存先や空の頂点列からGPUリソースを生成しないよう検証する

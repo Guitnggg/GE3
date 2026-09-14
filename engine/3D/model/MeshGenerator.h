@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "engine/core/Mymath.h"
+#include "engine/math/Mymath.h"
 
 namespace MeshGenerator {
 	/// <summary>

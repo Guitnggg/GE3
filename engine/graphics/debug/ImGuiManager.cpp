@@ -3,10 +3,10 @@
 #include <stdexcept>
 #include <string>
 
-#include "DirectXCommon.h"
-#include "FrameRateController.h"
-#include "Time.h"
-#include "WinApp.h"
+#include "engine/core/DirectXCommon.h"
+#include "engine/core/timing/FrameRateController.h"
+#include "engine/core/timing/Time.h"
+#include "engine/core/WinApp.h"
 #include "engine/audio/Audio.h"
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"

@@ -2,8 +2,8 @@
 
 #include <stdexcept>
 
-#include "engine/core/HResult.h"
-#include "engine/core/Logger.h"
+#include "engine/core/diagnostics/HResult.h"
+#include "engine/core/diagnostics/Logger.h"
 
 // スプライト描画共通処理を初期化する
 void SpriteCommon::Initialize(DirectXCommon* directXCommon) {
