@@ -34,11 +34,15 @@ public:
 	void InitializeFromVertices(DirectXCommon* dxCommon,
 		const std::vector<VertexData>& vertices, uint32_t textureIndex);
 
-	/// <summary>モデルが所有するメッシュを描画する。</summary>
+	/// <summary>
+	/// モデルが所有するメッシュを描画する。
+	/// </summary>
 	/// <param name="commandList">描画命令を記録するコマンドリスト</param>
 	void Draw(ID3D12GraphicsCommandList* commandList) const;
 
-	/// <summary>モデルに設定された既定テクスチャ番号を取得する。</summary>
+	/// <summary>
+	/// モデルに設定された既定テクスチャ番号を取得する。
+	/// </summary>
 	/// <returns>TextureManager内のテクスチャ番号</returns>
 	uint32_t GetDefaultTextureIndex() const { return defaultTextureIndex_; }
 

@@ -1,11 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <d3d12.h>
 #include <memory>
 #include "application/Framework.h"
 #include "engine/audio/Audio.h"
-#include "engine/core/Mymath.h"
 
 class Camera;
 class Object3d;
@@ -50,21 +48,11 @@ private:
 
 	// 読み込み済み音声とテクスチャのハンドル
 	Audio::SoundHandle fanfareSound_{};
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU_{};
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2_{};
 	uint32_t uvCheckerTexture_ = 0;
 	uint32_t monsterBallTexture_ = 0;
 
 	// 手続き生成する球体のメッシュ設定
 	static constexpr uint32_t kSphereSubdivisions = 16;
-
-	// スプライトが所有する定数バッファへの参照
-	Material* materialDataSprite_ = nullptr;
-	TransformationMatrix* transformationMatrixDataSprite_ = nullptr;
-
-	// スプライトとUVの座標変換（3DのTransformは各Object3dが所有する）
-	Transform transformSprite_{{1.0f, 1.0f, 1.0f}, {}, {}};
-	Transform uvTransformSprite_{{1.0f, 1.0f, 1.0f}, {}, {}};
 
 	// ImGuiから変更する表示・動作設定
 	bool textureChange_ = true;

@@ -7,7 +7,6 @@
 #include "engine/3d/Object3d.h"
 #include "engine/3d/Object3dCommon.h"
 #include "engine/3d/TextureManager.h"
-#include "engine/core/DirectXCommon.h"
 #include "engine/core/FrameRateController.h"
 #include "engine/core/ImGuiManager.h"
 #include "engine/core/Input.h"
@@ -32,15 +31,13 @@ void MyGame::Initialize() {
 	// このゲームで使用する音声を読み込む
 	fanfareSound_ = audio_->Load("fanfare.wav");
 
-	// このゲームで表示するスプライトの初期化
-	sprite_ = std::make_unique<Sprite>();
-	sprite_->Initialize(spriteCommon_.get());
-
 	// 描画で切り替えて使用するテクスチャを読み込む
 	uvCheckerTexture_ = textureManager_->Load("resource/uvChecker.png");
 	monsterBallTexture_ = textureManager_->Load("resource/monsterBall.png");
-	textureSrvHandleGPU_ = textureManager_->GetSrvHandleGPU(uvCheckerTexture_);
-	textureSrvHandleGPU2_ = textureManager_->GetSrvHandleGPU(monsterBallTexture_);
+
+	// スプライト自身へ描画用テクスチャと各GPUリソースを持たせる
+	sprite_ = std::make_unique<Sprite>();
+	sprite_->Initialize(spriteCommon_.get(), textureManager_.get(), uvCheckerTexture_);
 
 	// 3Dオブジェクトとカメラの初期化
 	object3d_ = std::make_unique<Object3d>();
@@ -53,9 +50,6 @@ void MyGame::Initialize() {
 	sphere_->Initialize(object3dCommon_.get(), textureManager_.get(),
 		modelManager_->Create(MeshGenerator::CreateSphere(kSphereSubdivisions), uvCheckerTexture_));
 
-	// 毎フレーム更新するスプライトの定数バッファを取得
-	materialDataSprite_ = sprite_->GetMaterialData();
-	transformationMatrixDataSprite_ = sprite_->GetTransformationMatrixData();
 		initialized_ = true;
 	}
 	catch (...) {
@@ -69,8 +63,8 @@ void MyGame::Update() {
 	// ImGuiで描画対象や座標、ライト、音声を操作する
 	imguiManager_->BeginFrame();
 	imguiManager_->DrawDebugWindow(isModel_, isSphere_, isRotate_, isSprite_, textureChange_,
-		*sphere_->GetMaterialData(), sphere_->GetTransform(), *sphere_->GetDirectionalLightData(), transformSprite_,
-		uvTransformSprite_, *audio_, fanfareSound_, *frameRateController_);
+		*sphere_->GetMaterialData(), sphere_->GetTransform(), *sphere_->GetDirectionalLightData(), sprite_->GetTransform(),
+		sprite_->GetUvTransform(), *audio_, fanfareSound_, *frameRateController_);
 #endif
 
 	// 入力と音声など、ゲーム共通の毎フレーム処理
@@ -88,17 +82,8 @@ void MyGame::Update() {
 	object3d_->Update(*camera_);
 	sphere_->Update(*camera_);
 
-	// 画面座標系でスプライトの行列を更新
-	const Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite_.scale, transformSprite_.rotate, transformSprite_.translate);
-	const Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f,
-		static_cast<float>(WinApp::kClientWidth), static_cast<float>(WinApp::kClientHeight), 0.0f, 100.0f);
-	transformationMatrixDataSprite_->WVP = Multiply(worldMatrixSprite, projectionMatrixSprite);
-
-	// スプライトに適用するUV変換を更新
-	Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite_.scale);
-	uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite_.rotate.z));
-	uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite_.translate));
-	materialDataSprite_->uvTransform = uvTransformMatrix;
+	// 画面サイズを渡し、スプライト内部で座標行列とUV行列を更新する
+	sprite_->Update(static_cast<float>(WinApp::kClientWidth), static_cast<float>(WinApp::kClientHeight));
 #ifdef _DEBUG
 	imguiManager_->EndFrame();
 #endif
@@ -120,15 +105,8 @@ void MyGame::Draw() {
 
 	// 2Dスプライトを描画
 	if (isSprite_) {
-		spriteCommon_->CommonDrawSetting();
-		D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite = sprite_->GetVertexBufferView();
-		D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite = sprite_->GetIndexBufferView();
-		dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-		dxCommon_->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);
-		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, sprite_->GetMaterialResource()->GetGPUVirtualAddress());
-		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(1, sprite_->GetTransformationMatrixResource()->GetGPUVirtualAddress());
-		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureChange_ ? textureSrvHandleGPU2_ : textureSrvHandleGPU_);
-		dxCommon_->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+		sprite_->SetTextureIndex(textureChange_ ? monsterBallTexture_ : uvCheckerTexture_);
+		sprite_->Draw();
 	}
 	// ImGuiの描画と画面表示はFramework側で行う
 	EndDraw();
@@ -143,11 +121,7 @@ void MyGame::Finalize() {
 	sphere_.reset();
 	camera_.reset();
 
-	materialDataSprite_ = nullptr;
-	transformationMatrixDataSprite_ = nullptr;
 	fanfareSound_ = Audio::kInvalidSoundHandle;
-	textureSrvHandleGPU_ = {};
-	textureSrvHandleGPU2_ = {};
 	uvCheckerTexture_ = 0;
 	monsterBallTexture_ = 0;
 
