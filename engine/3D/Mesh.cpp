@@ -37,5 +37,6 @@ void Mesh::Draw(ID3D12GraphicsCommandList* commandList) const {
 		throw std::logic_error("Mesh is not initialized or has no command list.");
 	}
 	// 入力アセンブラへ頂点バッファを設定し、三角形リストを描画する
+	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
 	commandList->DrawInstanced(vertexCount_, 1, 0, 0);
 }

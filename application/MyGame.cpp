@@ -64,7 +64,7 @@ void MyGame::Update() {
 	imguiManager_->BeginFrame();
 	imguiManager_->DrawDebugWindow(isModel_, isSphere_, isRotate_, isSprite_, textureChange_,
 		*sphere_->GetMaterialData(), sphere_->GetTransform(), *sphere_->GetDirectionalLightData(), sprite_->GetTransform(),
-		sprite_->GetUvTransform(), *audio_, fanfareSound_, *frameRateController_);
+		sprite_->GetUvTransform(), *audio_, fanfareSound_, *frameRateController_, *time_);
 #endif
 
 	// 入力と音声など、ゲーム共通の毎フレーム処理
@@ -87,6 +87,11 @@ void MyGame::Update() {
 #ifdef _DEBUG
 	imguiManager_->EndFrame();
 #endif
+}
+
+void MyGame::FixedUpdate() {
+	// 当たり判定や物理移動は、必要になった時点でここへ実装する。
+	// 1ステップの秒数にはtime_->GetFixedDeltaTime()を使用する。
 }
 
 void MyGame::Draw() {

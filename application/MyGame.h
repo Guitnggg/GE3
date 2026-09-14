@@ -30,6 +30,11 @@ public:
 	void Update() override;
 
 	/// <summary>
+	/// 固定時間間隔で実行するゲームロジック・物理更新処理。
+	/// </summary>
+	void FixedUpdate() override;
+
+	/// <summary>
 	/// 描画処理。DirectXの描画開始とImGuiの描画を行った後に呼ばれる。
 	/// </summary>
 	void Draw() override;

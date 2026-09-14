@@ -79,12 +79,20 @@ void Framework::Initialize() {
 }
 
 void Framework::Update() {
-	// すべてのゲームで必要になる毎フレーム処理
+	// すべてのゲームで必要になる毎フレーム処理を先に更新する
 	frameRateController_->BeginFrame();
 	time_->Update();
 	input_->Update();
 	audio_->Update();
+
+	// 蓄積時間が固定間隔を満たす間、物理・固定ロジックを一定刻みで進める
+	while (time_->ConsumeFixedStep()) {
+		FixedUpdate();
+	}
 }
+
+// 固定更新を使わないゲームもあるため、基底クラスの既定処理は空にする
+void Framework::FixedUpdate() {}
 
 bool Framework::IsEndRequest() {
 	return winApp_->ProcessMessage();

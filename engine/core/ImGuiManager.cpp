@@ -5,6 +5,7 @@
 
 #include "DirectXCommon.h"
 #include "FrameRateController.h"
+#include "Time.h"
 #include "WinApp.h"
 #include "engine/audio/Audio.h"
 #include "externals/imgui/imgui.h"
@@ -76,7 +77,8 @@ void ImGuiManager::DrawDebugWindow(
 	Transform& spriteUvTransform,
 	Audio& audio,
 	uint32_t soundHandle,
-	FrameRateController& frameRateController) {
+	FrameRateController& frameRateController,
+	Time& time) {
 	// 用途別に折りたためるデバッグ操作画面を構築する
 	ImGui::Begin("Debug Controls");
 
@@ -110,8 +112,34 @@ void ImGuiManager::DrawDebugWindow(
 
 	DrawAudioControls(audio, soundHandle);
 	DrawFrameRateControls(frameRateController);
+	DrawTimeControls(time);
 
 	ImGui::End();
+}
+
+void ImGuiManager::DrawTimeControls(Time& time) {
+	if (!ImGui::CollapsingHeader("Fixed Update", ImGuiTreeNodeFlags_DefaultOpen)) {
+		return;
+	}
+
+	// 秒単位より理解しやすい更新Hzで編集し、Timeへは固定間隔へ変換して渡す
+	float fixedUpdateRate = 1.0f / time.GetFixedDeltaTime();
+	if (ImGui::SliderFloat("Fixed Update Rate", &fixedUpdateRate, 15.0f, 240.0f, "%.0f Hz")) {
+		time.SetFixedDeltaTime(1.0f / fixedUpdateRate);
+	}
+
+	int maxSteps = static_cast<int>(time.GetMaxFixedStepsPerFrame());
+	if (ImGui::SliderInt("Max Catch-up Steps", &maxSteps, 1, 16)) {
+		time.SetMaxFixedStepsPerFrame(static_cast<uint32_t>(maxSteps));
+	}
+
+	// UI構築はTime::Updateより先なので、ここには直前の描画フレームの結果を表示する
+	ImGui::Text("Previous frame steps: %u", time.GetFixedStepsThisFrame());
+	ImGui::Text("Interpolation alpha: %.3f", time.GetFixedInterpolationAlpha());
+	if (time.WasFixedTimeDroppedThisFrame()) {
+		ImGui::TextColored(ImVec4(1.0f, 0.65f, 0.2f, 1.0f),
+			"Catch-up limit reached; excess fixed time was dropped.");
+	}
 }
 
 void ImGuiManager::DrawFrameRateControls(FrameRateController& frameRateController) {

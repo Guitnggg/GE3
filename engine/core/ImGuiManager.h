@@ -7,6 +7,7 @@
 
 class DirectXCommon;
 class FrameRateController;
+class Time;
 class WinApp;
 class Audio;
 
@@ -47,7 +48,8 @@ public:
 		Transform& spriteUvTransform,
 		Audio& audio,
 		uint32_t soundHandle,
-		FrameRateController& frameRateController);
+		FrameRateController& frameRateController,
+		Time& time);
 
 	/// <summary>
 	/// ImGuiのUI構築を終了し、描画データを確定する。
@@ -70,6 +72,9 @@ private:
 	/// </summary>
 	void DrawAudioControls(Audio& audio, uint32_t soundHandle);
 	void DrawFrameRateControls(FrameRateController& frameRateController);
+
+	/// <summary>固定更新間隔、追いつき上限、実行状況を操作・表示する。</summary>
+	void DrawTimeControls(Time& time);
 
 	bool isInitialized_ = false;          // ImGuiが初期化済みか
 	uint64_t debugVoiceHandle_ = 0;       // デバッグ画面から再生した音声の識別番号

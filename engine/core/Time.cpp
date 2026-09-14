@@ -16,9 +16,16 @@ void Time::Initialize() {
 	unscaledDeltaTime_ = 0.0f;
 	elapsedTime_ = 0.0;
 	unscaledElapsedTime_ = 0.0;
+	fixedAccumulator_ = 0.0;
+	fixedElapsedTime_ = 0.0;
 	frameCount_ = 0;
+	fixedFrameCount_ = 0;
 	timeScale_ = kDefaultTimeScale;
 	maxDeltaTime_ = kDefaultMaxDeltaTime;
+	fixedDeltaTime_ = kDefaultFixedDeltaTime;
+	maxFixedStepsPerFrame_ = kDefaultMaxFixedStepsPerFrame;
+	fixedStepsThisFrame_ = 0;
+	fixedTimeDroppedThisFrame_ = false;
 	hasPreviousFrame_ = false;
 	initialized_ = true;
 }
@@ -28,6 +35,8 @@ void Time::Update() {
 	if (!initialized_) {
 		throw std::logic_error("Time is not initialized.");
 	}
+	fixedStepsThisFrame_ = 0;
+	fixedTimeDroppedThisFrame_ = false;
 
 	// 最初のフレームは比較対象がないため、経過時間0として基準時刻だけ記録する
 	const Clock::time_point currentTime = Clock::now();
@@ -52,7 +61,28 @@ void Time::Update() {
 	// 実時間とゲーム内時間を別々に累積する
 	unscaledElapsedTime_ += rawDeltaTime;
 	elapsedTime_ += static_cast<double>(deltaTime_);
+	// TimeScale適用後の時間を蓄積し、固定更新側で一定量ずつ消費する
+	fixedAccumulator_ += static_cast<double>(deltaTime_);
 	++frameCount_;
+}
+
+bool Time::ConsumeFixedStep() {
+	if (!initialized_) { throw std::logic_error("Time is not initialized."); }
+	const double step = static_cast<double>(fixedDeltaTime_);
+	if (fixedAccumulator_ < step) { return false; }
+
+	// 上限を超える遅延は捨て、処理落ちがさらに固定更新を増やす悪循環を防ぐ
+	if (fixedStepsThisFrame_ >= maxFixedStepsPerFrame_) {
+		fixedAccumulator_ = std::fmod(fixedAccumulator_, step);
+		fixedTimeDroppedThisFrame_ = true;
+		return false;
+	}
+
+	fixedAccumulator_ -= step;
+	fixedElapsedTime_ += step;
+	++fixedFrameCount_;
+	++fixedStepsThisFrame_;
+	return true;
 }
 
 void Time::Finalize() {
@@ -61,9 +91,16 @@ void Time::Finalize() {
 	unscaledDeltaTime_ = 0.0f;
 	elapsedTime_ = 0.0;
 	unscaledElapsedTime_ = 0.0;
+	fixedAccumulator_ = 0.0;
+	fixedElapsedTime_ = 0.0;
 	frameCount_ = 0;
+	fixedFrameCount_ = 0;
 	timeScale_ = kDefaultTimeScale;
 	maxDeltaTime_ = kDefaultMaxDeltaTime;
+	fixedDeltaTime_ = kDefaultFixedDeltaTime;
+	maxFixedStepsPerFrame_ = kDefaultMaxFixedStepsPerFrame;
+	fixedStepsThisFrame_ = 0;
+	fixedTimeDroppedThisFrame_ = false;
 	hasPreviousFrame_ = false;
 	initialized_ = false;
 }
@@ -82,4 +119,24 @@ void Time::SetMaxDeltaTime(float maxDeltaTime) {
 		throw std::invalid_argument("Maximum delta time must be finite and positive.");
 	}
 	maxDeltaTime_ = maxDeltaTime;
+}
+
+float Time::GetFixedInterpolationAlpha() const {
+	if (fixedDeltaTime_ <= 0.0f) { return 0.0f; }
+	return static_cast<float>(std::clamp(
+		fixedAccumulator_ / static_cast<double>(fixedDeltaTime_), 0.0, 1.0));
+}
+
+void Time::SetFixedDeltaTime(float fixedDeltaTime) {
+	if (!std::isfinite(fixedDeltaTime) || fixedDeltaTime <= 0.0f) {
+		throw std::invalid_argument("Fixed delta time must be finite and positive.");
+	}
+	fixedDeltaTime_ = fixedDeltaTime;
+	// 設定変更前の大きな持ち越し時間を、新しい更新間隔未満へ収める
+	fixedAccumulator_ = std::fmod(fixedAccumulator_, static_cast<double>(fixedDeltaTime_));
+}
+
+void Time::SetMaxFixedStepsPerFrame(uint32_t maxSteps) {
+	if (maxSteps == 0) { throw std::invalid_argument("Maximum fixed steps must be at least one."); }
+	maxFixedStepsPerFrame_ = maxSteps;
 }

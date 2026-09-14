@@ -37,6 +37,12 @@ public:
 	virtual void Update();
 
 	/// <summary>
+	/// 一定時間間隔で実行するゲームロジック・物理更新処理。
+	/// 派生クラスで必要に応じてオーバーライドする。
+	/// </summary>
+	virtual void FixedUpdate();
+
+	/// <summary>
 	/// ゲーム固有の描画処理。派生クラスで実装する。
 	/// </summary>
 	virtual void Draw() = 0;
