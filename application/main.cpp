@@ -7,7 +7,7 @@
 #include <exception>
 #include <string>
 
-#include "application/MyGame.h"
+#include "application/core/MyGame.h"
 #include "engine/core/diagnostics/Logger.h"
 
 #pragma comment(lib, "dxcompiler.lib")

@@ -1,7 +1,7 @@
 #include "application/scenes/GameScene.h"
 
-#include "application/game/Enemy.h"
-#include "application/game/Player.h"
+#include "application/characters/Enemy.h"
+#include "application/characters/Player.h"
 #include "engine/3D/model/MeshGenerator.h"
 #include "engine/3D/model/ModelManager.h"
 #include "engine/3D/object/Object3dCommon.h"

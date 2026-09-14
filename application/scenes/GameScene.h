@@ -1,7 +1,7 @@
 #pragma once
 
-#include "application/game/Enemy.h"
-#include "application/game/Player.h"
+#include "application/characters/Enemy.h"
+#include "application/characters/Player.h"
 #include "engine/3D/object/Object3d.h"
 #include "engine/scene/IScene.h"
 #include <cstdint>

@@ -1,4 +1,4 @@
-#include "application/game/Player.h"
+#include "application/characters/Player.h"
 
 #include "engine/core/WinApp.h"
 #include "engine/graphics/resource/TextureManager.h"

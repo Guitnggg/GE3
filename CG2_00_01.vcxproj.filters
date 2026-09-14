@@ -22,8 +22,11 @@
     <Filter Include="application\scenes">
       <UniqueIdentifier>{386E3448-DAC1-437F-A5C1-C67F47A788C5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="application\game">
+    <Filter Include="application\characters">
       <UniqueIdentifier>{A3CDA732-593A-4C78-BDAE-E8B320B6191F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\core">
+      <UniqueIdentifier>{84B37D22-1DFC-4C08-AEBE-68997723C73A}</UniqueIdentifier>
     </Filter>
     <Filter Include="engine">
       <UniqueIdentifier>{0a00b4e5-8996-409a-bcc6-4e0f3b8cbd83}</UniqueIdentifier>
@@ -81,20 +84,20 @@
 	</Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="application\game\Enemy.cpp">
-      <Filter>application\game</Filter>
+    <ClCompile Include="application\characters\Enemy.cpp">
+      <Filter>application\characters</Filter>
     </ClCompile>
-    <ClCompile Include="application\game\Player.cpp">
-      <Filter>application\game</Filter>
+    <ClCompile Include="application\characters\Player.cpp">
+      <Filter>application\characters</Filter>
     </ClCompile>
-    <ClCompile Include="application\Framework.cpp">
-      <Filter>application</Filter>
+    <ClCompile Include="application\core\Framework.cpp">
+      <Filter>application\core</Filter>
     </ClCompile>
     <ClCompile Include="application\scenes\GameScene.cpp">
       <Filter>application\scenes</Filter>
     </ClCompile>
-    <ClCompile Include="application\MyGame.cpp">
-      <Filter>application</Filter>
+    <ClCompile Include="application\core\MyGame.cpp">
+      <Filter>application\core</Filter>
     </ClCompile>
     <ClCompile Include="application\main.cpp">
       <Filter>application</Filter>
@@ -194,20 +197,20 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\game\Enemy.h">
-      <Filter>application\game</Filter>
+    <ClInclude Include="application\characters\Enemy.h">
+      <Filter>application\characters</Filter>
     </ClInclude>
-    <ClInclude Include="application\game\Player.h">
-      <Filter>application\game</Filter>
+    <ClInclude Include="application\characters\Player.h">
+      <Filter>application\characters</Filter>
     </ClInclude>
-    <ClInclude Include="application\Framework.h">
-      <Filter>application</Filter>
+    <ClInclude Include="application\core\Framework.h">
+      <Filter>application\core</Filter>
     </ClInclude>
     <ClInclude Include="application\scenes\GameScene.h">
       <Filter>application\scenes</Filter>
     </ClInclude>
-    <ClInclude Include="application\MyGame.h">
-      <Filter>application</Filter>
+    <ClInclude Include="application\core\MyGame.h">
+      <Filter>application\core</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imconfig.h">
       <Filter>imgui</Filter>

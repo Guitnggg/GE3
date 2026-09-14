@@ -1,4 +1,4 @@
-#include "application/game/Enemy.h"
+#include "application/characters/Enemy.h"
 
 #include "engine/3D/camera/Camera.h"
 #include <cmath>

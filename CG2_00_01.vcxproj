@@ -94,11 +94,11 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="application\game\Enemy.cpp" />
-    <ClCompile Include="application\game\Player.cpp" />
-    <ClCompile Include="application\Framework.cpp" />
+    <ClCompile Include="application\characters\Enemy.cpp" />
+    <ClCompile Include="application\characters\Player.cpp" />
+    <ClCompile Include="application\core\Framework.cpp" />
     <ClCompile Include="application\scenes\GameScene.cpp" />
-    <ClCompile Include="application\MyGame.cpp" />
+    <ClCompile Include="application\core\MyGame.cpp" />
     <ClCompile Include="application\main.cpp" />
 	<ClCompile Include="engine\audio\Audio.cpp" />
     <ClCompile Include="engine\collision\Collision.cpp" />
@@ -133,11 +133,11 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\game\Enemy.h" />
-    <ClInclude Include="application\game\Player.h" />
-    <ClInclude Include="application\Framework.h" />
+    <ClInclude Include="application\characters\Enemy.h" />
+    <ClInclude Include="application\characters\Player.h" />
+    <ClInclude Include="application\core\Framework.h" />
     <ClInclude Include="application\scenes\GameScene.h" />
-    <ClInclude Include="application\MyGame.h" />
+    <ClInclude Include="application\core\MyGame.h" />
     <ClInclude Include="engine\2d\Sprite.h" />
 	<ClInclude Include="engine\audio\Audio.h" />
     <ClInclude Include="engine\collision\Collision.h" />

@@ -1,4 +1,4 @@
-#include "application/MyGame.h"
+#include "application/core/MyGame.h"
 
 #include "application/scenes/GameScene.h"
 #include "engine/scene/SceneManager.h"
