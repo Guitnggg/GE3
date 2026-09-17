@@ -21,12 +21,13 @@ public:
 		const Vector3& initialDirection, uint64_t targetId);
 	void Update(const Camera& camera, float deltaTime, const Enemy* target);
 	void Draw() const;
-	bool Intersects(const Enemy& enemy, float deltaTime) const;
+	bool Intersects(const Enemy& enemy) const;
 	bool IsExpired() const { return remainingLifetime_ <= 0.0f; }
 	uint64_t GetTargetId() const { return targetId_; }
 
 private:
 	std::unique_ptr<Object3d> object_;
+	Vector3 previousPosition_{};
 	Vector3 velocity_{};
 	uint64_t targetId_ = 0;
 	float remainingLifetime_ = 0.0f;

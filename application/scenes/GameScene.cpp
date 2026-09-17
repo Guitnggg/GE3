@@ -101,7 +101,7 @@ void GameScene::UpdateBullets(float deltaTime) {
 	for (auto bulletIt = bullets_.begin(); bulletIt != bullets_.end();) {
 		(*bulletIt)->Update(player_->GetCamera(), deltaTime);
 		auto hit = std::find_if(enemies_.begin(), enemies_.end(),
-			[&bulletIt, deltaTime](const auto& enemy) { return (*bulletIt)->Intersects(*enemy, deltaTime); });
+			[&bulletIt](const auto& enemy) { return (*bulletIt)->Intersects(*enemy); });
 		if (hit != enemies_.end()) {
 			if ((*hit)->GetId() == lockedEnemyId_) { lockedEnemyId_ = 0; }
 			enemies_.erase(hit);
@@ -143,7 +143,7 @@ void GameScene::UpdateLockOn(float deltaTime, bool acceptMouseInput) {
 	const Vector3 origin = player_->GetShotOrigin();
 	const Vector3 direction = player_->GetShotDirection();
 	Enemy* bestTarget = nullptr;
-	float bestScore = std::numeric_limits<float>::max();
+	float bestForward = std::numeric_limits<float>::max();
 	for (const auto& enemy : enemies_) {
 		const Vector3 offset{
 			enemy->GetPosition().x - origin.x,
@@ -154,8 +154,8 @@ void GameScene::UpdateLockOn(float deltaTime, bool acceptMouseInput) {
 		const float distanceSquared = offset.x * offset.x + offset.y * offset.y + offset.z * offset.z;
 		const float perpendicularSquared = std::max(0.0f, distanceSquared - forward * forward);
 		const float lockRadius = enemy->GetRadius() + 2.5f;
-		if (perpendicularSquared <= lockRadius * lockRadius && perpendicularSquared < bestScore) {
-			bestScore = perpendicularSquared;
+		if (perpendicularSquared <= lockRadius * lockRadius && forward < bestForward) {
+			bestForward = forward;
 			bestTarget = enemy.get();
 		}
 	}
@@ -176,7 +176,7 @@ void GameScene::UpdateMissiles(float deltaTime) {
 	for (auto missileIt = missiles_.begin(); missileIt != missiles_.end();) {
 		Enemy* target = FindEnemy((*missileIt)->GetTargetId());
 		(*missileIt)->Update(player_->GetCamera(), deltaTime, target);
-		if (target != nullptr && (*missileIt)->Intersects(*target, deltaTime)) {
+		if (target != nullptr && (*missileIt)->Intersects(*target)) {
 			const uint64_t hitId = target->GetId();
 			enemies_.erase(std::remove_if(enemies_.begin(), enemies_.end(),
 				[hitId](const auto& enemy) { return enemy->GetId() == hitId; }), enemies_.end());
@@ -227,11 +227,13 @@ void GameScene::Update() {
 			if (player_->Update(deltaTime, parameters_.railSpeed, parameters_.playerMoveSpeed, acceptFireInput)) { Shoot(); }
 			UpdateLockOn(deltaTime, acceptFireInput);
 			RemovePassedEnemies();
-			enemySpawnTimer_ -= deltaTime;
-			if (enemySpawnTimer_ <= 0.0f) {
-				SpawnEnemy();
-				enemySpawnTimer_ = std::max(parameters_.minimumSpawnInterval,
-					parameters_.enemySpawnInterval - static_cast<float>(score_) * parameters_.spawnAccelerationPerScore);
+			if (!gameOver_) {
+				enemySpawnTimer_ -= deltaTime;
+				if (enemySpawnTimer_ <= 0.0f) {
+					SpawnEnemy();
+					enemySpawnTimer_ = std::max(parameters_.minimumSpawnInterval,
+						parameters_.enemySpawnInterval - static_cast<float>(score_) * parameters_.spawnAccelerationPerScore);
+				}
 			}
 		}
 	} else if (context_.input->TriggerKey(DIK_R)) { ResetGame(); }

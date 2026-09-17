@@ -49,6 +49,11 @@ namespace Collision {
 	bool Intersects(const SphereCollider& sphere, const AabbCollider& aabb) noexcept;
 
 	/// <summary>
+	/// 線分が球と交差または接触しているか判定する。
+	/// </summary>
+	bool IntersectsSegment(const Vector3& start, const Vector3& end, const SphereCollider& sphere) noexcept;
+
+	/// <summary>
 	/// 点がAABBの内部または境界上にあるか判定する。
 	/// </summary>
 	bool Contains(const AabbCollider& aabb, const Vector3& point) noexcept;

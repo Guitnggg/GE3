@@ -3,6 +3,7 @@
 #include "application/characters/Enemy.h"
 #include "engine/3D/camera/Camera.h"
 #include "engine/3D/object/Object3d.h"
+#include "engine/collision/Collision.h"
 
 #include <cmath>
 #include <stdexcept>
@@ -17,6 +18,7 @@ void Bullet::Initialize(Object3dCommon* object3dCommon, TextureManager* textureM
 	object_ = std::make_unique<Object3d>();
 	object_->Initialize(object3dCommon, textureManager, model);
 	object_->GetTransform().translate = position;
+	previousPosition_ = position;
 	object_->GetTransform().scale = {radius_, radius_, 0.45f};
 	object_->GetMaterialData()->color = {0.25f, 0.9f, 1.0f, 1.0f};
 	const Vector3 normalized = Normalize(direction);
@@ -27,6 +29,7 @@ void Bullet::Initialize(Object3dCommon* object3dCommon, TextureManager* textureM
 void Bullet::Update(const Camera& camera, float deltaTime) {
 	if (!object_) { throw std::logic_error("Bullet is not initialized."); }
 	auto& position = object_->GetTransform().translate;
+	previousPosition_ = position;
 	position.x += velocity_.x * deltaTime;
 	position.y += velocity_.y * deltaTime;
 	position.z += velocity_.z * deltaTime;
@@ -39,14 +42,10 @@ void Bullet::Draw() const {
 	object_->Draw();
 }
 
-bool Bullet::Intersects(const Enemy& enemy, float deltaTime) const {
+bool Bullet::Intersects(const Enemy& enemy) const {
 	if (!object_) { return false; }
 	const Vector3& position = object_->GetTransform().translate;
-	const Vector3& target = enemy.GetPosition();
-	const float x = target.x - position.x;
-	const float y = target.y - position.y;
-	const float z = target.z - position.z;
-	// 高速な通常弾が敵を1フレームで通過しないよう移動距離を判定幅へ加える
-	const float hitRadius = radius_ + enemy.GetRadius() + kSpeed * deltaTime;
-	return x * x + y * y + z * z <= hitRadius * hitRadius;
+	// 弾の前後位置を結ぶ線分で判定し、高速移動によるすり抜けと横方向の誤命中を防ぐ
+	return Collision::IntersectsSegment(previousPosition_, position,
+		SphereCollider{enemy.GetPosition(), radius_ + enemy.GetRadius()});
 }

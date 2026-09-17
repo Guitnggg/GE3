@@ -57,6 +57,32 @@ bool Collision::Intersects(const SphereCollider& sphere, const AabbCollider& aab
 	return DistanceSquared(sphere.center, closestPoint) <= radius * radius;
 }
 
+bool Collision::IntersectsSegment(const Vector3& start, const Vector3& end, const SphereCollider& sphere) noexcept {
+	if (!IsFinite(start) || !IsFinite(end) || !IsValid(sphere)) { return false; }
+	const Vector3 segment{end.x - start.x, end.y - start.y, end.z - start.z};
+	const Vector3 toCenter{
+		sphere.center.x - start.x,
+		sphere.center.y - start.y,
+		sphere.center.z - start.z,
+	};
+	const double lengthSquared = static_cast<double>(segment.x) * segment.x +
+		static_cast<double>(segment.y) * segment.y + static_cast<double>(segment.z) * segment.z;
+	double ratio = 0.0;
+	if (lengthSquared > 0.0) {
+		ratio = (static_cast<double>(toCenter.x) * segment.x +
+			static_cast<double>(toCenter.y) * segment.y + static_cast<double>(toCenter.z) * segment.z) /
+			lengthSquared;
+		ratio = std::clamp(ratio, 0.0, 1.0);
+	}
+	const Vector3 closest{
+		start.x + segment.x * static_cast<float>(ratio),
+		start.y + segment.y * static_cast<float>(ratio),
+		start.z + segment.z * static_cast<float>(ratio),
+	};
+	const double radius = sphere.radius;
+	return DistanceSquared(closest, sphere.center) <= radius * radius;
+}
+
 bool Collision::Contains(const AabbCollider& aabb, const Vector3& point) noexcept {
 	if (!IsValid(aabb) || !IsFinite(point)) { return false; }
 	// 各軸が閉区間内にあるため、境界上の点も内包とみなす

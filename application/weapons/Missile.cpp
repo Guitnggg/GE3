@@ -3,6 +3,7 @@
 #include "application/characters/Enemy.h"
 #include "engine/3D/camera/Camera.h"
 #include "engine/3D/object/Object3d.h"
+#include "engine/collision/Collision.h"
 
 #include <cmath>
 #include <stdexcept>
@@ -18,6 +19,7 @@ void Missile::Initialize(Object3dCommon* object3dCommon, TextureManager* texture
 	object_ = std::make_unique<Object3d>();
 	object_->Initialize(object3dCommon, textureManager, model);
 	object_->GetTransform().translate = position;
+	previousPosition_ = position;
 	object_->GetTransform().scale = {0.12f, 0.12f, 0.12f};
 	const Vector3 direction = Normalize(initialDirection);
 	velocity_ = {direction.x * kSpeed, direction.y * kSpeed, direction.z * kSpeed};
@@ -35,6 +37,7 @@ void Missile::Update(const Camera& camera, float deltaTime, const Enemy* target)
 		velocity_ = {direction.x * kSpeed, direction.y * kSpeed, direction.z * kSpeed};
 	}
 	auto& position = object_->GetTransform().translate;
+	previousPosition_ = position;
 	position.x += velocity_.x * deltaTime;
 	position.y += velocity_.y * deltaTime;
 	position.z += velocity_.z * deltaTime;
@@ -47,13 +50,9 @@ void Missile::Draw() const {
 	object_->Draw();
 }
 
-bool Missile::Intersects(const Enemy& enemy, float deltaTime) const {
+bool Missile::Intersects(const Enemy& enemy) const {
 	if (!object_) { return false; }
 	const Vector3& position = object_->GetTransform().translate;
-	const Vector3& target = enemy.GetPosition();
-	const float x = target.x - position.x;
-	const float y = target.y - position.y;
-	const float z = target.z - position.z;
-	const float hitRadius = enemy.GetRadius() + 0.35f + kSpeed * deltaTime;
-	return x * x + y * y + z * z <= hitRadius * hitRadius;
+	return Collision::IntersectsSegment(previousPosition_, position,
+		SphereCollider{enemy.GetPosition(), enemy.GetRadius() + 0.35f});
 }

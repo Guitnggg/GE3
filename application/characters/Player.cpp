@@ -112,7 +112,17 @@ Vector3 Player::GetShotDirection() const {
 	const float normalizedY = 1.0f - aim_.y / (WinApp::kClientHeight * 0.5f);
 	const float tanHalfFov = std::tan(kFovY * 0.5f);
 	const float aspect = static_cast<float>(WinApp::kClientWidth) / WinApp::kClientHeight;
-	return Normalize({normalizedX * aspect * tanHalfFov, normalizedY * tanHalfFov, 1.0f});
+	const Vector3 cameraDirection = Normalize(
+		{normalizedX * aspect * tanHalfFov, normalizedY * tanHalfFov, 1.0f});
+	// カメラの照準レイ上へ収束させ、移動した機体から撃っても照準との視差を抑える
+	constexpr float kAimDistance = 100.0f;
+	const Vector3 aimPoint{
+		cameraDirection.x * kAimDistance,
+		cameraDirection.y * kAimDistance,
+		cameraZ_ + cameraDirection.z * kAimDistance,
+	};
+	const Vector3& origin = ship_->GetTransform().translate;
+	return Normalize({aimPoint.x - origin.x, aimPoint.y - origin.y, aimPoint.z - origin.z});
 }
 
 // unsigned整数のアンダーフローを防ぐため、0より大きい場合だけ減算する
