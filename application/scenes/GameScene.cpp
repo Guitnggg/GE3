@@ -28,7 +28,7 @@ void GameScene::Initialize(const SceneContext& context) {
 	context_ = context;
 	try {
 		// 敵とレールで共有するメッシュを1度だけ生成する
-		texture_ = context_.textureManager->Load("resource/monsterBall.png");
+		texture_ = context_.textureManager->Load("resource/textures/monsterBall.png");
 		sphereModel_ = context_.modelManager->Create(MeshGenerator::CreateSphere(kSphereSubdivisions), texture_);
 		// プレイヤーを生成した後、進行方向の左右へレールマーカーを並べる
 		player_ = std::make_unique<Player>();

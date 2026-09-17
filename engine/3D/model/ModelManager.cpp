@@ -19,7 +19,7 @@ std::shared_ptr<Model> ModelManager::Load(const std::string& directoryPath, cons
 	if (dxCommon_ == nullptr || textureManager_ == nullptr) {
 		throw std::logic_error("ModelManager is not initialized.");
 	}
-	// "resource/./model.obj"などの表記揺れをまとめ、同じファイルの重複読み込みを防ぐ
+	// "resource/models/./model.obj"などの表記揺れをまとめ、同じファイルの重複読み込みを防ぐ
 	const std::string key = (std::filesystem::path(directoryPath) / filename).lexically_normal().generic_string();
 	if (const auto found = models_.find(key); found != models_.end()) {
 		return found->second;

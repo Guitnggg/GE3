@@ -30,7 +30,7 @@ public:
 	/// <param name="filename">読み込むOBJファイル名</param>
 	/// <returns>複数のObject3dで共有できるモデル</returns>
 	std::shared_ptr<Model> Load(
-		const std::string& directoryPath = "resource", const std::string& filename = "axis.obj");
+		const std::string& directoryPath = "resource/models/axis", const std::string& filename = "axis.obj");
 
 	/// <summary>
 	/// 手続き生成した頂点列から、キャッシュしないモデルを生成する。
