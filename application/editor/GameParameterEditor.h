@@ -7,6 +7,7 @@
 /// </summary>
 struct GameParameters {
 	float railSpeed = 8.0f;                    // カメラがレール上を前進する速度
+	float playerMoveSpeed = 5.5f;              // WASDによるプレイヤー機体の移動速度
 	float enemySpawnInterval = 0.85f;          // 得点補正前の敵出現間隔（秒）
 	float minimumSpawnInterval = 0.38f;        // 難易度上昇後も下回らない出現間隔（秒）
 	float spawnAccelerationPerScore = 0.012f;  // 1得点ごとに短縮する出現間隔（秒）

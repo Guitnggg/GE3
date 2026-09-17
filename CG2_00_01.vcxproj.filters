@@ -25,6 +25,9 @@
     <Filter Include="application\characters">
       <UniqueIdentifier>{A3CDA732-593A-4C78-BDAE-E8B320B6191F}</UniqueIdentifier>
     </Filter>
+	<Filter Include="application\weapons">
+	  <UniqueIdentifier>{5270F590-A4ED-4B62-94F1-1E5CD245C630}</UniqueIdentifier>
+	</Filter>
     <Filter Include="application\core">
       <UniqueIdentifier>{84B37D22-1DFC-4C08-AEBE-68997723C73A}</UniqueIdentifier>
     </Filter>
@@ -96,6 +99,12 @@
     <ClCompile Include="application\characters\Player.cpp">
       <Filter>application\characters</Filter>
     </ClCompile>
+	<ClCompile Include="application\weapons\Bullet.cpp">
+	  <Filter>application\weapons</Filter>
+	</ClCompile>
+	<ClCompile Include="application\weapons\Missile.cpp">
+	  <Filter>application\weapons</Filter>
+	</ClCompile>
     <ClCompile Include="application\core\Framework.cpp">
       <Filter>application\core</Filter>
     </ClCompile>
@@ -221,6 +230,12 @@
     <ClInclude Include="application\characters\Player.h">
       <Filter>application\characters</Filter>
     </ClInclude>
+	<ClInclude Include="application\weapons\Bullet.h">
+	  <Filter>application\weapons</Filter>
+	</ClInclude>
+	<ClInclude Include="application\weapons\Missile.h">
+	  <Filter>application\weapons</Filter>
+	</ClInclude>
     <ClInclude Include="application\core\Framework.h">
       <Filter>application\core</Filter>
     </ClInclude>

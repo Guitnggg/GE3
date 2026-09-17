@@ -3,6 +3,8 @@
 #include "application/characters/Enemy.h"
 #include "application/characters/Player.h"
 #include "application/editor/GameParameterEditor.h"
+#include "application/weapons/Bullet.h"
+#include "application/weapons/Missile.h"
 #include "engine/3D/object/Object3d.h"
 #include "engine/scene/IScene.h"
 #include <cstdint>
@@ -70,6 +72,16 @@ private:
 	/// プレイヤーの射線に最も近い敵を撃破する。
 	/// </summary>
 	void Shoot();
+	/// <summary>通常弾の移動、命中、寿命を更新する。</summary>
+	void UpdateBullets(float deltaTime);
+	/// <summary>右ボタン長押し中のロック対象を更新する。</summary>
+	void UpdateLockOn(float deltaTime, bool acceptMouseInput);
+	/// <summary>現在のロック対象へ追尾ミサイルを発射する。</summary>
+	void LaunchMissile();
+	/// <summary>飛行中のミサイルを誘導し、命中と寿命を処理する。</summary>
+	void UpdateMissiles(float deltaTime);
+	Enemy* FindEnemy(uint64_t id) const;
+	void ClearLockOn();
 
 	/// <summary>
 	/// レールマーカーを再配置し、描画行列を更新する。
@@ -81,18 +93,26 @@ private:
 	/// </summary>
 	void RemovePassedEnemies();
 
+
 private:
 	SceneContext context_{};                              // Frameworkが所有する共通機能への非所有参照
 	std::shared_ptr<Model> sphereModel_;                  // 敵とレールマーカーで共有する球モデル
+	std::shared_ptr<Model> playerModel_;                  // プレイヤー専用OBJモデル
+	std::shared_ptr<Model> missileModel_;                 // ミサイル専用OBJモデル
 	std::unique_ptr<Player> player_;                      // カメラ、照準、ライフを持つプレイヤー
 	std::vector<std::unique_ptr<Enemy>> enemies_;         // 現在出現している敵
 	std::vector<std::unique_ptr<Object3d>> railMarkers_;  // 自動前進を視覚化する左右の目印
+	std::vector<std::unique_ptr<Bullet>> bullets_;        // 飛行中の通常弾
+	std::vector<std::unique_ptr<Missile>> missiles_;      // 飛行中の追尾ミサイル
 	GameParameters parameters_{};                         // 実行中に調整可能なゲーム設定
 	GameParameterEditor parameterEditor_{};               // ゲーム設定を操作するデバッグUI
 	uint32_t texture_ = 0;                                // 球と照準に使用するテクスチャ番号
 	uint32_t score_ = 0;                                  // 撃破した敵の数
 	uint32_t spawnSequence_ = 0;                          // 敵配置パターンを選択する通し番号
+	uint64_t nextEnemyId_ = 1;                            // ミサイル追跡用の敵ID発行番号
+	uint64_t lockedEnemyId_ = 0;                          // 現在ロックオン中の敵。0は対象なし
 	float enemySpawnTimer_ = 0.0f;                        // 次の敵生成までの残り秒数
+	float lockOnHoldTime_ = 0.0f;                         // 右ボタンを押し続けている秒数
 	bool gameOver_ = false;                               // ゲームオーバー状態
 	bool initialized_ = false;                            // 多重初期化を防ぐ状態
 };

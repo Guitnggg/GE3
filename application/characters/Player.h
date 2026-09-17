@@ -2,12 +2,15 @@
 
 #include "engine/2D/Sprite.h"
 #include "engine/3D/camera/Camera.h"
+#include "engine/3D/object/Object3d.h"
 #include "engine/math/Mymath.h"
 #include <cstdint>
 #include <memory>
 #include <vector>
 
 class Input;
+class Model;
+class Object3dCommon;
 class SpriteCommon;
 class TextureManager;
 
@@ -18,10 +21,13 @@ class Player final {
 public:
 	/// <summary>入力、描画共通機能、照準用テクスチャを受け取って初期化する。</summary>
 	/// <param name="spriteCommon">2Dスプライトの共通描画機能</param>
+	/// <param name="object3dCommon">プレイヤー機体の3D描画機能</param>
 	/// <param name="textureManager">テクスチャ管理機能</param>
-	/// <param name="input">キーボード入力機能</param>
+	/// <param name="input">マウス入力を含む入力管理機能</param>
+	/// <param name="model">プレイヤー機体に使用する共有モデル</param>
 	/// <param name="texture">照準に使用するテクスチャ番号</param>
-	void Initialize(SpriteCommon* spriteCommon, TextureManager* textureManager, Input* input, uint32_t texture);
+	void Initialize(SpriteCommon* spriteCommon, Object3dCommon* object3dCommon,
+		TextureManager* textureManager, Input* input, const std::shared_ptr<Model>& model, uint32_t texture);
 
 	/// <summary>カメラ、照準、ライフをゲーム開始時の状態へ戻す。</summary>
 	/// <param name="startingLives">ゲーム開始時のライフ数</param>
@@ -30,12 +36,15 @@ public:
 	/// <summary>入力に応じて照準を動かし、カメラをレール方向へ進める。</summary>
 	/// <param name="deltaTime">前フレームからの経過秒数</param>
 	/// <param name="railSpeed">カメラの前進速度</param>
+	/// <param name="moveSpeed">WASDによる機体の移動速度</param>
 	/// <param name="acceptFireInput">falseの場合は射撃だけを無効化する</param>
 	/// <returns>このフレームで射撃入力された場合はtrue</returns>
-	bool Update(float deltaTime, float railSpeed, bool acceptFireInput = true);
+	bool Update(float deltaTime, float railSpeed, float moveSpeed, bool acceptFireInput = true);
 
 	/// <summary>2本のスプライトで構成した照準を描画する。</summary>
 	void DrawReticle() const;
+	/// <summary>カメラ前方を飛行するプレイヤー機体を描画する。</summary>
+	void DrawShip() const;
 
 	/// <summary>ライフを1減らす。0未満にはしない。</summary>
 	void Damage();
@@ -50,6 +59,7 @@ public:
 	bool IsDead() const { return lives_ == 0; }
 	/// <summary>射線の始点となるカメラ位置を取得する。</summary>
 	Vector3 GetShotOrigin() const;
+	const Vector3& GetPosition() const;
 	/// <summary>画面上の照準位置からワールド空間の射線方向を計算する。</summary>
 	Vector3 GetShotDirection() const;
 
@@ -64,7 +74,9 @@ private:
 	TextureManager* textureManager_ = nullptr;       // テクスチャ管理機能への非所有参照
 	Camera camera_{};                                // プレイヤー視点の3Dカメラ
 	std::vector<std::unique_ptr<Sprite>> reticle_;   // 照準を構成するスプライト
+	std::unique_ptr<Object3d> ship_;                 // 三人称視点で表示するプレイヤー機体
 	Vector2 aim_{640.0f, 360.0f};                    // ピクセル単位の照準座標
+	Vector2 shipPosition_{0.0f, -0.7f};              // カメラを基準とした機体のXY位置
 	float cameraZ_ = -10.5f;                         // レール上の現在位置
 	float shotFlashTimer_ = 0.0f;                    // 射撃時に照準色を変える残り時間
 	uint32_t lives_ = 3;                             // 敵を逃せる残り回数

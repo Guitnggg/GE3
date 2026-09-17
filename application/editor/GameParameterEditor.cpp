@@ -13,6 +13,7 @@ bool GameParameterEditor::Draw(GameParameters& parameters) {
 		// プレイヤー関連の値。初期ライフは次回リスタート時に反映される
 		if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::SliderFloat("Rail Speed", &parameters.railSpeed, 0.0f, 30.0f, "%.1f");
+			ImGui::SliderFloat("Move Speed", &parameters.playerMoveSpeed, 1.0f, 15.0f, "%.1f");
 			int lives = static_cast<int>(parameters.startingLives);
 			if (ImGui::SliderInt("Starting Lives", &lives, 1, 10)) {
 				parameters.startingLives = static_cast<uint32_t>(lives);

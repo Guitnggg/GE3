@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/3D/object/Object3d.h"
+#include <cstdint>
 #include <memory>
 
 class Camera;
@@ -22,7 +23,7 @@ public:
 	/// <param name="position">敵を配置するワールド座標</param>
 	/// <param name="radius">表示スケールと当たり判定に使用する半径</param>
 	void Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager,
-		const std::shared_ptr<Model>& model, const Vector3& position, float radius);
+		const std::shared_ptr<Model>& model, const Vector3& position, float radius, uint64_t id);
 
 	/// <summary>
 	/// 回転を進め、現在のカメラに対する描画行列を更新する。
@@ -48,7 +49,14 @@ public:
 	/// <returns>射線が敵へ命中した場合はtrue</returns>
 	bool IntersectsRay(const Vector3& origin, const Vector3& direction, float& distance) const;
 
+	/// <summary>ロックオン表示の有無を色へ反映する。</summary>
+	void SetLockedOn(bool lockedOn);
+	const Vector3& GetPosition() const { return object_->GetTransform().translate; }
+	float GetRadius() const { return radius_; }
+	uint64_t GetId() const { return id_; }
+
 private:
 	std::unique_ptr<Object3d> object_; // 敵の表示とワールド座標を所有する3Dオブジェクト
 	float radius_ = 1.0f;             // 射線判定に使用する球の半径
+	uint64_t id_ = 0;                 // ミサイルが安全に追跡するための一意な番号
 };

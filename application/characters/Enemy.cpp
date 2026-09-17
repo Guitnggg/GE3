@@ -4,7 +4,7 @@
 #include <cmath>
 
 void Enemy::Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager,
-	const std::shared_ptr<Model>& model, const Vector3& position, float radius) {
+	const std::shared_ptr<Model>& model, const Vector3& position, float radius, uint64_t id) {
 	// 敵ごとの座標と色は個別に持ち、GPUメッシュは全敵で共有する
 	object_ = std::make_unique<Object3d>();
 	object_->Initialize(object3dCommon, textureManager, model);
@@ -12,6 +12,13 @@ void Enemy::Initialize(Object3dCommon* object3dCommon, TextureManager* textureMa
 	object_->GetTransform().scale = {radius, radius, radius};
 	object_->GetMaterialData()->color = {1.0f, 0.38f, 0.3f, 1.0f};
 	radius_ = radius;
+	id_ = id;
+}
+
+void Enemy::SetLockedOn(bool lockedOn) {
+	object_->GetMaterialData()->color = lockedOn
+		? Vector4{1.0f, 0.85f, 0.1f, 1.0f}
+		: Vector4{1.0f, 0.38f, 0.3f, 1.0f};
 }
 
 void Enemy::Update(const Camera& camera, float deltaTime, float rotationSpeed) {

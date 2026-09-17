@@ -97,6 +97,8 @@
     <ClCompile Include="application\editor\GameParameterEditor.cpp" />
     <ClCompile Include="application\characters\Enemy.cpp" />
     <ClCompile Include="application\characters\Player.cpp" />
+	<ClCompile Include="application\weapons\Bullet.cpp" />
+	<ClCompile Include="application\weapons\Missile.cpp" />
     <ClCompile Include="application\core\Framework.cpp" />
     <ClCompile Include="application\scenes\GameScene.cpp" />
     <ClCompile Include="application\core\MyGame.cpp" />
@@ -140,6 +142,8 @@
     <ClInclude Include="application\editor\GameParameterEditor.h" />
     <ClInclude Include="application\characters\Enemy.h" />
     <ClInclude Include="application\characters\Player.h" />
+	<ClInclude Include="application\weapons\Bullet.h" />
+	<ClInclude Include="application\weapons\Missile.h" />
     <ClInclude Include="application\core\Framework.h" />
     <ClInclude Include="application\scenes\GameScene.h" />
     <ClInclude Include="application\core\MyGame.h" />

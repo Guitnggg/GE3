@@ -1,2 +1,4 @@
 # Blender 4.4.1 MTL File: 'missile.blend'
 # www.blender.org
+newmtl Material
+map_Kd ../../textures/monsterBall.png
