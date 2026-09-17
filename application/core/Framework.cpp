@@ -132,6 +132,9 @@ void Framework::Finalize() {
 	textureManager_.reset();
 	srvManager_.reset();
 	audio_.reset();
+	if (input_) {
+		input_->Finalize();
+	}
 	input_.reset();
 	dxCommon_.reset();
 	if (winApp_) {

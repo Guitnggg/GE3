@@ -127,7 +127,12 @@ void GameScene::Update() {
 	// 一時停止中とゲームオーバー中はゲームロジックを進めない
 	if (!gameOver_) {
 		if (!parameterEditor_.IsPaused()) {
-			if (player_->Update(deltaTime, parameters_.railSpeed, parameters_.aimSpeed)) { Shoot(); }
+			bool acceptFireInput = true;
+#ifdef _DEBUG
+			// ImGui操作中も表示位置は同期し、射撃だけを抑制する
+			acceptFireInput = !ImGui::GetIO().WantCaptureMouse;
+#endif
+			if (player_->Update(deltaTime, parameters_.railSpeed, acceptFireInput)) { Shoot(); }
 			RemovePassedEnemies();
 			enemySpawnTimer_ -= deltaTime;
 			if (enemySpawnTimer_ <= 0.0f) {
@@ -153,7 +158,7 @@ void GameScene::Update() {
 	ImGui::Begin("3D RAIL SHOOTER", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 	ImGui::Text("SCORE  %u", score_);
 	ImGui::Text("LIVES  %u", player_->GetLives());
-	ImGui::TextUnformatted("AIM: WASD / Arrow Keys    FIRE: Space");
+	ImGui::TextUnformatted("AIM: Mouse    FIRE: Left Click");
 	if (parameterEditor_.IsPaused()) { ImGui::TextColored({1.0f, 0.8f, 0.2f, 1.0f}, "PAUSED"); }
 	if (gameOver_) { ImGui::Separator(); ImGui::TextColored({1.0f, 0.25f, 0.2f, 1.0f}, "GAME OVER"); ImGui::TextUnformatted("Press R to restart"); }
 	ImGui::End();

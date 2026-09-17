@@ -45,20 +45,14 @@ void Player::Reset(uint32_t startingLives) {
 	UpdateReticle();
 }
 
-bool Player::Update(float deltaTime, float railSpeed, float aimSpeed) {
-	// WASDと矢印キーのどちらでも照準を操作できるよう入力方向を作る
-	float x = 0.0f;
-	float y = 0.0f;
-	if (input_->PushKey(DIK_A) || input_->PushKey(DIK_LEFT)) { x -= 1.0f; }
-	if (input_->PushKey(DIK_D) || input_->PushKey(DIK_RIGHT)) { x += 1.0f; }
-	if (input_->PushKey(DIK_W) || input_->PushKey(DIK_UP)) { y -= 1.0f; }
-	if (input_->PushKey(DIK_S) || input_->PushKey(DIK_DOWN)) { y += 1.0f; }
-	// 照準を画面内に制限し、フレーム時間に依存しない速度でカメラを前進させる
-	aim_.x = std::clamp(aim_.x + x * aimSpeed * deltaTime, 20.0f, WinApp::kClientWidth - 20.0f);
-	aim_.y = std::clamp(aim_.y + y * aimSpeed * deltaTime, 20.0f, WinApp::kClientHeight - 20.0f);
+bool Player::Update(float deltaTime, float railSpeed, bool acceptFireInput) {
+	// OSカーソルとレティクルがずれないよう、クライアント座標をそのまま使用する
+	const POINT mousePosition = input_->GetMousePosition();
+	aim_ = {static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y)};
+	// フレーム時間に依存しない速度でカメラを前進させる
 	cameraZ_ += railSpeed * deltaTime;
 	// 押した瞬間だけ射撃し、短時間だけ照準色を変えて反応を示す
-	const bool fired = input_->TriggerKey(DIK_SPACE);
+	const bool fired = acceptFireInput && input_->TriggerMouseButton(0);
 	if (fired) { shotFlashTimer_ = 0.08f; }
 	shotFlashTimer_ = std::max(0.0f, shotFlashTimer_ - deltaTime);
 	camera_.SetTranslate({0.0f, 0.0f, cameraZ_});

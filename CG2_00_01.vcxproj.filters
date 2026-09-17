@@ -138,6 +138,15 @@
 	<ClCompile Include="engine\input\Input.cpp">
       <Filter>engine\input</Filter>
 	</ClCompile>
+	<ClCompile Include="engine\input\KeyboardInput.cpp">
+	  <Filter>engine\input</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\input\MouseInput.cpp">
+	  <Filter>engine\input</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\input\GamepadInput.cpp">
+	  <Filter>engine\input</Filter>
+	</ClCompile>
 	<ClCompile Include="engine\scene\SceneManager.cpp">
 	  <Filter>engine\scene</Filter>
 	</ClCompile>
@@ -256,6 +265,15 @@
     </ClInclude>
 	<ClInclude Include="engine\input\Input.h">
       <Filter>engine\input</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\input\KeyboardInput.h">
+	  <Filter>engine\input</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\input\MouseInput.h">
+	  <Filter>engine\input</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\input\GamepadInput.h">
+	  <Filter>engine\input</Filter>
 	</ClInclude>
 	<ClInclude Include="engine\scene\IScene.h">
 	  <Filter>engine\scene</Filter>

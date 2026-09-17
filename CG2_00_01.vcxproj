@@ -119,6 +119,9 @@
     <ClCompile Include="engine\core\timing\FrameRateController.cpp" />
 	<ClCompile Include="engine\core\diagnostics\HResult.cpp" />
     <ClCompile Include="engine\input\Input.cpp" />
+	<ClCompile Include="engine\input\KeyboardInput.cpp" />
+	<ClCompile Include="engine\input\MouseInput.cpp" />
+	<ClCompile Include="engine\input\GamepadInput.cpp" />
 	<ClCompile Include="engine\scene\SceneManager.cpp" />
 	<ClCompile Include="engine\graphics\debug\ImGuiManager.cpp" />
     <ClCompile Include="engine\core\diagnostics\Logger.cpp" />
@@ -158,6 +161,9 @@
     <ClInclude Include="engine\core\timing\FrameRateController.h" />
 	<ClInclude Include="engine\core\diagnostics\HResult.h" />
     <ClInclude Include="engine\input\Input.h" />
+	<ClInclude Include="engine\input\KeyboardInput.h" />
+	<ClInclude Include="engine\input\MouseInput.h" />
+	<ClInclude Include="engine\input\GamepadInput.h" />
 	<ClInclude Include="engine\scene\IScene.h" />
 	<ClInclude Include="engine\scene\SceneContext.h" />
 	<ClInclude Include="engine\scene\SceneManager.h" />

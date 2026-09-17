@@ -30,9 +30,9 @@ public:
 	/// <summary>入力に応じて照準を動かし、カメラをレール方向へ進める。</summary>
 	/// <param name="deltaTime">前フレームからの経過秒数</param>
 	/// <param name="railSpeed">カメラの前進速度</param>
-	/// <param name="aimSpeed">照準の移動速度</param>
+	/// <param name="acceptFireInput">falseの場合は射撃だけを無効化する</param>
 	/// <returns>このフレームで射撃入力された場合はtrue</returns>
-	bool Update(float deltaTime, float railSpeed, float aimSpeed);
+	bool Update(float deltaTime, float railSpeed, bool acceptFireInput = true);
 
 	/// <summary>2本のスプライトで構成した照準を描画する。</summary>
 	void DrawReticle() const;
