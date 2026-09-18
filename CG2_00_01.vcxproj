@@ -97,6 +97,8 @@
     <ClCompile Include="application\editor\GameParameterEditor.cpp" />
     <ClCompile Include="application\characters\Enemy.cpp" />
     <ClCompile Include="application\characters\Player.cpp" />
+	<ClCompile Include="application\managers\EnemyManager.cpp" />
+	<ClCompile Include="application\managers\WeaponManager.cpp" />
 	<ClCompile Include="application\weapons\Bullet.cpp" />
 	<ClCompile Include="application\weapons\Missile.cpp" />
     <ClCompile Include="application\core\Framework.cpp" />
@@ -118,6 +120,7 @@
     <ClCompile Include="engine\graphics\resource\TextureManager.cpp" />
     <ClCompile Include="engine\core\diagnostics\D3DResourceLeakChecker.cpp" />
     <ClCompile Include="engine\core\DirectXCommon.cpp" />
+	<ClCompile Include="engine\core\utility\JsonUtility.cpp" />
     <ClCompile Include="engine\core\timing\FrameRateController.cpp" />
 	<ClCompile Include="engine\core\diagnostics\HResult.cpp" />
     <ClCompile Include="engine\input\Input.cpp" />
@@ -142,6 +145,8 @@
     <ClInclude Include="application\editor\GameParameterEditor.h" />
     <ClInclude Include="application\characters\Enemy.h" />
     <ClInclude Include="application\characters\Player.h" />
+	<ClInclude Include="application\managers\EnemyManager.h" />
+	<ClInclude Include="application\managers\WeaponManager.h" />
 	<ClInclude Include="application\weapons\Bullet.h" />
 	<ClInclude Include="application\weapons\Missile.h" />
     <ClInclude Include="application\core\Framework.h" />
@@ -162,6 +167,7 @@
     <ClInclude Include="engine\graphics\resource\TextureManager.h" />
     <ClInclude Include="engine\core\diagnostics\D3DResourceLeakChecker.h" />
     <ClInclude Include="engine\core\DirectXCommon.h" />
+	<ClInclude Include="engine\core\utility\JsonUtility.h" />
     <ClInclude Include="engine\core\timing\FrameRateController.h" />
 	<ClInclude Include="engine\core\diagnostics\HResult.h" />
     <ClInclude Include="engine\input\Input.h" />
@@ -185,6 +191,7 @@
     <ClInclude Include="externals\imgui\imstb_rectpack.h" />
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
+	<ClInclude Include="externals\nlohmann\json.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

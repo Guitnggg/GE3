@@ -28,6 +28,9 @@
 	<Filter Include="application\weapons">
 	  <UniqueIdentifier>{5270F590-A4ED-4B62-94F1-1E5CD245C630}</UniqueIdentifier>
 	</Filter>
+	<Filter Include="application\managers">
+	  <UniqueIdentifier>{BA5BEF47-5E4C-4D28-A55F-B64DD5D04725}</UniqueIdentifier>
+	</Filter>
     <Filter Include="application\core">
       <UniqueIdentifier>{84B37D22-1DFC-4C08-AEBE-68997723C73A}</UniqueIdentifier>
     </Filter>
@@ -99,6 +102,12 @@
     <ClCompile Include="application\characters\Player.cpp">
       <Filter>application\characters</Filter>
     </ClCompile>
+	<ClCompile Include="application\managers\EnemyManager.cpp">
+	  <Filter>application\managers</Filter>
+	</ClCompile>
+	<ClCompile Include="application\managers\WeaponManager.cpp">
+	  <Filter>application\managers</Filter>
+	</ClCompile>
 	<ClCompile Include="application\weapons\Bullet.cpp">
 	  <Filter>application\weapons</Filter>
 	</ClCompile>
@@ -177,6 +186,9 @@
     <ClCompile Include="engine\core\utility\StringUtility.cpp">
       <Filter>engine\core\utility</Filter>
     </ClCompile>
+    <ClCompile Include="engine\core\utility\JsonUtility.cpp">
+      <Filter>engine\core\utility</Filter>
+    </ClCompile>
     <ClCompile Include="engine\core\diagnostics\Logger.cpp">
       <Filter>engine\core\diagnostics</Filter>
     </ClCompile>
@@ -230,6 +242,12 @@
     <ClInclude Include="application\characters\Player.h">
       <Filter>application\characters</Filter>
     </ClInclude>
+	<ClInclude Include="application\managers\EnemyManager.h">
+	  <Filter>application\managers</Filter>
+	</ClInclude>
+	<ClInclude Include="application\managers\WeaponManager.h">
+	  <Filter>application\managers</Filter>
+	</ClInclude>
 	<ClInclude Include="application\weapons\Bullet.h">
 	  <Filter>application\weapons</Filter>
 	</ClInclude>
@@ -271,6 +289,9 @@
     </ClInclude>
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\nlohmann\json.hpp">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h">
       <Filter>imgui</Filter>
@@ -315,6 +336,9 @@
       <Filter>engine\core\diagnostics</Filter>
     </ClInclude>
     <ClInclude Include="engine\core\utility\StringUtility.h">
+      <Filter>engine\core\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\core\utility\JsonUtility.h">
       <Filter>engine\core\utility</Filter>
     </ClInclude>
     <ClInclude Include="engine\core\diagnostics\Logger.h">
