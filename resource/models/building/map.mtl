@@ -1,0 +1,6 @@
+# Blender 5.0.1 MTL File: 'map.blend'
+# www.blender.org
+
+newmtl BuildingMaterial
+Kd 0.650000 0.700000 0.800000
+map_Kd ../player/fly.png

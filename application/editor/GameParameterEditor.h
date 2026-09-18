@@ -2,6 +2,10 @@
 
 #include <cstdint>
 
+class Audio;
+class FrameRateController;
+class Time;
+
 /// <summary>
 /// ゲームプレイ中に調整できるパラメータ一式。
 /// </summary>
@@ -23,12 +27,20 @@ struct GameParameters {
 /// </summary>
 class GameParameterEditor final {
 public:
+	/// <summary>デバッグUIで使用する音声を読み込む。</summary>
+	void Initialize(Audio* audio);
+
+	/// <summary>デバッグUIから再生した音声と読み込み済みデータを解放する。</summary>
+	void Finalize();
+
 	/// <summary>
 	/// パラメータ編集、一時停止、再スタート操作を描画する。
 	/// </summary>
 	/// <param name="parameters">編集対象のゲームパラメータ</param>
+	/// <param name="frameRateController">フレームレート設定</param>
+	/// <param name="time">ゲーム時間設定</param>
 	/// <returns>ゲームの再スタートが要求された場合はtrue</returns>
-	bool Draw(GameParameters& parameters);
+	bool Draw(GameParameters& parameters, FrameRateController& frameRateController, Time& time);
 
 	/// <summary>
 	/// エディタからゲームが一時停止されているか取得する。
@@ -41,5 +53,17 @@ public:
 	void SetPaused(bool paused) { paused_ = paused; }
 
 private:
+	void DrawAudioControls();
+	void DrawFrameRateControls(FrameRateController& frameRateController);
+	void DrawTimeControls(Time& time);
+
+	Audio* audio_ = nullptr;            // Frameworkが所有する音声システム
+	uint32_t soundHandle_ = 0;          // テスト再生用サウンド
+	uint64_t voiceHandle_ = 0;          // デバッグUIから再生中のボイス
+	float audioVolume_ = 1.0f;          // テスト音声の音量
+	float audioPitch_ = 1.0f;           // テスト音声のピッチ
+	float masterVolume_ = 1.0f;         // 全音声のマスター音量
+	bool audioLoop_ = false;            // テスト音声をループするか
+	bool audioPaused_ = false;          // テスト音声が一時停止中か
 	bool paused_ = false; // ゲームロジックを停止するか
 };

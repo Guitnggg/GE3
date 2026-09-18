@@ -23,7 +23,7 @@ public:
 	~GameScene() override;
 
 	/// <summary>
-	/// 共通機能を受け取り、プレイヤー、モデル、レールを生成する。
+	/// 共通機能を受け取り、プレイヤー、モデル、街区を生成する。
 	/// </summary>
 	/// <param name="context">Frameworkが所有するゲーム共通機能</param>
 	void Initialize(const SceneContext& context) override;
@@ -50,30 +50,23 @@ public:
 
 private:
 	/// <summary>
-	/// レールマーカーを作成する。
-	/// </summary>
-	/// <param name="x">マーカーを配置するX座標</param>
-	/// <param name="z">マーカーを配置するZ座標</param>
-	/// <returns>初期化済みの3Dオブジェクト</returns>
-	std::unique_ptr<Object3d> CreateRailMarker(float x, float z);
-
-	/// <summary>
 	/// ゲーム要素とスコアを開始状態へ戻す。
 	/// </summary>
 	void ResetGame();
 
 	/// <summary>
-	/// レールマーカーを再配置し、描画行列を更新する。
+	/// 通過した街区を前方へ循環させ、建物が続いて見えるようにする。
 	/// </summary>
-	void UpdateRail();
+	void UpdateEnvironment();
 
 private:
 	SceneContext context_{};                              // Frameworkが所有する共通機能への非所有参照
-	std::shared_ptr<Model> sphereModel_;                  // 敵とレールマーカーで共有する球モデル
+	std::shared_ptr<Model> sphereModel_;                  // 敵と弾で共有する球モデル
 	std::shared_ptr<Model> playerModel_;                  // プレイヤー専用OBJモデル
 	std::shared_ptr<Model> missileModel_;                 // ミサイル専用OBJモデル
+	std::shared_ptr<Model> mapModel_;                     // 左右に建物が並ぶ街区モデル
 	std::unique_ptr<Player> player_;                      // カメラ、照準、ライフを持つプレイヤー
-	std::vector<std::unique_ptr<Object3d>> railMarkers_;  // 自動前進を視覚化する左右の目印
+	std::vector<std::unique_ptr<Object3d>> mapSegments_;  // 前方へ循環配置する街区
 	EnemyManager enemyManager_{};                         // 敵の生成、更新、検索、削除
 	WeaponManager weaponManager_{};                       // 通常弾、ロックオン、ミサイル
 	GameParameters parameters_{};                         // 実行中に調整可能なゲーム設定
