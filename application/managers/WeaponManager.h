@@ -26,17 +26,18 @@ public:
 		const std::shared_ptr<Model>& bulletModel, const std::shared_ptr<Model>& missileModel);
 	void Reset(EnemyManager& enemies);
 	void Shoot(const Vector3& origin, const Vector3& direction);
-	void UpdateLockOn(float deltaTime, bool acceptMouseInput, const Vector3& origin,
-		const Vector3& direction, const Vector3& missileOrigin, EnemyManager& enemies);
+	void UpdateLockOn(float deltaTime, bool acceptMouseInput, const Vector3& direction,
+		const Vector3& missileOrigin, EnemyManager& enemies);
 	void UpdateProjectiles(const Camera& camera, float deltaTime, EnemyManager& enemies);
 	uint32_t ResolveProjectileHits(EnemyManager& enemies);
 	void OnEnemyRemoved(uint64_t id);
 	void ClearLockOn(EnemyManager& enemies);
 	void Draw() const;
-	bool HasLock() const { return lockedEnemyId_ != 0; }
+	bool HasLock() const { return !lockedEnemyIds_.empty(); }
+	size_t GetLockCount() const { return lockedEnemyIds_.size(); }
 
 private:
-	void LaunchMissile(const Vector3& origin, const Vector3& direction, const EnemyManager& enemies);
+	void LaunchMissiles(const Vector3& origin, const Vector3& direction, const EnemyManager& enemies);
 	void UpdateBullets(const Camera& camera, float deltaTime);
 	void UpdateMissiles(const Camera& camera, float deltaTime, EnemyManager& enemies);
 
@@ -48,6 +49,8 @@ private:
 	std::shared_ptr<Model> missileModel_;
 	std::vector<std::unique_ptr<Bullet>> bullets_;
 	std::vector<std::unique_ptr<Missile>> missiles_;
-	uint64_t lockedEnemyId_ = 0;
+	std::vector<uint64_t> lockedEnemyIds_;
 	float lockOnHoldTime_ = 0.0f;
+	static constexpr size_t kMaxLockCount = 5;
+	static constexpr float kLockInterval = 0.2f;
 };

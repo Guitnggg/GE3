@@ -31,6 +31,7 @@ void GameScene::Initialize(const SceneContext& context) {
 	try {
 		// 敵と弾で共有するメッシュを1度だけ生成する
 		texture_ = context_.textureManager->Load("resource/textures/monsterBall.png");
+		lockOnTexture_ = context_.textureManager->Load("resource/textures/Lockon.png");
 		sphereModel_ = context_.modelManager->Create(MeshGenerator::CreateSphere(kSphereSubdivisions), texture_);
 		playerModel_ = context_.modelManager->Load("resource/models/player", "player.obj");
 		missileModel_ = context_.modelManager->Load("resource/models/missile", "missile.obj");
@@ -49,7 +50,8 @@ void GameScene::Initialize(const SceneContext& context) {
 		player_ = std::make_unique<Player>();
 		player_->Initialize(context_.spriteCommon, context_.object3dCommon,
 			context_.textureManager, context_.input, playerModel_, texture_);
-		enemyManager_.Initialize(context_.collisionWorld, context_.object3dCommon, context_.textureManager, sphereModel_);
+		enemyManager_.Initialize(context_.collisionWorld, context_.spriteCommon,
+			context_.object3dCommon, context_.textureManager, sphereModel_, lockOnTexture_);
 		weaponManager_.Initialize(context_.collisionWorld, context_.object3dCommon, context_.textureManager, context_.input,
 			sphereModel_, missileModel_);
 #ifdef _DEBUG
@@ -97,7 +99,7 @@ void GameScene::Update() {
 			if (player_->Update(deltaTime, parameters_.railSpeed, parameters_.playerMoveSpeed, acceptFireInput)) {
 				weaponManager_.Shoot(player_->GetShotOrigin(), player_->GetShotDirection());
 			}
-			weaponManager_.UpdateLockOn(deltaTime, acceptFireInput, player_->GetShotOrigin(),
+			weaponManager_.UpdateLockOn(deltaTime, acceptFireInput,
 				player_->GetShotDirection(), player_->GetPosition(), enemyManager_);
 			const std::vector<uint64_t> passedIds = enemyManager_.RemovePassed(player_->GetPosition().z);
 			for (const uint64_t id : passedIds) {
@@ -133,7 +135,9 @@ void GameScene::Update() {
 	ImGui::Text("LIVES  %u", player_->GetLives());
 	ImGui::TextUnformatted("MOVE: WASD    AIM: Mouse    NORMAL: Left Click");
 	ImGui::TextUnformatted("LOCK: Hold Right Click    MISSILE: Release Right Click");
-	if (weaponManager_.HasLock()) { ImGui::TextColored({1.0f, 0.85f, 0.1f, 1.0f}, "LOCKED"); }
+	if (weaponManager_.HasLock()) {
+		ImGui::TextColored({1.0f, 0.85f, 0.1f, 1.0f}, "LOCKED  %zu / 5", weaponManager_.GetLockCount());
+	}
 	if (parameterEditor_.IsPaused()) { ImGui::TextColored({1.0f, 0.8f, 0.2f, 1.0f}, "PAUSED"); }
 	if (gameOver_) { ImGui::Separator(); ImGui::TextColored({1.0f, 0.25f, 0.2f, 1.0f}, "GAME OVER"); ImGui::TextUnformatted("Press R to restart"); }
 	ImGui::End();
@@ -151,6 +155,7 @@ void GameScene::Draw() {
 	player_->DrawShip();
 	enemyManager_.Draw();
 	weaponManager_.Draw();
+	enemyManager_.DrawLockOnMarkers();
 	player_->DrawReticle();
 }
 
@@ -160,5 +165,5 @@ void GameScene::Finalize() {
 	parameterEditor_.Finalize();
 	weaponManager_.Reset(enemyManager_); enemyManager_.Reset(); mapSegments_.clear(); player_.reset();
 	mapModel_.reset(); missileModel_.reset(); playerModel_.reset(); sphereModel_.reset();
-	texture_ = 0; context_ = {};
+	texture_ = 0; lockOnTexture_ = 0; context_ = {};
 }

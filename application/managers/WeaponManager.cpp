@@ -38,27 +38,36 @@ void WeaponManager::Shoot(const Vector3& origin, const Vector3& direction) {
 	bullets_.push_back(std::move(bullet));
 }
 
-void WeaponManager::UpdateLockOn(float deltaTime, bool acceptMouseInput, const Vector3& origin,
-	const Vector3& direction, const Vector3& missileOrigin, EnemyManager& enemies) {
+void WeaponManager::UpdateLockOn(float deltaTime, bool acceptMouseInput, const Vector3& direction,
+	const Vector3& missileOrigin, EnemyManager& enemies) {
 	if (!acceptMouseInput) { return; }
 	const bool holding = input_->PushMouseButton(1);
 	const bool released = input_->ReleaseMouseButton(1);
-	if (released && lockedEnemyId_ != 0) { LaunchMissile(missileOrigin, direction, enemies); }
-	if (!holding) { lockOnHoldTime_ = 0.0f; ClearLockOn(enemies); return; }
+	if (released) {
+		LaunchMissiles(missileOrigin, direction, enemies);
+		ClearLockOn(enemies);
+		return;
+	}
+	if (!holding) { ClearLockOn(enemies); return; }
+	if (lockedEnemyIds_.size() >= kMaxLockCount) { return; }
 	lockOnHoldTime_ += deltaTime;
-	constexpr float kLockOnDelay = 0.2f;
-	if (lockOnHoldTime_ < kLockOnDelay) { ClearLockOn(enemies); return; }
-	Enemy* target = enemies.FindLockTarget(origin, direction);
-	lockedEnemyId_ = target ? target->GetId() : 0;
-	enemies.SetLockedEnemy(lockedEnemyId_);
+	while (lockOnHoldTime_ >= kLockInterval && lockedEnemyIds_.size() < kMaxLockCount) {
+		lockOnHoldTime_ -= kLockInterval;
+		Enemy* target = enemies.FindNearestLockTarget(missileOrigin, lockedEnemyIds_);
+		if (target == nullptr) { break; }
+		lockedEnemyIds_.push_back(target->GetId());
+		enemies.SetLockedEnemies(lockedEnemyIds_);
+	}
 }
 
-void WeaponManager::LaunchMissile(const Vector3& origin, const Vector3& direction,
+void WeaponManager::LaunchMissiles(const Vector3& origin, const Vector3& direction,
 	const EnemyManager& enemies) {
-	if (enemies.Find(lockedEnemyId_) == nullptr) { return; }
-	auto missile = std::make_unique<Missile>();
-	missile->Initialize(collisionWorld_, object3dCommon_, textureManager_, missileModel_, origin, direction, lockedEnemyId_);
-	missiles_.push_back(std::move(missile));
+	for (const uint64_t targetId : lockedEnemyIds_) {
+		if (enemies.Find(targetId) == nullptr) { continue; }
+		auto missile = std::make_unique<Missile>();
+		missile->Initialize(collisionWorld_, object3dCommon_, textureManager_, missileModel_, origin, direction, targetId);
+		missiles_.push_back(std::move(missile));
+	}
 }
 
 void WeaponManager::UpdateBullets(const Camera& camera, float deltaTime) {
@@ -107,12 +116,13 @@ uint32_t WeaponManager::ResolveProjectileHits(EnemyManager& enemies) {
 }
 
 void WeaponManager::OnEnemyRemoved(uint64_t id) {
-	if (lockedEnemyId_ == id) { lockedEnemyId_ = 0; }
+	lockedEnemyIds_.erase(std::remove(lockedEnemyIds_.begin(), lockedEnemyIds_.end(), id), lockedEnemyIds_.end());
 }
 
 void WeaponManager::ClearLockOn(EnemyManager& enemies) {
-	lockedEnemyId_ = 0;
-	enemies.SetLockedEnemy(0);
+	lockedEnemyIds_.clear();
+	lockOnHoldTime_ = 0.0f;
+	enemies.SetLockedEnemies(lockedEnemyIds_);
 }
 
 void WeaponManager::Draw() const {

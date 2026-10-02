@@ -72,6 +72,7 @@ private:
 	GameParameters parameters_{};                         // 実行中に調整可能なゲーム設定
 	GameParameterEditor parameterEditor_{};               // ゲーム設定を操作するデバッグUI
 	uint32_t texture_ = 0;                                // 球と照準に使用するテクスチャ番号
+	uint32_t lockOnTexture_ = 0;                          // ロック対象へ重ねるマーカーテクスチャ
 	uint32_t score_ = 0;                                  // 撃破した敵の数
 	bool gameOver_ = false;                               // ゲームオーバー状態
 	bool initialized_ = false;                            // 多重初期化を防ぐ状態

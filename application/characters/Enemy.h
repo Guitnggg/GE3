@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/3D/object/Object3d.h"
+#include "engine/2D/Sprite.h"
 #include "engine/collision/CollisionWorld.h"
 #include <cstdint>
 #include <memory>
@@ -8,6 +9,7 @@
 class Camera;
 class Model;
 class Object3dCommon;
+class SpriteCommon;
 class TextureManager;
 
 /// <summary>
@@ -24,8 +26,10 @@ public:
 	/// <param name="model">全敵で共有する球モデル</param>
 	/// <param name="position">敵を配置するワールド座標</param>
 	/// <param name="radius">表示スケールと当たり判定に使用する半径</param>
-	void Initialize(CollisionWorld* collisionWorld, Object3dCommon* object3dCommon, TextureManager* textureManager,
-		const std::shared_ptr<Model>& model, const Vector3& position, float radius, uint64_t id);
+	void Initialize(CollisionWorld* collisionWorld, SpriteCommon* spriteCommon,
+		Object3dCommon* object3dCommon, TextureManager* textureManager,
+		const std::shared_ptr<Model>& model, uint32_t lockOnTexture,
+		const Vector3& position, float radius, uint64_t id);
 
 	/// <summary>
 	/// 回転を進め、現在のカメラに対する描画行列を更新する。
@@ -36,6 +40,7 @@ public:
 	/// 敵の3Dモデルを描画する。
 	/// </summary>
 	void Draw() const;
+	void DrawLockOnMarker() const;
 
 	/// <summary>
 	/// 敵がカメラ位置を通過したか判定する。
@@ -52,6 +57,9 @@ private:
 	CollisionWorld* collisionWorld_ = nullptr;
 	ColliderHandle collider_{};
 	std::unique_ptr<Object3d> object_; // 敵の表示とワールド座標を所有する3Dオブジェクト
+	std::unique_ptr<Sprite> lockOnMarker_; // 敵の画面座標へ重ねるロックオン画像
 	float radius_ = 1.0f;             // 射線判定に使用する球の半径
 	uint64_t id_ = 0;                 // ミサイルが安全に追跡するための一意な番号
+	bool lockedOn_ = false;
+	bool lockOnMarkerVisible_ = false;
 };

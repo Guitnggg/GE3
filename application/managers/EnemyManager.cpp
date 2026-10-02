@@ -2,23 +2,24 @@
 
 #include "application/characters/Enemy.h"
 #include "application/editor/GameParameterEditor.h"
-#include "application/collision/GameCollisionLayers.h"
-#include "engine/collision/CollisionWorld.h"
-
 #include <algorithm>
+#include <limits>
 #include <stdexcept>
 
 EnemyManager::~EnemyManager() = default;
 
-void EnemyManager::Initialize(CollisionWorld* collisionWorld, Object3dCommon* object3dCommon, TextureManager* textureManager,
-	const std::shared_ptr<Model>& model) {
-	if (!collisionWorld || !object3dCommon || !textureManager || !model) {
+void EnemyManager::Initialize(CollisionWorld* collisionWorld, SpriteCommon* spriteCommon,
+	Object3dCommon* object3dCommon, TextureManager* textureManager,
+	const std::shared_ptr<Model>& model, uint32_t lockOnTexture) {
+	if (!collisionWorld || !spriteCommon || !object3dCommon || !textureManager || !model) {
 		throw std::invalid_argument("EnemyManager requires initialized rendering services and a model.");
 	}
 	object3dCommon_ = object3dCommon;
+	spriteCommon_ = spriteCommon;
 	collisionWorld_ = collisionWorld;
 	textureManager_ = textureManager;
 	model_ = model;
+	lockOnTexture_ = lockOnTexture;
 	Reset();
 }
 
@@ -37,7 +38,7 @@ void EnemyManager::Spawn(float cameraZ, const GameParameters& parameters) {
 	const float radius = parameters.enemyBaseRadius +
 		static_cast<float>(spawnSequence_ % 3u) * parameters.enemyRadiusStep;
 	auto enemy = std::make_unique<Enemy>();
-	enemy->Initialize(collisionWorld_, object3dCommon_, textureManager_, model_,
+	enemy->Initialize(collisionWorld_, spriteCommon_, object3dCommon_, textureManager_, model_, lockOnTexture_,
 		{xPositions[xIndex], yPositions[yIndex], cameraZ + parameters.enemySpawnDistance},
 		radius, nextEnemyId_++);
 	enemies_.push_back(std::move(enemy));
@@ -61,6 +62,10 @@ void EnemyManager::Draw() const {
 	for (const auto& enemy : enemies_) { enemy->Draw(); }
 }
 
+void EnemyManager::DrawLockOnMarkers() const {
+	for (const auto& enemy : enemies_) { enemy->DrawLockOnMarker(); }
+}
+
 Enemy* EnemyManager::Find(uint64_t id) const {
 	if (id == 0) { return nullptr; }
 	for (const auto& enemy : enemies_) {
@@ -69,14 +74,29 @@ Enemy* EnemyManager::Find(uint64_t id) const {
 	return nullptr;
 }
 
-Enemy* EnemyManager::FindLockTarget(const Vector3& origin, const Vector3& direction) const {
-	RaycastHit hit{};
-	return collisionWorld_->Raycast(origin, direction, 200.0f, GameCollisionLayers::Enemy, hit)
-		? Find(hit.userData) : nullptr;
+Enemy* EnemyManager::FindNearestLockTarget(const Vector3& origin,
+	const std::vector<uint64_t>& excludedIds) const {
+	Enemy* nearest = nullptr;
+	float nearestDistanceSquared = std::numeric_limits<float>::max();
+	for (const auto& enemy : enemies_) {
+		if (std::find(excludedIds.begin(), excludedIds.end(), enemy->GetId()) != excludedIds.end()) { continue; }
+		const Vector3& position = enemy->GetPosition();
+		const float x = position.x - origin.x;
+		const float y = position.y - origin.y;
+		const float z = position.z - origin.z;
+		const float distanceSquared = x * x + y * y + z * z;
+		if (distanceSquared < nearestDistanceSquared) {
+			nearestDistanceSquared = distanceSquared;
+			nearest = enemy.get();
+		}
+	}
+	return nearest;
 }
 
-void EnemyManager::SetLockedEnemy(uint64_t id) {
-	for (auto& enemy : enemies_) { enemy->SetLockedOn(enemy->GetId() == id); }
+void EnemyManager::SetLockedEnemies(const std::vector<uint64_t>& ids) {
+	for (auto& enemy : enemies_) {
+		enemy->SetLockedOn(std::find(ids.begin(), ids.end(), enemy->GetId()) != ids.end());
+	}
 }
 
 bool EnemyManager::Remove(uint64_t id) {

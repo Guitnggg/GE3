@@ -115,9 +115,19 @@ void SpriteCommon::CreateGraphicsPipeline() {
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
 	inputLayoutDesc.NumElements = _countof(inputElementDescs);
 
-	// 全色成分を書き込み、背面カリングを行う基本描画状態を設定する
+	// テクスチャのアルファ値で背景と合成し、透過PNGを正しく描画する
 	D3D12_BLEND_DESC blendDesc{};
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	auto& renderTargetBlend = blendDesc.RenderTarget[0];
+	renderTargetBlend.BlendEnable = TRUE;
+	renderTargetBlend.LogicOpEnable = FALSE;
+	renderTargetBlend.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	renderTargetBlend.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	renderTargetBlend.BlendOp = D3D12_BLEND_OP_ADD;
+	renderTargetBlend.SrcBlendAlpha = D3D12_BLEND_ONE;
+	renderTargetBlend.DestBlendAlpha = D3D12_BLEND_ZERO;
+	renderTargetBlend.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	renderTargetBlend.LogicOp = D3D12_LOGIC_OP_NOOP;
+	renderTargetBlend.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
