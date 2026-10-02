@@ -1,4 +1,5 @@
 #include "application/weapons/Missile.h"
+#include "engine/math/MathUtility.h"
 
 #include "application/characters/Enemy.h"
 #include "application/collision/GameCollisionLayers.h"

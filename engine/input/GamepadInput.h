@@ -6,7 +6,7 @@
 #include <Windows.h>
 #include <Xinput.h>
 
-#include "engine/math/Mymath.h"
+#include "engine/math/MathTypes.h"
 
 /// <summary>
 /// 1台のXInputゲームパッドの状態とフレーム間変化を管理する。

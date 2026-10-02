@@ -5,7 +5,8 @@
 #include <memory>
 #include <wrl.h>
 
-#include "engine/math/Mymath.h"
+#include "engine/math/MatrixMath.h"
+#include "engine/math/RenderingTypes.h"
 
 class Camera;
 class Model;

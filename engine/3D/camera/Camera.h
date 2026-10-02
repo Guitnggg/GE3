@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/math/Mymath.h"
+#include "engine/math/MatrixMath.h"
 
 /// <summary>
 /// 3D空間を映すカメラの姿勢と投影設定を管理するクラス。

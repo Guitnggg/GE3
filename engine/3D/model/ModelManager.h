@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "engine/math/Mymath.h"
+#include "engine/math/RenderingTypes.h"
 
 class DirectXCommon;
 class Model;

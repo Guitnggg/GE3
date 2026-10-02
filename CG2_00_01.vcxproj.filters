@@ -377,6 +377,18 @@
     <ClInclude Include="engine\math\Mymath.h">
       <Filter>engine\math</Filter>
     </ClInclude>
+	<ClInclude Include="engine\math\MathTypes.h">
+	  <Filter>engine\math</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\math\MathUtility.h">
+	  <Filter>engine\math</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\math\MatrixMath.h">
+	  <Filter>engine\math</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\math\RenderingTypes.h">
+	  <Filter>engine\math</Filter>
+	</ClInclude>
 	<ClInclude Include="engine\math\Curve.h">
 	  <Filter>engine\math</Filter>
 	</ClInclude>

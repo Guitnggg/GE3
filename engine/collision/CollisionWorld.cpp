@@ -1,4 +1,5 @@
 #include "engine/collision/CollisionWorld.h"
+#include "engine/math/MathUtility.h"
 
 #include <algorithm>
 #include <cmath>

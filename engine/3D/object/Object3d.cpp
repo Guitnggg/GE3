@@ -1,4 +1,5 @@
 #include "Object3d.h"
+#include "engine/math/MathUtility.h"
 
 #include <stdexcept>
 

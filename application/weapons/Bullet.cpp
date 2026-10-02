@@ -1,4 +1,5 @@
 #include "application/weapons/Bullet.h"
+#include "engine/math/MathUtility.h"
 
 #include "application/collision/GameCollisionLayers.h"
 #include "engine/3D/camera/Camera.h"

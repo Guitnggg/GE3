@@ -1,7 +1,7 @@
 #pragma once
 
 #include "application/characters/Enemy.h"
-#include "engine/math/Mymath.h"
+#include "engine/math/MathTypes.h"
 
 #include <cstdint>
 #include <memory>

@@ -1,4 +1,5 @@
 #include "application/characters/Player.h"
+#include "engine/math/MathUtility.h"
 
 #include "engine/core/WinApp.h"
 #include "engine/3D/model/Model.h"

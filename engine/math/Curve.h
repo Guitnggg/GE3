@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/math/Mymath.h"
+#include "engine/math/MathUtility.h"
 
 namespace Curve {
 	inline Vector3 QuadraticBezier(const Vector3& start, const Vector3& control,

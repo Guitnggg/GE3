@@ -4,7 +4,7 @@
 #include "engine/3D/camera/Camera.h"
 #include "engine/3D/object/Object3d.h"
 #include "engine/input/Input.h"
-#include "engine/math/Mymath.h"
+#include "engine/math/MathTypes.h"
 #include <cstdint>
 #include <memory>
 #include <vector>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/math/Mymath.h"
+#include "engine/math/MathTypes.h"
 
 /// <summary>
 /// 中心座標と半径で表す球形コライダー。

@@ -200,6 +200,10 @@
 	<ClInclude Include="engine\graphics\debug\ImGuiManager.h" />
     <ClInclude Include="engine\core\diagnostics\Logger.h" />
     <ClInclude Include="engine\math\Mymath.h" />
+	<ClInclude Include="engine\math\MathTypes.h" />
+	<ClInclude Include="engine\math\MathUtility.h" />
+	<ClInclude Include="engine\math\MatrixMath.h" />
+	<ClInclude Include="engine\math\RenderingTypes.h" />
 	<ClInclude Include="engine\math\Curve.h" />
 	<ClInclude Include="engine\math\Easing.h" />
 	<ClInclude Include="engine\math\Interpolation.h" />
