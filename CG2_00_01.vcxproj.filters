@@ -76,6 +76,9 @@
 	<Filter Include="engine\math">
 	  <UniqueIdentifier>{E83158EE-F3B8-4016-81C5-5C4DF8F37146}</UniqueIdentifier>
 	</Filter>
+	<Filter Include="engine\effects">
+	  <UniqueIdentifier>{04F4F621-420F-4F43-B6DB-BB99C0808050}</UniqueIdentifier>
+	</Filter>
 	<Filter Include="engine\input">
 	  <UniqueIdentifier>{49CFFDE7-CC4D-4DA9-9E02-D681740761DD}</UniqueIdentifier>
 	</Filter>
@@ -137,6 +140,12 @@
     </ClCompile>
 	<ClCompile Include="engine\collision\CollisionWorld.cpp">
 	  <Filter>engine\collision</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\effects\CameraShake.cpp">
+	  <Filter>engine\effects</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\effects\Tween.cpp">
+	  <Filter>engine\effects</Filter>
 	</ClCompile>
     <ClCompile Include="externals\imgui\imgui.cpp">
       <Filter>imgui</Filter>
@@ -284,6 +293,12 @@
 	<ClInclude Include="engine\collision\CollisionWorld.h">
 	  <Filter>engine\collision</Filter>
 	</ClInclude>
+	<ClInclude Include="engine\effects\CameraShake.h">
+	  <Filter>engine\effects</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\effects\Tween.h">
+	  <Filter>engine\effects</Filter>
+	</ClInclude>
     <ClInclude Include="externals\imgui\imgui.h">
       <Filter>imgui</Filter>
     </ClInclude>
@@ -311,6 +326,18 @@
     <ClInclude Include="engine\math\Mymath.h">
       <Filter>engine\math</Filter>
     </ClInclude>
+	<ClInclude Include="engine\math\Curve.h">
+	  <Filter>engine\math</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\math\Easing.h">
+	  <Filter>engine\math</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\math\Interpolation.h">
+	  <Filter>engine\math</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\math\Noise.h">
+	  <Filter>engine\math</Filter>
+	</ClInclude>
 	<ClInclude Include="engine\input\Input.h">
       <Filter>engine\input</Filter>
 	</ClInclude>

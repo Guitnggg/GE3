@@ -109,6 +109,8 @@
 	<ClCompile Include="engine\audio\Audio.cpp" />
     <ClCompile Include="engine\collision\Collision.cpp" />
 	<ClCompile Include="engine\collision\CollisionWorld.cpp" />
+	<ClCompile Include="engine\effects\CameraShake.cpp" />
+	<ClCompile Include="engine\effects\Tween.cpp" />
     <ClCompile Include="engine\2d\Sprite.cpp" />
     <ClCompile Include="engine\2d\SpriteCommon.cpp" />
     <ClCompile Include="engine\3d\camera\Camera.cpp" />
@@ -158,6 +160,8 @@
 	<ClInclude Include="engine\audio\Audio.h" />
     <ClInclude Include="engine\collision\Collision.h" />
 	<ClInclude Include="engine\collision\CollisionWorld.h" />
+	<ClInclude Include="engine\effects\CameraShake.h" />
+	<ClInclude Include="engine\effects\Tween.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h" />
     <ClInclude Include="engine\3d\camera\Camera.h" />
 	<ClInclude Include="engine\3d\model\MeshGenerator.h" />
@@ -183,6 +187,10 @@
 	<ClInclude Include="engine\graphics\debug\ImGuiManager.h" />
     <ClInclude Include="engine\core\diagnostics\Logger.h" />
     <ClInclude Include="engine\math\Mymath.h" />
+	<ClInclude Include="engine\math\Curve.h" />
+	<ClInclude Include="engine\math\Easing.h" />
+	<ClInclude Include="engine\math\Interpolation.h" />
+	<ClInclude Include="engine\math\Noise.h" />
     <ClInclude Include="engine\core\utility\StringUtility.h" />
 	<ClInclude Include="engine\core\timing\Time.h" />
     <ClInclude Include="engine\core\WinApp.h" />
