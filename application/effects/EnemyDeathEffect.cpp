@@ -4,12 +4,12 @@
 
 #include <stdexcept>
 
-void EnemyDeathEffect::Initialize(DirectXCommon* dxCommon, TextureManager* textureManager,
+void EnemyDeathEffect::Initialize(DirectXCommon* dxCommon, GPUParticlePipeline* pipeline, TextureManager* textureManager,
 	uint32_t textureHandle) {
 	if (initialized_) { throw std::logic_error("EnemyDeathEffect is already initialized."); }
-	flashSystem_.Initialize(dxCommon, textureManager, textureHandle, 512);
-	sparkSystem_.Initialize(dxCommon, textureManager, textureHandle, 4096);
-	smokeSystem_.Initialize(dxCommon, textureManager, textureHandle, 2048);
+	flashSystem_.Initialize(dxCommon, pipeline, textureManager, textureHandle, 512);
+	sparkSystem_.Initialize(dxCommon, pipeline, textureManager, textureHandle, 4096);
+	smokeSystem_.Initialize(dxCommon, pipeline, textureManager, textureHandle, 2048);
 
 	GPUParticlePreset flash{};
 	flash.drag = 6.0f;

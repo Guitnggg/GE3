@@ -67,12 +67,14 @@ void GameScene::InitializeGameObjects() {
 		context_.textureManager, context_.input, playerModel_, texture_, moveAction_, shootAction_);
 
 	playerEngineEffect_ = std::make_unique<PlayerEngineEffect>();
-	playerEngineEffect_->Initialize(context_.directXCommon, context_.textureManager,
+	playerEngineEffect_->Initialize(context_.directXCommon, context_.gpuParticlePipeline, context_.textureManager,
 		particleTexture_, parameters_.engineParticle);
 	enemyDeathEffect_ = std::make_unique<EnemyDeathEffect>();
-	enemyDeathEffect_->Initialize(context_.directXCommon, context_.textureManager, particleTexture_);
+	enemyDeathEffect_->Initialize(context_.directXCommon, context_.gpuParticlePipeline,
+		context_.textureManager, particleTexture_);
 	missileTrailEffect_ = std::make_unique<MissileTrailEffect>();
-	missileTrailEffect_->Initialize(context_.directXCommon, context_.textureManager, particleTexture_);
+	missileTrailEffect_->Initialize(context_.directXCommon, context_.gpuParticlePipeline,
+		context_.textureManager, particleTexture_);
 
 	enemyManager_.Initialize(context_.collisionWorld, context_.spriteCommon,
 		context_.object3dCommon, context_.textureManager, sphereModel_, lockOnTexture_);

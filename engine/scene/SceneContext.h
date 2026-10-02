@@ -4,6 +4,7 @@ class Audio;
 class CollisionWorld;
 class DirectXCommon;
 class FrameRateController;
+class GPUParticlePipeline;
 class ImGuiManager;
 class Input;
 class ModelManager;
@@ -27,6 +28,7 @@ struct SceneContext {
 	Object3dCommon* object3dCommon = nullptr;
 	Time* time = nullptr;
 	FrameRateController* frameRateController = nullptr;
+	GPUParticlePipeline* gpuParticlePipeline = nullptr;
 #ifdef _DEBUG
 	ImGuiManager* imguiManager = nullptr;
 #endif

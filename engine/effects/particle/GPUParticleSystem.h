@@ -10,6 +10,7 @@
 
 class Camera;
 class DirectXCommon;
+class GPUParticlePipeline;
 class TextureManager;
 
 /// <summary>
@@ -18,7 +19,7 @@ class TextureManager;
 /// </summary>
 class GPUParticleSystem final {
 public:
-	void Initialize(DirectXCommon* dxCommon, TextureManager* textureManager,
+	void Initialize(DirectXCommon* dxCommon, GPUParticlePipeline* pipeline, TextureManager* textureManager,
 		uint32_t textureHandle, uint32_t maxParticles = 4096);
 	void SetPreset(const GPUParticlePreset& preset);
 	void Emit(const GPUParticleEmitData& emitData);
@@ -76,15 +77,13 @@ private:
 	};
 
 	void CreateResources();
-	void CreateComputePipeline();
-	void CreateGraphicsPipeline();
-	void CreateRootSignatures();
 	void TransitionParticleBuffer(D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
 	void DispatchInitialize();
 	void DispatchEmitCommands();
 	void DispatchUpdate();
 
 	DirectXCommon* dxCommon_ = nullptr;
+	GPUParticlePipeline* pipeline_ = nullptr;
 	TextureManager* textureManager_ = nullptr;
 	uint32_t textureHandle_ = 0;
 	uint32_t maxParticles_ = 0;
@@ -105,11 +104,4 @@ private:
 	EmitConstants* emitConstants_ = nullptr;
 	DrawConstants* drawConstants_ = nullptr;
 
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> computeRootSignature_;
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> graphicsRootSignature_;
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> initializePipeline_;
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> emitPipeline_;
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> updatePipeline_;
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> alphaPipeline_;
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> additivePipeline_;
 };

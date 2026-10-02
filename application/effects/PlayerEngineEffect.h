@@ -7,6 +7,7 @@
 
 class Camera;
 class DirectXCommon;
+class GPUParticlePipeline;
 class TextureManager;
 
 /// <summary>
@@ -36,7 +37,8 @@ struct PlayerEngineEffectSettings {
 /// </summary>
 class PlayerEngineEffect final {
 public:
-	void Initialize(DirectXCommon* dxCommon, TextureManager* textureManager, uint32_t textureHandle,
+	void Initialize(DirectXCommon* dxCommon, GPUParticlePipeline* pipeline,
+		TextureManager* textureManager, uint32_t textureHandle,
 		const PlayerEngineEffectSettings& settings);
 	void Reset(const PlayerEngineEffectSettings& settings);
 	void Update(float deltaTime, const Vector3& playerPosition, const PlayerEngineEffectSettings& settings);

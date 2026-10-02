@@ -30,6 +30,7 @@ void MyGame::Initialize() {
 		context.object3dCommon = object3dCommon_.get();
 		context.time = time_.get();
 		context.frameRateController = frameRateController_.get();
+		context.gpuParticlePipeline = gpuParticlePipeline_.get();
 #ifdef _DEBUG
 		context.imguiManager = imguiManager_.get();
 #endif

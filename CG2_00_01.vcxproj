@@ -116,6 +116,7 @@
 	<ClCompile Include="engine\effects\CameraShake.cpp" />
 	<ClCompile Include="engine\effects\Tween.cpp" />
 	<ClCompile Include="engine\effects\particle\GPUParticleSystem.cpp" />
+	<ClCompile Include="engine\effects\particle\GPUParticlePipeline.cpp" />
 	<ClCompile Include="engine\effects\particle\GPUParticleEmitter.cpp" />
     <ClCompile Include="engine\2d\Sprite.cpp" />
     <ClCompile Include="engine\2d\SpriteCommon.cpp" />
@@ -174,6 +175,7 @@
 	<ClInclude Include="engine\effects\Tween.h" />
 	<ClInclude Include="engine\effects\particle\GPUParticleCommon.h" />
 	<ClInclude Include="engine\effects\particle\GPUParticleSystem.h" />
+	<ClInclude Include="engine\effects\particle\GPUParticlePipeline.h" />
 	<ClInclude Include="engine\effects\particle\GPUParticleEmitter.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h" />
     <ClInclude Include="engine\3d\camera\Camera.h" />

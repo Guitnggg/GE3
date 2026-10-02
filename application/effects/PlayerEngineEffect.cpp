@@ -5,10 +5,10 @@
 #include <algorithm>
 #include <stdexcept>
 
-void PlayerEngineEffect::Initialize(DirectXCommon* dxCommon, TextureManager* textureManager,
+void PlayerEngineEffect::Initialize(DirectXCommon* dxCommon, GPUParticlePipeline* pipeline, TextureManager* textureManager,
 	uint32_t textureHandle, const PlayerEngineEffectSettings& settings) {
 	if (initialized_) { throw std::logic_error("PlayerEngineEffect is already initialized."); }
-	particleSystem_.Initialize(dxCommon, textureManager, textureHandle, 4096);
+	particleSystem_.Initialize(dxCommon, pipeline, textureManager, textureHandle, 4096);
 	GPUParticleEmitData emit{};
 	emit.seed = 0x454e474eu;
 	emitter_.Initialize(&particleSystem_, emit, settings.interval);

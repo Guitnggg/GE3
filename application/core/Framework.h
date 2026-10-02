@@ -5,6 +5,7 @@
 class DirectXCommon;
 class CollisionWorld;
 class FrameRateController;
+class GPUParticlePipeline;
 class ImGuiManager;
 class Input;
 class ModelManager;
@@ -80,6 +81,7 @@ protected:
 	std::unique_ptr<ModelManager> modelManager_;
 	std::unique_ptr<SpriteCommon> spriteCommon_;
 	std::unique_ptr<Object3dCommon> object3dCommon_;
+	std::unique_ptr<GPUParticlePipeline> gpuParticlePipeline_;
 	std::unique_ptr<Time> time_;
 	std::unique_ptr<FrameRateController> frameRateController_;
 

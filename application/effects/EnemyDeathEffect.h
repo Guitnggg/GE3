@@ -6,6 +6,7 @@
 
 class Camera;
 class DirectXCommon;
+class GPUParticlePipeline;
 class TextureManager;
 
 /// <summary>
@@ -13,7 +14,8 @@ class TextureManager;
 /// </summary>
 class EnemyDeathEffect final {
 public:
-	void Initialize(DirectXCommon* dxCommon, TextureManager* textureManager, uint32_t textureHandle);
+	void Initialize(DirectXCommon* dxCommon, GPUParticlePipeline* pipeline,
+		TextureManager* textureManager, uint32_t textureHandle);
 	void Emit(const Vector3& position);
 	void Update(float deltaTime);
 	void Draw(const Camera& camera);

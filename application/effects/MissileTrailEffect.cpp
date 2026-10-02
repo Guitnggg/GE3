@@ -6,10 +6,10 @@
 #include <cmath>
 #include <stdexcept>
 
-void MissileTrailEffect::Initialize(DirectXCommon* dxCommon, TextureManager* textureManager,
+void MissileTrailEffect::Initialize(DirectXCommon* dxCommon, GPUParticlePipeline* pipeline, TextureManager* textureManager,
 	uint32_t textureHandle) {
 	if (initialized_) { throw std::logic_error("MissileTrailEffect is already initialized."); }
-	particleSystem_.Initialize(dxCommon, textureManager, textureHandle, 8192);
+	particleSystem_.Initialize(dxCommon, pipeline, textureManager, textureHandle, 8192);
 	GPUParticlePreset preset{};
 	preset.acceleration = {0.0f, 1.2f, 0.0f};
 	preset.drag = 1.4f;

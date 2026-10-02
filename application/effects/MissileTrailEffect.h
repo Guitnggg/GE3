@@ -7,6 +7,7 @@
 
 class Camera;
 class DirectXCommon;
+class GPUParticlePipeline;
 class TextureManager;
 
 /// <summary>
@@ -14,7 +15,8 @@ class TextureManager;
 /// </summary>
 class MissileTrailEffect final {
 public:
-	void Initialize(DirectXCommon* dxCommon, TextureManager* textureManager, uint32_t textureHandle);
+	void Initialize(DirectXCommon* dxCommon, GPUParticlePipeline* pipeline,
+		TextureManager* textureManager, uint32_t textureHandle);
 	void EmitTrails(const std::vector<Vector3>& missilePositions, float deltaTime);
 	void Update(float deltaTime);
 	void Draw(const Camera& camera);
