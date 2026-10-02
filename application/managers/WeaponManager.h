@@ -9,6 +9,7 @@
 #include <vector>
 
 class Camera;
+class CollisionWorld;
 class EnemyManager;
 class Input;
 class Model;
@@ -21,13 +22,14 @@ class TextureManager;
 class WeaponManager final {
 public:
 	~WeaponManager();
-	void Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager, Input* input,
+	void Initialize(CollisionWorld* collisionWorld, Object3dCommon* object3dCommon, TextureManager* textureManager, Input* input,
 		const std::shared_ptr<Model>& bulletModel, const std::shared_ptr<Model>& missileModel);
 	void Reset(EnemyManager& enemies);
 	void Shoot(const Vector3& origin, const Vector3& direction);
 	void UpdateLockOn(float deltaTime, bool acceptMouseInput, const Vector3& origin,
 		const Vector3& direction, const Vector3& missileOrigin, EnemyManager& enemies);
-	uint32_t UpdateProjectiles(const Camera& camera, float deltaTime, EnemyManager& enemies);
+	void UpdateProjectiles(const Camera& camera, float deltaTime, EnemyManager& enemies);
+	uint32_t ResolveProjectileHits(EnemyManager& enemies);
 	void OnEnemyRemoved(uint64_t id);
 	void ClearLockOn(EnemyManager& enemies);
 	void Draw() const;
@@ -35,9 +37,10 @@ public:
 
 private:
 	void LaunchMissile(const Vector3& origin, const Vector3& direction, const EnemyManager& enemies);
-	uint32_t UpdateBullets(const Camera& camera, float deltaTime, EnemyManager& enemies);
-	uint32_t UpdateMissiles(const Camera& camera, float deltaTime, EnemyManager& enemies);
+	void UpdateBullets(const Camera& camera, float deltaTime);
+	void UpdateMissiles(const Camera& camera, float deltaTime, EnemyManager& enemies);
 
+	CollisionWorld* collisionWorld_ = nullptr;
 	Object3dCommon* object3dCommon_ = nullptr;
 	TextureManager* textureManager_ = nullptr;
 	Input* input_ = nullptr;

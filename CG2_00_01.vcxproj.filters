@@ -37,6 +37,9 @@
     <Filter Include="application\editor">
       <UniqueIdentifier>{04A65FD4-3384-4574-B470-E784D9BDB05A}</UniqueIdentifier>
     </Filter>
+	<Filter Include="application\collision">
+	  <UniqueIdentifier>{93E1F0E7-B98B-4A06-991F-9A8A5D741A6E}</UniqueIdentifier>
+	</Filter>
     <Filter Include="engine">
       <UniqueIdentifier>{0a00b4e5-8996-409a-bcc6-4e0f3b8cbd83}</UniqueIdentifier>
     </Filter>
@@ -132,6 +135,9 @@
     <ClCompile Include="engine\collision\Collision.cpp">
       <Filter>engine\collision</Filter>
     </ClCompile>
+	<ClCompile Include="engine\collision\CollisionWorld.cpp">
+	  <Filter>engine\collision</Filter>
+	</ClCompile>
     <ClCompile Include="externals\imgui\imgui.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
@@ -233,6 +239,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+	<ClInclude Include="application\collision\GameCollisionLayers.h">
+	  <Filter>application\collision</Filter>
+	</ClInclude>
     <ClInclude Include="application\editor\GameParameterEditor.h">
       <Filter>application\editor</Filter>
     </ClInclude>
@@ -272,6 +281,9 @@
     <ClInclude Include="engine\collision\Collision.h">
       <Filter>engine\collision</Filter>
     </ClInclude>
+	<ClInclude Include="engine\collision\CollisionWorld.h">
+	  <Filter>engine\collision</Filter>
+	</ClInclude>
     <ClInclude Include="externals\imgui\imgui.h">
       <Filter>imgui</Filter>
     </ClInclude>

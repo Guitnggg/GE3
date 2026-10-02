@@ -6,6 +6,7 @@
 #include "engine/3D/object/Object3dCommon.h"
 #include "engine/core/timing/Time.h"
 #include "engine/graphics/debug/ImGuiManager.h"
+#include "engine/collision/CollisionWorld.h"
 #include "engine/graphics/resource/TextureManager.h"
 #include "engine/input/Input.h"
 #ifdef _DEBUG
@@ -48,8 +49,8 @@ void GameScene::Initialize(const SceneContext& context) {
 		player_ = std::make_unique<Player>();
 		player_->Initialize(context_.spriteCommon, context_.object3dCommon,
 			context_.textureManager, context_.input, playerModel_, texture_);
-		enemyManager_.Initialize(context_.object3dCommon, context_.textureManager, sphereModel_);
-		weaponManager_.Initialize(context_.object3dCommon, context_.textureManager, context_.input,
+		enemyManager_.Initialize(context_.collisionWorld, context_.object3dCommon, context_.textureManager, sphereModel_);
+		weaponManager_.Initialize(context_.collisionWorld, context_.object3dCommon, context_.textureManager, context_.input,
 			sphereModel_, missileModel_);
 #ifdef _DEBUG
 		parameterEditor_.Initialize(context_.audio);
@@ -114,7 +115,9 @@ void GameScene::Update() {
 	UpdateEnvironment();
 	const float enemyDeltaTime = (!gameOver_ && !parameterEditor_.IsPaused()) ? deltaTime : 0.0f;
 	enemyManager_.Update(player_->GetCamera(), enemyDeltaTime, parameters_.enemyRotationSpeed);
-	score_ += weaponManager_.UpdateProjectiles(player_->GetCamera(), enemyDeltaTime, enemyManager_);
+	weaponManager_.UpdateProjectiles(player_->GetCamera(), enemyDeltaTime, enemyManager_);
+	context_.collisionWorld->Update();
+	score_ += weaponManager_.ResolveProjectileHits(enemyManager_);
 
 #ifdef _DEBUG
 	// ゲームHUDとパラメータエディタは同じImGuiフレーム内へ構築する

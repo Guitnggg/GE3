@@ -3,6 +3,7 @@
 #include <memory>
 
 class DirectXCommon;
+class CollisionWorld;
 class FrameRateController;
 class ImGuiManager;
 class Input;
@@ -72,6 +73,7 @@ protected:
 	std::unique_ptr<WinApp> winApp_;
 	std::unique_ptr<Input> input_;
 	std::unique_ptr<Audio> audio_;
+	std::unique_ptr<CollisionWorld> collisionWorld_;
 	std::unique_ptr<DirectXCommon> dxCommon_;
 	std::unique_ptr<SrvManager> srvManager_;
 	std::unique_ptr<TextureManager> textureManager_;

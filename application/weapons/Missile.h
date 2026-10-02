@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/math/Mymath.h"
+#include "engine/collision/CollisionWorld.h"
 
 #include <cstdint>
 #include <memory>
@@ -16,20 +17,23 @@ class TextureManager;
 class Missile final {
 public:
 	~Missile();
-	void Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager,
+	void Initialize(CollisionWorld* collisionWorld, Object3dCommon* object3dCommon, TextureManager* textureManager,
 		const std::shared_ptr<Model>& model, const Vector3& position,
 		const Vector3& initialDirection, uint64_t targetId);
 	void Update(const Camera& camera, float deltaTime, const Enemy* target);
 	void Draw() const;
-	bool Intersects(const Enemy& enemy) const;
 	bool IsExpired() const { return remainingLifetime_ <= 0.0f; }
 	uint64_t GetTargetId() const { return targetId_; }
+	uint64_t ConsumeHitEnemyId();
 
 private:
+	CollisionWorld* collisionWorld_ = nullptr;
+	ColliderHandle collider_{};
 	std::unique_ptr<Object3d> object_;
-	Vector3 previousPosition_{};
 	Vector3 velocity_{};
 	uint64_t targetId_ = 0;
 	float remainingLifetime_ = 0.0f;
+	uint64_t hitEnemyId_ = 0;
+	static constexpr float kRadius = 0.35f;
 	static constexpr float kSpeed = 25.0f;
 };

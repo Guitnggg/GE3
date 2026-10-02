@@ -5,17 +5,19 @@
 #include "application/weapons/Bullet.h"
 #include "application/weapons/Missile.h"
 #include "engine/input/Input.h"
+#include "engine/collision/CollisionWorld.h"
 
 #include <algorithm>
 #include <stdexcept>
 
 WeaponManager::~WeaponManager() = default;
 
-void WeaponManager::Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager, Input* input,
+void WeaponManager::Initialize(CollisionWorld* collisionWorld, Object3dCommon* object3dCommon, TextureManager* textureManager, Input* input,
 	const std::shared_ptr<Model>& bulletModel, const std::shared_ptr<Model>& missileModel) {
-	if (!object3dCommon || !textureManager || !input || !bulletModel || !missileModel) {
+	if (!collisionWorld || !object3dCommon || !textureManager || !input || !bulletModel || !missileModel) {
 		throw std::invalid_argument("WeaponManager requires initialized services and models.");
 	}
+	collisionWorld_ = collisionWorld;
 	object3dCommon_ = object3dCommon;
 	textureManager_ = textureManager;
 	input_ = input;
@@ -32,7 +34,7 @@ void WeaponManager::Reset(EnemyManager& enemies) {
 
 void WeaponManager::Shoot(const Vector3& origin, const Vector3& direction) {
 	auto bullet = std::make_unique<Bullet>();
-	bullet->Initialize(object3dCommon_, textureManager_, bulletModel_, origin, direction);
+	bullet->Initialize(collisionWorld_, object3dCommon_, textureManager_, bulletModel_, origin, direction);
 	bullets_.push_back(std::move(bullet));
 }
 
@@ -55,54 +57,53 @@ void WeaponManager::LaunchMissile(const Vector3& origin, const Vector3& directio
 	const EnemyManager& enemies) {
 	if (enemies.Find(lockedEnemyId_) == nullptr) { return; }
 	auto missile = std::make_unique<Missile>();
-	missile->Initialize(object3dCommon_, textureManager_, missileModel_, origin, direction, lockedEnemyId_);
+	missile->Initialize(collisionWorld_, object3dCommon_, textureManager_, missileModel_, origin, direction, lockedEnemyId_);
 	missiles_.push_back(std::move(missile));
 }
 
-uint32_t WeaponManager::UpdateBullets(const Camera& camera, float deltaTime, EnemyManager& enemies) {
-	uint32_t killCount = 0;
+void WeaponManager::UpdateBullets(const Camera& camera, float deltaTime) {
 	for (auto bulletIt = bullets_.begin(); bulletIt != bullets_.end();) {
 		(*bulletIt)->Update(camera, deltaTime);
-		const auto& enemyList = enemies.GetEnemies();
-		const auto hit = std::find_if(enemyList.begin(), enemyList.end(),
-			[&bulletIt](const auto& enemy) { return (*bulletIt)->Intersects(*enemy); });
-		if (hit != enemyList.end()) {
-			const uint64_t hitId = (*hit)->GetId();
-			enemies.Remove(hitId);
-			OnEnemyRemoved(hitId);
-			++killCount;
-			bulletIt = bullets_.erase(bulletIt);
-		} else if ((*bulletIt)->IsExpired()) {
+		if ((*bulletIt)->IsExpired()) {
 			bulletIt = bullets_.erase(bulletIt);
 		} else {
 			++bulletIt;
 		}
 	}
-	return killCount;
 }
 
-uint32_t WeaponManager::UpdateMissiles(const Camera& camera, float deltaTime, EnemyManager& enemies) {
-	uint32_t killCount = 0;
+void WeaponManager::UpdateMissiles(const Camera& camera, float deltaTime, EnemyManager& enemies) {
 	for (auto missileIt = missiles_.begin(); missileIt != missiles_.end();) {
 		Enemy* target = enemies.Find((*missileIt)->GetTargetId());
 		(*missileIt)->Update(camera, deltaTime, target);
-		if (target != nullptr && (*missileIt)->Intersects(*target)) {
-			const uint64_t hitId = target->GetId();
-			enemies.Remove(hitId);
-			OnEnemyRemoved(hitId);
-			++killCount;
-			missileIt = missiles_.erase(missileIt);
-		} else if ((*missileIt)->IsExpired()) {
+		if ((*missileIt)->IsExpired()) {
 			missileIt = missiles_.erase(missileIt);
 		} else {
 			++missileIt;
 		}
 	}
-	return killCount;
 }
 
-uint32_t WeaponManager::UpdateProjectiles(const Camera& camera, float deltaTime, EnemyManager& enemies) {
-	return UpdateBullets(camera, deltaTime, enemies) + UpdateMissiles(camera, deltaTime, enemies);
+void WeaponManager::UpdateProjectiles(const Camera& camera, float deltaTime, EnemyManager& enemies) {
+	UpdateBullets(camera, deltaTime);
+	UpdateMissiles(camera, deltaTime, enemies);
+}
+
+uint32_t WeaponManager::ResolveProjectileHits(EnemyManager& enemies) {
+	uint32_t killCount = 0;
+	for (auto bullet = bullets_.begin(); bullet != bullets_.end();) {
+		const uint64_t hitId = (*bullet)->ConsumeHitEnemyId();
+		if (hitId == 0) { ++bullet; continue; }
+		if (enemies.Remove(hitId)) { OnEnemyRemoved(hitId); ++killCount; }
+		bullet = bullets_.erase(bullet);
+	}
+	for (auto missile = missiles_.begin(); missile != missiles_.end();) {
+		const uint64_t hitId = (*missile)->ConsumeHitEnemyId();
+		if (hitId == 0) { ++missile; continue; }
+		if (enemies.Remove(hitId)) { OnEnemyRemoved(hitId); ++killCount; }
+		missile = missiles_.erase(missile);
+	}
+	return killCount;
 }
 
 void WeaponManager::OnEnemyRemoved(uint64_t id) {

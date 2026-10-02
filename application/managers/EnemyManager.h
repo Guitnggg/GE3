@@ -8,6 +8,7 @@
 #include <vector>
 
 class Camera;
+class CollisionWorld;
 struct GameParameters;
 class Model;
 class Object3dCommon;
@@ -19,7 +20,7 @@ class TextureManager;
 class EnemyManager final {
 public:
 	~EnemyManager();
-	void Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager,
+	void Initialize(CollisionWorld* collisionWorld, Object3dCommon* object3dCommon, TextureManager* textureManager,
 		const std::shared_ptr<Model>& model);
 	void Reset();
 	void Update(const Camera& camera, float deltaTime, float rotationSpeed);
@@ -31,12 +32,11 @@ public:
 	void SetLockedEnemy(uint64_t id);
 	bool Remove(uint64_t id);
 	std::vector<uint64_t> RemovePassed(float playerZ);
-	const std::vector<std::unique_ptr<Enemy>>& GetEnemies() const { return enemies_; }
-
 private:
 	void Spawn(float cameraZ, const GameParameters& parameters);
 
 	Object3dCommon* object3dCommon_ = nullptr;
+	CollisionWorld* collisionWorld_ = nullptr;
 	TextureManager* textureManager_ = nullptr;
 	std::shared_ptr<Model> model_;
 	std::vector<std::unique_ptr<Enemy>> enemies_;

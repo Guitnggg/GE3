@@ -21,6 +21,7 @@ void MyGame::Initialize() {
 		// Frameworkが所有する各機能を、所有権を移さずシーンへ公開する
 		SceneContext context{};
 		context.audio = audio_.get();
+		context.collisionWorld = collisionWorld_.get();
 		context.input = input_.get();
 		context.textureManager = textureManager_.get();
 		context.modelManager = modelManager_.get();

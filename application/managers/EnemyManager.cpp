@@ -2,19 +2,21 @@
 
 #include "application/characters/Enemy.h"
 #include "application/editor/GameParameterEditor.h"
+#include "application/collision/GameCollisionLayers.h"
+#include "engine/collision/CollisionWorld.h"
 
 #include <algorithm>
-#include <limits>
 #include <stdexcept>
 
 EnemyManager::~EnemyManager() = default;
 
-void EnemyManager::Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager,
+void EnemyManager::Initialize(CollisionWorld* collisionWorld, Object3dCommon* object3dCommon, TextureManager* textureManager,
 	const std::shared_ptr<Model>& model) {
-	if (!object3dCommon || !textureManager || !model) {
+	if (!collisionWorld || !object3dCommon || !textureManager || !model) {
 		throw std::invalid_argument("EnemyManager requires initialized rendering services and a model.");
 	}
 	object3dCommon_ = object3dCommon;
+	collisionWorld_ = collisionWorld;
 	textureManager_ = textureManager;
 	model_ = model;
 	Reset();
@@ -35,7 +37,7 @@ void EnemyManager::Spawn(float cameraZ, const GameParameters& parameters) {
 	const float radius = parameters.enemyBaseRadius +
 		static_cast<float>(spawnSequence_ % 3u) * parameters.enemyRadiusStep;
 	auto enemy = std::make_unique<Enemy>();
-	enemy->Initialize(object3dCommon_, textureManager_, model_,
+	enemy->Initialize(collisionWorld_, object3dCommon_, textureManager_, model_,
 		{xPositions[xIndex], yPositions[yIndex], cameraZ + parameters.enemySpawnDistance},
 		radius, nextEnemyId_++);
 	enemies_.push_back(std::move(enemy));
@@ -68,22 +70,9 @@ Enemy* EnemyManager::Find(uint64_t id) const {
 }
 
 Enemy* EnemyManager::FindLockTarget(const Vector3& origin, const Vector3& direction) const {
-	Enemy* bestTarget = nullptr;
-	float bestForward = std::numeric_limits<float>::max();
-	for (const auto& enemy : enemies_) {
-		const Vector3 offset{enemy->GetPosition().x - origin.x, enemy->GetPosition().y - origin.y,
-			enemy->GetPosition().z - origin.z};
-		const float forward = offset.x * direction.x + offset.y * direction.y + offset.z * direction.z;
-		if (forward <= 0.0f) { continue; }
-		const float distanceSquared = offset.x * offset.x + offset.y * offset.y + offset.z * offset.z;
-		const float perpendicularSquared = std::max(0.0f, distanceSquared - forward * forward);
-		const float lockRadius = enemy->GetRadius() + 2.5f;
-		if (perpendicularSquared <= lockRadius * lockRadius && forward < bestForward) {
-			bestForward = forward;
-			bestTarget = enemy.get();
-		}
-	}
-	return bestTarget;
+	RaycastHit hit{};
+	return collisionWorld_->Raycast(origin, direction, 200.0f, GameCollisionLayers::Enemy, hit)
+		? Find(hit.userData) : nullptr;
 }
 
 void EnemyManager::SetLockedEnemy(uint64_t id) {

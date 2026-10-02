@@ -94,6 +94,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+	<ClInclude Include="application\collision\GameCollisionLayers.h" />
     <ClCompile Include="application\editor\GameParameterEditor.cpp" />
     <ClCompile Include="application\characters\Enemy.cpp" />
     <ClCompile Include="application\characters\Player.cpp" />
@@ -107,6 +108,7 @@
     <ClCompile Include="application\main.cpp" />
 	<ClCompile Include="engine\audio\Audio.cpp" />
     <ClCompile Include="engine\collision\Collision.cpp" />
+	<ClCompile Include="engine\collision\CollisionWorld.cpp" />
     <ClCompile Include="engine\2d\Sprite.cpp" />
     <ClCompile Include="engine\2d\SpriteCommon.cpp" />
     <ClCompile Include="engine\3d\camera\Camera.cpp" />
@@ -155,6 +157,7 @@
     <ClInclude Include="engine\2d\Sprite.h" />
 	<ClInclude Include="engine\audio\Audio.h" />
     <ClInclude Include="engine\collision\Collision.h" />
+	<ClInclude Include="engine\collision\CollisionWorld.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h" />
     <ClInclude Include="engine\3d\camera\Camera.h" />
 	<ClInclude Include="engine\3d\model\MeshGenerator.h" />

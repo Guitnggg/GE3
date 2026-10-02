@@ -1,6 +1,7 @@
 #pragma once
 
 class Audio;
+class CollisionWorld;
 class FrameRateController;
 class ImGuiManager;
 class Input;
@@ -16,6 +17,7 @@ class Time;
 /// </summary>
 struct SceneContext {
 	Audio* audio = nullptr;
+	CollisionWorld* collisionWorld = nullptr;
 	Input* input = nullptr;
 	TextureManager* textureManager = nullptr;
 	ModelManager* modelManager = nullptr;

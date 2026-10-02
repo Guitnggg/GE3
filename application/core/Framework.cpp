@@ -6,6 +6,7 @@
 #include "engine/graphics/resource/SrvManager.h"
 #include "engine/graphics/resource/TextureManager.h"
 #include "engine/audio/Audio.h"
+#include "engine/collision/CollisionWorld.h"
 #include "engine/core/DirectXCommon.h"
 #include "engine/core/timing/FrameRateController.h"
 #include "engine/graphics/debug/ImGuiManager.h"
@@ -22,7 +23,7 @@ Framework::~Framework() {
 }
 
 void Framework::Initialize() {
-	if (initialized_ || winApp_ || input_ || audio_ || dxCommon_ || srvManager_ ||
+	if (initialized_ || winApp_ || input_ || audio_ || collisionWorld_ || dxCommon_ || srvManager_ ||
 		textureManager_ || modelManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_
 #ifdef _DEBUG
 		|| imguiManager_
@@ -47,6 +48,7 @@ void Framework::Initialize() {
 	// ゲーム内で共有する音声システムの初期化
 	audio_ = std::make_unique<Audio>();
 	audio_->Initialize("resource/audio");
+	collisionWorld_ = std::make_unique<CollisionWorld>();
 
 	// DirectXとGPUディスクリプタ管理の初期化
 	dxCommon_ = std::make_unique<DirectXCommon>();
@@ -132,6 +134,7 @@ void Framework::Finalize() {
 	textureManager_.reset();
 	srvManager_.reset();
 	audio_.reset();
+	collisionWorld_.reset();
 	if (input_) {
 		input_->Finalize();
 	}
