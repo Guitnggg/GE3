@@ -27,6 +27,8 @@ public:
 	uint64_t ConsumeHitEnemyId();
 
 private:
+	void UpdateRotation(float deltaTime, bool snap);
+
 	CollisionWorld* collisionWorld_ = nullptr;
 	ColliderHandle collider_{};
 	std::unique_ptr<Object3d> object_;
@@ -36,4 +38,5 @@ private:
 	uint64_t hitEnemyId_ = 0;
 	static constexpr float kRadius = 0.35f;
 	static constexpr float kSpeed = 25.0f;
+	static constexpr float kRotationSpeed = 8.0f;
 };
