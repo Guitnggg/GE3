@@ -30,10 +30,12 @@ public:
 	void UpdateLockOn(float deltaTime, bool acceptMouseInput, const Vector3& direction,
 		const Vector3& missileOrigin, EnemyManager& enemies);
 	void UpdateProjectiles(const Camera& camera, float deltaTime, EnemyManager& enemies);
-	uint32_t ResolveProjectileHits(EnemyManager& enemies);
+	/// <summary>命中を解決し、このフレームに撃破した敵のワールド座標を返す。</summary>
+	std::vector<Vector3> ResolveProjectileHits(EnemyManager& enemies);
 	void OnEnemyRemoved(uint64_t id);
 	void ClearLockOn(EnemyManager& enemies);
 	void Draw() const;
+	std::vector<Vector3> GetMissilePositions() const;
 	bool HasLock() const { return !lockedEnemyIds_.empty(); }
 	size_t GetLockCount() const { return lockedEnemyIds_.size(); }
 

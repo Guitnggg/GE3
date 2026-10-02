@@ -37,6 +37,12 @@
     <Filter Include="application\editor">
       <UniqueIdentifier>{04A65FD4-3384-4574-B470-E784D9BDB05A}</UniqueIdentifier>
     </Filter>
+	<Filter Include="application\effects">
+	  <UniqueIdentifier>{BC94AA98-251A-4F43-9177-71CE4A73062E}</UniqueIdentifier>
+	</Filter>
+	<Filter Include="application\environment">
+	  <UniqueIdentifier>{637243B6-F260-49F9-809E-A82A562616E3}</UniqueIdentifier>
+	</Filter>
 	<Filter Include="application\collision">
 	  <UniqueIdentifier>{93E1F0E7-B98B-4A06-991F-9A8A5D741A6E}</UniqueIdentifier>
 	</Filter>
@@ -144,6 +150,18 @@
     <ClCompile Include="engine\collision\Collision.cpp">
       <Filter>engine\collision</Filter>
     </ClCompile>
+	<ClCompile Include="application\effects\EnemyDeathEffect.cpp">
+	  <Filter>application\effects</Filter>
+	</ClCompile>
+	<ClCompile Include="application\effects\MissileTrailEffect.cpp">
+	  <Filter>application\effects</Filter>
+	</ClCompile>
+	<ClCompile Include="application\effects\PlayerEngineEffect.cpp">
+	  <Filter>application\effects</Filter>
+	</ClCompile>
+	<ClCompile Include="application\environment\StageEnvironment.cpp">
+	  <Filter>application\environment</Filter>
+	</ClCompile>
 	<ClCompile Include="engine\collision\CollisionWorld.cpp">
 	  <Filter>engine\collision</Filter>
 	</ClCompile>
@@ -302,6 +320,18 @@
     <ClInclude Include="engine\collision\Collision.h">
       <Filter>engine\collision</Filter>
     </ClInclude>
+	<ClInclude Include="application\effects\EnemyDeathEffect.h">
+	  <Filter>application\effects</Filter>
+	</ClInclude>
+	<ClInclude Include="application\effects\MissileTrailEffect.h">
+	  <Filter>application\effects</Filter>
+	</ClInclude>
+	<ClInclude Include="application\effects\PlayerEngineEffect.h">
+	  <Filter>application\effects</Filter>
+	</ClInclude>
+	<ClInclude Include="application\environment\StageEnvironment.h">
+	  <Filter>application\environment</Filter>
+	</ClInclude>
 	<ClInclude Include="engine\collision\CollisionWorld.h">
 	  <Filter>engine\collision</Filter>
 	</ClInclude>

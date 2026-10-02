@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/math/Mymath.h"
+#include "application/effects/PlayerEngineEffect.h"
 
 #include <cstdint>
 
@@ -23,24 +23,7 @@ struct GameParameters {
 	float enemyRotationSpeed = 1.5f;           // 敵のY軸回転速度（ラジアン/秒）
 	bool enemySpawningEnabled = true;          // falseなら敵の新規生成を停止する
 	uint32_t startingLives = 3;                // リスタート時に設定する初期ライフ
-	bool engineParticleEnabled = true;
-	uint32_t engineParticleCount = 10;         // 1回・1噴射口あたりの発生数
-	float engineParticleInterval = 1.0f / 120.0f;
-	float engineParticleMinSpeed = 8.0f;
-	float engineParticleMaxSpeed = 12.0f;
-	float engineParticleVelocitySpread = 0.3f;
-	float engineParticlePositionSpread = 0.04f;
-	float engineParticleMinLifetime = 0.22f;
-	float engineParticleMaxLifetime = 0.38f;
-	float engineParticleStartSize = 0.22f;
-	float engineParticleEndSize = 0.06f;
-	Vector4 engineParticleStartColor{0.65f, 0.9f, 1.0f, 0.95f};
-	Vector4 engineParticleEndColor{0.05f, 0.2f, 1.0f, 0.0f};
-	float engineParticleAccelerationZ = -5.0f;
-	float engineParticleDrag = 0.8f;
-	float engineParticleOffsetX = 0.0f;
-	float engineParticleOffsetY = -0.05f;
-	float engineParticleOffsetZ = -0.72f;
+	PlayerEngineEffectSettings engineParticle{};
 };
 
 /// <summary>

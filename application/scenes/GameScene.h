@@ -2,89 +2,66 @@
 
 #include "application/characters/Player.h"
 #include "application/editor/GameParameterEditor.h"
+#include "application/effects/EnemyDeathEffect.h"
+#include "application/effects/MissileTrailEffect.h"
+#include "application/effects/PlayerEngineEffect.h"
+#include "application/environment/StageEnvironment.h"
 #include "application/managers/EnemyManager.h"
 #include "application/managers/WeaponManager.h"
-#include "engine/3D/object/Object3d.h"
-#include "engine/effects/particle/GPUParticleEmitter.h"
-#include "engine/effects/particle/GPUParticleSystem.h"
-#include "engine/scene/IScene.h"
 #include "engine/input/Input.h"
+#include "engine/scene/IScene.h"
+
 #include <cstdint>
 #include <memory>
-#include <vector>
 
 class Model;
 
-/// <summary>
-/// 3Dレールシューティング全体の進行と得点を管理する。
-/// </summary>
+/// <summary>3Dレールシューティング全体の進行と得点を管理する。</summary>
 class GameScene final : public IScene {
 public:
-	/// <summary>
-	/// シーンが所有するゲーム要素と参照を解放する。
-	/// </summary>
 	~GameScene() override;
-
-	/// <summary>
-	/// 共通機能を受け取り、プレイヤー、モデル、街区を生成する。
-	/// </summary>
-	/// <param name="context">Frameworkが所有するゲーム共通機能</param>
 	void Initialize(const SceneContext& context) override;
-
-	/// <summary>
-	/// 毎フレーム呼び出されるメソッド。ゲームの状態を更新するためにオーバーライドされます。
-	/// </summary>
 	void Update() override;
-
-	/// <summary>
-	/// 固定更新時に呼び出されるメソッド。物理演算や時間に依存する更新処理を一定間隔で行うためにオーバーライドされます。
-	/// </summary>
 	void FixedUpdate() override;
-
-	/// <summary>
-	/// 3Dオブジェクトと照準を描画する。
-	/// </summary>
 	void Draw() override;
-
-	/// <summary>
-	/// シーンが所有するオブジェクトと参照を解放する。
-	/// </summary>
 	void Finalize() override;
 
 private:
-	/// <summary>
-	/// ゲーム要素とスコアを開始状態へ戻す。
-	/// </summary>
+	void InitializeInputActions();
+	void InitializeGameObjects();
 	void ResetGame();
+	void UpdateGameplay(float deltaTime, bool acceptFireInput);
+	void UpdateFrameSystems(float deltaTime);
+	void DrawDebugUi();
 
-	/// <summary>
-	/// 通過した街区を前方へ循環させ、建物が続いて見えるようにする。
-	/// </summary>
-	void UpdateEnvironment();
-	void UpdateEngineParticles(float deltaTime);
+	SceneContext context_{};
 
-private:
-	SceneContext context_{};                              // Frameworkが所有する共通機能への非所有参照
-	std::shared_ptr<Model> sphereModel_;                  // 敵と弾で共有する球モデル
-	std::shared_ptr<Model> playerModel_;                  // プレイヤー専用OBJモデル
-	std::shared_ptr<Model> missileModel_;                 // ミサイル専用OBJモデル
-	std::shared_ptr<Model> mapModel_;                     // 左右に建物が並ぶ街区モデル
-	std::unique_ptr<Player> player_;                      // カメラ、照準、ライフを持つプレイヤー
-	std::unique_ptr<GPUParticleSystem> engineParticleSystem_; // プレイヤーエンジン噴射のGPUパーティクルプール
-	std::unique_ptr<GPUParticleEmitter> engineEmitter_;       // 中央エンジンの継続エミッター
-	std::vector<std::unique_ptr<Object3d>> mapSegments_;  // 前方へ循環配置する街区
-	EnemyManager enemyManager_{};                         // 敵の生成、更新、検索、削除
-	WeaponManager weaponManager_{};                       // 通常弾、ロックオン、ミサイル
-	GameParameters parameters_{};                         // 実行中に調整可能なゲーム設定
-	GameParameterEditor parameterEditor_{};               // ゲーム設定を操作するデバッグUI
-	uint32_t texture_ = 0;                                // 球と照準に使用するテクスチャ番号
-	uint32_t lockOnTexture_ = 0;                          // ロック対象へ重ねるマーカーテクスチャ
-	uint32_t particleTexture_ = 0;                        // GPUパーティクル用の透過テクスチャ
+	// 読み込み済みリソース
+	std::shared_ptr<Model> sphereModel_;
+	std::shared_ptr<Model> playerModel_;
+	std::shared_ptr<Model> missileModel_;
+	uint32_t texture_ = 0;
+	uint32_t lockOnTexture_ = 0;
+	uint32_t particleTexture_ = 0;
+
+	// シーンを構成するゲーム要素
+	std::unique_ptr<Player> player_;
+	std::unique_ptr<StageEnvironment> stageEnvironment_;
+	std::unique_ptr<PlayerEngineEffect> playerEngineEffect_;
+	std::unique_ptr<EnemyDeathEffect> enemyDeathEffect_;
+	std::unique_ptr<MissileTrailEffect> missileTrailEffect_;
+	EnemyManager enemyManager_{};
+	WeaponManager weaponManager_{};
+
+	// ゲーム設定と入力
+	GameParameters parameters_{};
+	GameParameterEditor parameterEditor_{};
 	InputActionId moveAction_ = kInvalidInputActionId;
 	InputActionId shootAction_ = kInvalidInputActionId;
 	InputActionId lockOnAction_ = kInvalidInputActionId;
 	InputActionId restartAction_ = kInvalidInputActionId;
-	uint32_t score_ = 0;                                  // 撃破した敵の数
-	bool gameOver_ = false;                               // ゲームオーバー状態
-	bool initialized_ = false;                            // 多重初期化を防ぐ状態
+
+	uint32_t score_ = 0;
+	bool gameOver_ = false;
+	bool initialized_ = false;
 };

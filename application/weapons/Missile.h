@@ -24,6 +24,7 @@ public:
 	void Draw() const;
 	bool IsExpired() const { return remainingLifetime_ <= 0.0f; }
 	uint64_t GetTargetId() const { return targetId_; }
+	const Vector3& GetPosition() const;
 	uint64_t ConsumeHitEnemyId();
 
 private:

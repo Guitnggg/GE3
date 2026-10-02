@@ -61,32 +61,32 @@ bool GameParameterEditor::Draw(
 			ImGui::SliderFloat("Rotation Speed", &parameters.enemyRotationSpeed, 0.0f, 8.0f, "%.2f rad/s");
 		}
 		if (ImGui::CollapsingHeader("Engine Particle", ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::Checkbox("Enabled##EngineParticle", &parameters.engineParticleEnabled);
-			int count = static_cast<int>(parameters.engineParticleCount);
+			auto& particle = parameters.engineParticle;
+			ImGui::Checkbox("Enabled##EngineParticle", &particle.enabled);
+			int count = static_cast<int>(particle.count);
 			if (ImGui::SliderInt("Particles / Burst", &count, 1, 64)) {
-				parameters.engineParticleCount = static_cast<uint32_t>(count);
+				particle.count = static_cast<uint32_t>(count);
 			}
-			ImGui::SliderFloat("Emission Interval", &parameters.engineParticleInterval,
+			ImGui::SliderFloat("Emission Interval", &particle.interval,
 				1.0f / 240.0f, 0.1f, "%.4f s", ImGuiSliderFlags_Logarithmic);
-			ImGui::SliderFloat("Minimum Speed", &parameters.engineParticleMinSpeed, 0.0f, 30.0f, "%.1f");
-			ImGui::SliderFloat("Maximum Speed", &parameters.engineParticleMaxSpeed, 0.0f, 30.0f, "%.1f");
-			ImGui::SliderFloat("Velocity Spread", &parameters.engineParticleVelocitySpread, 0.0f, 3.0f, "%.2f");
-			ImGui::SliderFloat("Position Spread", &parameters.engineParticlePositionSpread, 0.0f, 0.5f, "%.3f");
-			ImGui::SliderFloat("Minimum Lifetime", &parameters.engineParticleMinLifetime, 0.05f, 3.0f, "%.2f s");
-			ImGui::SliderFloat("Maximum Lifetime", &parameters.engineParticleMaxLifetime, 0.05f, 3.0f, "%.2f s");
-			ImGui::SliderFloat("Start Size", &parameters.engineParticleStartSize, 0.01f, 2.0f, "%.2f");
-			ImGui::SliderFloat("End Size", &parameters.engineParticleEndSize, 0.0f, 2.0f, "%.2f");
-			ImGui::ColorEdit4("Start Color", &parameters.engineParticleStartColor.x,
+			ImGui::SliderFloat("Minimum Speed", &particle.minSpeed, 0.0f, 30.0f, "%.1f");
+			ImGui::SliderFloat("Maximum Speed", &particle.maxSpeed, 0.0f, 30.0f, "%.1f");
+			ImGui::SliderFloat("Velocity Spread", &particle.velocitySpread, 0.0f, 3.0f, "%.2f");
+			ImGui::SliderFloat("Position Spread", &particle.positionSpread, 0.0f, 0.5f, "%.3f");
+			ImGui::SliderFloat("Minimum Lifetime", &particle.minLifetime, 0.05f, 3.0f, "%.2f s");
+			ImGui::SliderFloat("Maximum Lifetime", &particle.maxLifetime, 0.05f, 3.0f, "%.2f s");
+			ImGui::SliderFloat("Start Size", &particle.startSize, 0.01f, 2.0f, "%.2f");
+			ImGui::SliderFloat("End Size", &particle.endSize, 0.0f, 2.0f, "%.2f");
+			ImGui::ColorEdit4("Start Color", &particle.startColor.x,
 				ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Float);
-			ImGui::ColorEdit4("End Color", &parameters.engineParticleEndColor.x,
+			ImGui::ColorEdit4("End Color", &particle.endColor.x,
 				ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Float);
-			ImGui::SliderFloat("Acceleration Z", &parameters.engineParticleAccelerationZ, -30.0f, 30.0f, "%.1f");
-			ImGui::SliderFloat("Drag", &parameters.engineParticleDrag, 0.0f, 10.0f, "%.2f");
-			ImGui::SliderFloat("Nozzle Offset X", &parameters.engineParticleOffsetX, -1.0f, 1.0f, "%.2f");
-			ImGui::SliderFloat("Nozzle Offset Y", &parameters.engineParticleOffsetY, -1.0f, 1.0f, "%.2f");
-			ImGui::SliderFloat("Nozzle Offset Z", &parameters.engineParticleOffsetZ, -2.0f, 1.0f, "%.2f");
-			const float particlesPerSecond = parameters.engineParticleCount /
-				parameters.engineParticleInterval;
+			ImGui::SliderFloat("Acceleration Z", &particle.accelerationZ, -30.0f, 30.0f, "%.1f");
+			ImGui::SliderFloat("Drag", &particle.drag, 0.0f, 10.0f, "%.2f");
+			ImGui::SliderFloat("Nozzle Offset X", &particle.nozzleOffset.x, -1.0f, 1.0f, "%.2f");
+			ImGui::SliderFloat("Nozzle Offset Y", &particle.nozzleOffset.y, -1.0f, 1.0f, "%.2f");
+			ImGui::SliderFloat("Nozzle Offset Z", &particle.nozzleOffset.z, -2.0f, 1.0f, "%.2f");
+			const float particlesPerSecond = particle.count / particle.interval;
 			ImGui::Text("Approx. emission: %.0f particles/s", particlesPerSecond);
 			ImGui::TextDisabled("GPU pool capacity: 4096 particles");
 		}

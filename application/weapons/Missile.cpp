@@ -88,3 +88,8 @@ uint64_t Missile::ConsumeHitEnemyId() {
 	hitEnemyId_ = 0;
 	return id;
 }
+
+const Vector3& Missile::GetPosition() const {
+	if (!object_) { throw std::logic_error("Missile is not initialized."); }
+	return object_->GetTransform().translate;
+}

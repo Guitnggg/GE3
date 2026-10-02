@@ -9,7 +9,9 @@ enum class GPUParticleBlendMode {
 	Additive,
 };
 
-/// <summary>同じGPUパーティクル基盤を演出ごとに調整する設定値。</summary>
+/// <summary>
+/// 同じGPUパーティクル基盤を演出ごとに調整する設定値。
+/// </summary>
 struct GPUParticlePreset {
 	Vector3 acceleration{};
 	float drag = 0.0f;
@@ -22,7 +24,9 @@ struct GPUParticlePreset {
 	GPUParticleBlendMode blendMode = GPUParticleBlendMode::Alpha;
 };
 
-/// <summary>1回の発生要求。範囲内の値はGPU側で粒ごとにランダム化する。</summary>
+/// <summary>
+/// 1回の発生要求。範囲内の値はGPU側で粒ごとにランダム化する。
+/// </summary>
 struct GPUParticleEmitData {
 	Vector3 position{};
 	uint32_t count = 1;

@@ -100,21 +100,33 @@ void WeaponManager::UpdateProjectiles(const Camera& camera, float deltaTime, Ene
 	UpdateMissiles(camera, deltaTime, enemies);
 }
 
-uint32_t WeaponManager::ResolveProjectileHits(EnemyManager& enemies) {
-	uint32_t killCount = 0;
+std::vector<Vector3> WeaponManager::ResolveProjectileHits(EnemyManager& enemies) {
+	std::vector<Vector3> destroyedPositions;
 	for (auto bullet = bullets_.begin(); bullet != bullets_.end();) {
 		const uint64_t hitId = (*bullet)->ConsumeHitEnemyId();
 		if (hitId == 0) { ++bullet; continue; }
-		if (enemies.Remove(hitId)) { OnEnemyRemoved(hitId); ++killCount; }
+		if (const Enemy* enemy = enemies.Find(hitId)) {
+			const Vector3 position = enemy->GetPosition();
+			if (enemies.Remove(hitId)) {
+				destroyedPositions.push_back(position);
+				OnEnemyRemoved(hitId);
+			}
+		}
 		bullet = bullets_.erase(bullet);
 	}
 	for (auto missile = missiles_.begin(); missile != missiles_.end();) {
 		const uint64_t hitId = (*missile)->ConsumeHitEnemyId();
 		if (hitId == 0) { ++missile; continue; }
-		if (enemies.Remove(hitId)) { OnEnemyRemoved(hitId); ++killCount; }
+		if (const Enemy* enemy = enemies.Find(hitId)) {
+			const Vector3 position = enemy->GetPosition();
+			if (enemies.Remove(hitId)) {
+				destroyedPositions.push_back(position);
+				OnEnemyRemoved(hitId);
+			}
+		}
 		missile = missiles_.erase(missile);
 	}
-	return killCount;
+	return destroyedPositions;
 }
 
 void WeaponManager::OnEnemyRemoved(uint64_t id) {
@@ -130,4 +142,11 @@ void WeaponManager::ClearLockOn(EnemyManager& enemies) {
 void WeaponManager::Draw() const {
 	for (const auto& bullet : bullets_) { bullet->Draw(); }
 	for (const auto& missile : missiles_) { missile->Draw(); }
+}
+
+std::vector<Vector3> WeaponManager::GetMissilePositions() const {
+	std::vector<Vector3> positions;
+	positions.reserve(missiles_.size());
+	for (const auto& missile : missiles_) { positions.push_back(missile->GetPosition()); }
+	return positions;
 }
