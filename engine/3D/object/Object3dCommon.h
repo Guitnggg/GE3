@@ -5,6 +5,8 @@
 
 #include "engine/core/DirectXCommon.h"
 
+class ShaderCompiler;
+
 /// <summary>
 /// 3Dオブジェクト描画で共有するルートシグネチャとパイプラインを管理するクラス
 /// </summary>
@@ -14,7 +16,7 @@ public:
 	/// DirectX共通処理を受け取り、3D描画用の共通設定を初期化する
 	/// </summary>
 	/// <param name="dxCommon">DirectX共通処理</param>
-	void Initialize(DirectXCommon* dxCommon);
+	void Initialize(DirectXCommon* dxCommon, ShaderCompiler* shaderCompiler);
 
 	/// <summary>
 	/// 3D描画前に共通の描画設定をコマンドリストへ設定する
@@ -41,6 +43,7 @@ private:
 
 private:
 	DirectXCommon* dxCommon_ = nullptr;  // DirectX共通処理
+	ShaderCompiler* shaderCompiler_ = nullptr;
 
 	// ===== パイプライン関連 =====
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;

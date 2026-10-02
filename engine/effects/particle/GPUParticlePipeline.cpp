@@ -3,6 +3,7 @@
 #include "engine/core/DirectXCommon.h"
 #include "engine/core/diagnostics/HResult.h"
 #include "engine/core/diagnostics/Logger.h"
+#include "engine/graphics/shader/ShaderCompiler.h"
 
 #include <stdexcept>
 #include <string>
@@ -24,10 +25,11 @@ void SerializeRootSignature(ID3D12Device* device, const D3D12_ROOT_SIGNATURE_DES
 }
 }
 
-void GPUParticlePipeline::Initialize(DirectXCommon* dxCommon) {
+void GPUParticlePipeline::Initialize(DirectXCommon* dxCommon, ShaderCompiler* shaderCompiler) {
 	if (dxCommon_ != nullptr) { throw std::logic_error("GPUParticlePipeline is already initialized."); }
-	if (dxCommon == nullptr) { throw std::invalid_argument("GPUParticlePipeline requires DirectXCommon."); }
+	if (dxCommon == nullptr || shaderCompiler == nullptr) { throw std::invalid_argument("GPUParticlePipeline requires rendering services."); }
 	dxCommon_ = dxCommon;
+	shaderCompiler_ = shaderCompiler;
 	CreateRootSignatures();
 	CreateComputePipelines();
 	CreateGraphicsPipelines();
@@ -88,7 +90,7 @@ void GPUParticlePipeline::CreateComputePipelines() {
 		{L"resource/shaders/particle/ParticleUpdate.CS.hlsl", &updatePipeline_},
 	};
 	for (const auto& entry : entries) {
-		ComPtr<IDxcBlob> shader = dxCommon_->CompileShader(entry.path, L"cs_6_0");
+		ComPtr<IDxcBlob> shader = shaderCompiler_->Compile(entry.path, L"cs_6_0");
 		D3D12_COMPUTE_PIPELINE_STATE_DESC desc{};
 		desc.pRootSignature = computeRootSignature_.Get();
 		desc.CS = {shader->GetBufferPointer(), shader->GetBufferSize()};
@@ -98,8 +100,8 @@ void GPUParticlePipeline::CreateComputePipelines() {
 }
 
 void GPUParticlePipeline::CreateGraphicsPipelines() {
-	ComPtr<IDxcBlob> vertexShader = dxCommon_->CompileShader(L"resource/shaders/particle/Particle.VS.hlsl", L"vs_6_0");
-	ComPtr<IDxcBlob> pixelShader = dxCommon_->CompileShader(L"resource/shaders/particle/Particle.PS.hlsl", L"ps_6_0");
+	ComPtr<IDxcBlob> vertexShader = shaderCompiler_->Compile(L"resource/shaders/particle/Particle.VS.hlsl", L"vs_6_0");
+	ComPtr<IDxcBlob> pixelShader = shaderCompiler_->Compile(L"resource/shaders/particle/Particle.PS.hlsl", L"ps_6_0");
 	auto create = [&](bool additive, ComPtr<ID3D12PipelineState>& destination) {
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
 		desc.pRootSignature = graphicsRootSignature_.Get();

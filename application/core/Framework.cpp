@@ -9,6 +9,7 @@
 #include "engine/collision/CollisionWorld.h"
 #include "engine/core/DirectXCommon.h"
 #include "engine/effects/particle/GPUParticlePipeline.h"
+#include "engine/graphics/shader/ShaderCompiler.h"
 #include "engine/core/timing/FrameRateController.h"
 #include "engine/graphics/debug/ImGuiManager.h"
 #include "engine/input/Input.h"
@@ -27,6 +28,7 @@ void Framework::Initialize() {
 	if (initialized_ || winApp_ || input_ || audio_ || collisionWorld_ || dxCommon_ || srvManager_ ||
 		textureManager_ || modelManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_
 		|| gpuParticlePipeline_
+		|| shaderCompiler_
 #ifdef _DEBUG
 		|| imguiManager_
 #endif
@@ -55,6 +57,8 @@ void Framework::Initialize() {
 	// DirectXとGPUディスクリプタ管理の初期化
 	dxCommon_ = std::make_unique<DirectXCommon>();
 	dxCommon_->Initialize(winApp_.get());
+	shaderCompiler_ = std::make_unique<ShaderCompiler>();
+	shaderCompiler_->Initialize();
 	srvManager_ = std::make_unique<SrvManager>();
 	srvManager_->Initialize(dxCommon_.get());
 	textureManager_ = std::make_unique<TextureManager>();
@@ -64,11 +68,11 @@ void Framework::Initialize() {
 
 	// 2D・3D描画で共通使用するパイプラインの初期化
 	spriteCommon_ = std::make_unique<SpriteCommon>();
-	spriteCommon_->Initialize(dxCommon_.get());
+	spriteCommon_->Initialize(dxCommon_.get(), shaderCompiler_.get());
 	object3dCommon_ = std::make_unique<Object3dCommon>();
-	object3dCommon_->Initialize(dxCommon_.get());
+	object3dCommon_->Initialize(dxCommon_.get(), shaderCompiler_.get());
 	gpuParticlePipeline_ = std::make_unique<GPUParticlePipeline>();
-	gpuParticlePipeline_->Initialize(dxCommon_.get());
+	gpuParticlePipeline_->Initialize(dxCommon_.get(), shaderCompiler_.get());
 
 #ifdef _DEBUG
 	// デバッグビルド時のみImGuiを使用する
@@ -135,6 +139,7 @@ void Framework::Finalize() {
 	gpuParticlePipeline_.reset();
 	object3dCommon_.reset();
 	spriteCommon_.reset();
+	shaderCompiler_.reset();
 	modelManager_.reset();
 	textureManager_.reset();
 	srvManager_.reset();

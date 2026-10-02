@@ -140,6 +140,7 @@
 	<ClCompile Include="engine\input\GamepadInput.cpp" />
 	<ClCompile Include="engine\scene\SceneManager.cpp" />
 	<ClCompile Include="engine\graphics\debug\ImGuiManager.cpp" />
+	<ClCompile Include="engine\graphics\shader\ShaderCompiler.cpp" />
     <ClCompile Include="engine\core\diagnostics\Logger.cpp" />
     <ClCompile Include="engine\core\utility\StringUtility.cpp" />
 	<ClCompile Include="engine\core\timing\Time.cpp" />
@@ -200,6 +201,7 @@
 	<ClInclude Include="engine\scene\SceneContext.h" />
 	<ClInclude Include="engine\scene\SceneManager.h" />
 	<ClInclude Include="engine\graphics\debug\ImGuiManager.h" />
+	<ClInclude Include="engine\graphics\shader\ShaderCompiler.h" />
     <ClInclude Include="engine\core\diagnostics\Logger.h" />
     <ClInclude Include="engine\math\Mymath.h" />
 	<ClInclude Include="engine\math\MathTypes.h" />

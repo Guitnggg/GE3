@@ -2,9 +2,12 @@
 
 #include "DirectXCommon.h"
 
+#include <format>
 #include <stdexcept>
 
 #include "engine/core/diagnostics/HResult.h"
+#include "engine/core/diagnostics/Logger.h"
+#include "engine/core/utility/StringUtility.h"
 #include "externals/DirectXTex/DirectXTex.h"
 
 using namespace Microsoft::WRL;
@@ -42,7 +45,6 @@ void DirectXCommon::Initialize(WinApp* winApp)
 	CreateFence();
 	CreateViewport();
 	CreateScissorRect();
-	CreateDXC();
 }
 
 //===============
@@ -128,57 +130,6 @@ D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetCPUDescriptorHandleSRV(uint32_t in
 D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetGPUDescriptorHandleSRV(uint32_t index)
 {
 	return GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, index);
-}
-
-// HLSLファイルをDXCでコンパイルする
-IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar_t* profile)
-{
-	//1.hlslファイル
-	Logger::Log(StringUtility::ConvertString(std::format(L"Begin CompileShader,path:{},profile:{}\n", filePath, profile)));
-
-	Microsoft::WRL::ComPtr <IDxcBlobEncoding> shaderSource = nullptr;
-	HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
-	HResult::ThrowIfFailed(hr, "Loading a shader file");
-
-	DxcBuffer shaderSourceBuffer;
-	shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
-	shaderSourceBuffer.Size = shaderSource->GetBufferSize();
-	shaderSourceBuffer.Encoding = DXC_CP_UTF8;
-
-	//2.Complie
-	LPCWSTR arguments[] = {
-		filePath.c_str(),
-		L"-E",L"main",
-		L"-T",profile,
-		L"-Zi",L"-Qembed_debug",
-		L"-Od",
-		L"-Zpr",
-	};
-
-	IDxcResult* shaderResult = nullptr;
-	hr = dxcCompiler->Compile(&shaderSourceBuffer, arguments, _countof(arguments),
-		includeHandler.Get(), IID_PPV_ARGS(&shaderResult));
-
-	HResult::ThrowIfFailed(hr, "Compiling a shader");
-
-	//3.警告エラー
-	IDxcBlobUtf8* shaderError = nullptr;
-	shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
-	if (shaderError != nullptr && shaderError->GetStringLength() != 0)
-	{
-		Logger::Log(shaderError->GetStringPointer());
-		//警告エラーダメ絶対
-		throw std::runtime_error(std::string("Shader compilation failed: ") + shaderError->GetStringPointer());
-	}
-
-	//4.Complie結果
-	IDxcBlob* shaderBlob = nullptr;
-	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
-	HResult::ThrowIfFailed(hr, "Getting compiled shader output");
-
-	Logger::Log(StringUtility::ConvertString(std::format(L"Compile Succeeded,path:{},profile:{}\n", filePath, profile)));
-
-	return shaderBlob;
 }
 
 // CPUから書き込めるバッファリソースを作成する
@@ -636,19 +587,4 @@ void DirectXCommon::CreateScissorRect()
 	scissorRect.right = WinApp::kClientWidth;
 	scissorRect.top = 0;
 	scissorRect.bottom = WinApp::kClientHeight;
-}
-
-// シェーダーコンパイル用のDXC関連オブジェクトを作成する
-void DirectXCommon::CreateDXC()
-{
-	HRESULT hr;
-
-	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
-	HResult::ThrowIfFailed(hr, "Creating DXC utilities");
-
-	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
-	HResult::ThrowIfFailed(hr, "Creating the DXC compiler");
-
-	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
-	HResult::ThrowIfFailed(hr, "Creating the DXC include handler");
 }

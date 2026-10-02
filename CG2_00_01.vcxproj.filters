@@ -82,6 +82,9 @@
 	<Filter Include="engine\math">
 	  <UniqueIdentifier>{E83158EE-F3B8-4016-81C5-5C4DF8F37146}</UniqueIdentifier>
 	</Filter>
+	<Filter Include="engine\graphics\shader">
+	  <UniqueIdentifier>{78CB9C65-69C6-4C83-A129-3018B20DF481}</UniqueIdentifier>
+	</Filter>
 	<Filter Include="engine\effects">
 	  <UniqueIdentifier>{04F4F621-420F-4F43-B6DB-BB99C0808050}</UniqueIdentifier>
 	</Filter>
@@ -218,6 +221,9 @@
 	</ClCompile>
 	<ClCompile Include="engine\graphics\debug\ImGuiManager.cpp">
 		<Filter>engine\graphics\debug</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\graphics\shader\ShaderCompiler.cpp">
+	  <Filter>engine\graphics\shader</Filter>
 	</ClCompile>
     <ClCompile Include="engine\core\WinApp.cpp">
       <Filter>engine\core</Filter>
@@ -430,6 +436,9 @@
 	</ClInclude>
 	<ClInclude Include="engine\graphics\debug\ImGuiManager.h">
 		<Filter>engine\graphics\debug</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\graphics\shader\ShaderCompiler.h">
+	  <Filter>engine\graphics\shader</Filter>
 	</ClInclude>
     <ClInclude Include="engine\core\WinApp.h">
       <Filter>engine\core</Filter>

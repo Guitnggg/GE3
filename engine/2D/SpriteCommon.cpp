@@ -4,12 +4,14 @@
 
 #include "engine/core/diagnostics/HResult.h"
 #include "engine/core/diagnostics/Logger.h"
+#include "engine/graphics/shader/ShaderCompiler.h"
 
 // スプライト描画共通処理を初期化する
-void SpriteCommon::Initialize(DirectXCommon* directXCommon) {
+void SpriteCommon::Initialize(DirectXCommon* directXCommon, ShaderCompiler* shaderCompiler) {
 	// GPUデバイスとコマンドリストを提供する共通処理を検証して保持する
-	if (directXCommon == nullptr) { throw std::invalid_argument("SpriteCommon requires DirectXCommon."); }
+	if (directXCommon == nullptr || shaderCompiler == nullptr) { throw std::invalid_argument("SpriteCommon requires rendering services."); }
 	dxCommon_ = directXCommon;
+	shaderCompiler_ = shaderCompiler;
 
 	CreateGraphicsPipeline();
 }
@@ -135,11 +137,11 @@ void SpriteCommon::CreateGraphicsPipeline() {
 
 	// スプライト描画で使用する頂点・ピクセルシェーダーをコンパイルする
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob =
-		dxCommon_->CompileShader(L"resource/shaders/Object3d.VS.hlsl", L"vs_6_0");
+		shaderCompiler_->Compile(L"resource/shaders/Object3d.VS.hlsl", L"vs_6_0");
 	if (vertexShaderBlob == nullptr) { throw std::runtime_error("Sprite vertex shader compilation returned no output."); }
 
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob =
-		dxCommon_->CompileShader(L"resource/shaders/Object3d.PS.hlsl", L"ps_6_0");
+		shaderCompiler_->Compile(L"resource/shaders/Object3d.PS.hlsl", L"ps_6_0");
 	if (pixelShaderBlob == nullptr) { throw std::runtime_error("Sprite pixel shader compilation returned no output."); }
 
 	// これまでの設定を1つのグラフィックスPSO記述へまとめる

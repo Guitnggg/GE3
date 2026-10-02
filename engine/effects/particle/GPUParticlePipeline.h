@@ -6,11 +6,12 @@
 #include <wrl.h>
 
 class DirectXCommon;
+class ShaderCompiler;
 
 /// <summary>全GPUパーティクルシステムで共有するRootSignatureとPSOを所有する。</summary>
 class GPUParticlePipeline final {
 public:
-	void Initialize(DirectXCommon* dxCommon);
+	void Initialize(DirectXCommon* dxCommon, ShaderCompiler* shaderCompiler);
 
 	ID3D12RootSignature* GetComputeRootSignature() const { return computeRootSignature_.Get(); }
 	ID3D12RootSignature* GetGraphicsRootSignature() const { return graphicsRootSignature_.Get(); }
@@ -25,6 +26,7 @@ private:
 	void CreateGraphicsPipelines();
 
 	DirectXCommon* dxCommon_ = nullptr;
+	ShaderCompiler* shaderCompiler_ = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> computeRootSignature_;
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> graphicsRootSignature_;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> initializePipeline_;

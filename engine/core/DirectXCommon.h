@@ -1,15 +1,10 @@
 #pragma once
 
 #include <d3d12.h>
-#include <dxcapi.h>
 #include <dxgi1_6.h>
-#include <format>
 #include <wrl.h>
 
 #include "WinApp.h"
-#include "engine/core/utility/StringUtility.h"
-#include "engine/core/diagnostics/Logger.h"
-
 #include "externals/DirectXTex/DirectXTex.h"
 #include "externals/DirectXTex/d3dx12.h"
 
@@ -96,11 +91,6 @@ public:
 	ID3D12GraphicsCommandList* GetCommandList() const { return commandList.Get(); }
 
 	/// <summary>
-	/// HLSLシェーダーをコンパイルする
-	/// </summary>
-	IDxcBlob* CompileShader(const std::wstring& filePath, const wchar_t* profile);
-
-	/// <summary>
 	/// CPUから書き込めるアップロード用バッファリソースを生成する
 	/// </summary>
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
@@ -159,7 +149,6 @@ private:
 	void CreateFence();           // GPU同期用フェンスを生成する
 	void CreateViewport();        // ビューポートを設定する
 	void CreateScissorRect();     // シザー矩形を設定する
-	void CreateDXC();             // DXCコンパイラ関連を初期化する
 
 private:
 	// ===== アプリケーション関連 =====
@@ -208,11 +197,5 @@ private:
 
 	D3D12_VIEWPORT viewport{};                                         // ビューポート
 	D3D12_RECT scissorRect{};                                          // シザー矩形
-
-	// ===== シェーダーコンパイル関連 =====
-
-	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;                        // DXCユーティリティ
-	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler;                 // DXCコンパイラ
-	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;         // include解決用ハンドラ
 
 };
