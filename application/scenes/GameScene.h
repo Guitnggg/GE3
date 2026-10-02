@@ -5,6 +5,8 @@
 #include "application/managers/EnemyManager.h"
 #include "application/managers/WeaponManager.h"
 #include "engine/3D/object/Object3d.h"
+#include "engine/effects/particle/GPUParticleEmitter.h"
+#include "engine/effects/particle/GPUParticleSystem.h"
 #include "engine/scene/IScene.h"
 #include "engine/input/Input.h"
 #include <cstdint>
@@ -59,6 +61,7 @@ private:
 	/// 通過した街区を前方へ循環させ、建物が続いて見えるようにする。
 	/// </summary>
 	void UpdateEnvironment();
+	void UpdateEngineParticles(float deltaTime);
 
 private:
 	SceneContext context_{};                              // Frameworkが所有する共通機能への非所有参照
@@ -67,6 +70,8 @@ private:
 	std::shared_ptr<Model> missileModel_;                 // ミサイル専用OBJモデル
 	std::shared_ptr<Model> mapModel_;                     // 左右に建物が並ぶ街区モデル
 	std::unique_ptr<Player> player_;                      // カメラ、照準、ライフを持つプレイヤー
+	std::unique_ptr<GPUParticleSystem> engineParticleSystem_; // プレイヤーエンジン噴射のGPUパーティクルプール
+	std::unique_ptr<GPUParticleEmitter> engineEmitter_;       // 中央エンジンの継続エミッター
 	std::vector<std::unique_ptr<Object3d>> mapSegments_;  // 前方へ循環配置する街区
 	EnemyManager enemyManager_{};                         // 敵の生成、更新、検索、削除
 	WeaponManager weaponManager_{};                       // 通常弾、ロックオン、ミサイル
@@ -74,6 +79,7 @@ private:
 	GameParameterEditor parameterEditor_{};               // ゲーム設定を操作するデバッグUI
 	uint32_t texture_ = 0;                                // 球と照準に使用するテクスチャ番号
 	uint32_t lockOnTexture_ = 0;                          // ロック対象へ重ねるマーカーテクスチャ
+	uint32_t particleTexture_ = 0;                        // GPUパーティクル用の透過テクスチャ
 	InputActionId moveAction_ = kInvalidInputActionId;
 	InputActionId shootAction_ = kInvalidInputActionId;
 	InputActionId lockOnAction_ = kInvalidInputActionId;

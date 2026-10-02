@@ -8,10 +8,13 @@
 #include "engine/graphics/debug/ImGuiManager.h"
 #include "engine/collision/CollisionWorld.h"
 #include "engine/graphics/resource/TextureManager.h"
+#include "engine/effects/particle/GPUParticleEmitter.h"
+#include "engine/effects/particle/GPUParticleSystem.h"
 #include "engine/input/Input.h"
 #ifdef _DEBUG
 #include "externals/imgui/imgui.h"
 #endif
+#include <algorithm>
 #include <stdexcept>
 
 namespace {
@@ -45,6 +48,7 @@ void GameScene::Initialize(const SceneContext& context) {
 		// 敵と弾で共有するメッシュを1度だけ生成する
 		texture_ = context_.textureManager->Load("resource/textures/monsterBall.png");
 		lockOnTexture_ = context_.textureManager->Load("resource/textures/Lockon.png");
+		particleTexture_ = context_.textureManager->Load("resource/textures/particleSoft.png");
 		sphereModel_ = context_.modelManager->Create(MeshGenerator::CreateSphere(kSphereSubdivisions), texture_);
 		playerModel_ = context_.modelManager->Load("resource/models/player", "player.obj");
 		missileModel_ = context_.modelManager->Load("resource/models/missile", "missile.obj");
@@ -63,6 +67,13 @@ void GameScene::Initialize(const SceneContext& context) {
 		player_ = std::make_unique<Player>();
 		player_->Initialize(context_.spriteCommon, context_.object3dCommon,
 			context_.textureManager, context_.input, playerModel_, texture_, moveAction_, shootAction_);
+		// 1つのGPUプールと中央噴射口を作り、Presetで噴射の見た目を定義する。
+		engineParticleSystem_ = std::make_unique<GPUParticleSystem>();
+		engineParticleSystem_->Initialize(context_.directXCommon, context_.textureManager, particleTexture_, 4096);
+		GPUParticleEmitData engineEmit{};
+		engineEmit.seed = 0x454e474eu;
+		engineEmitter_ = std::make_unique<GPUParticleEmitter>();
+		engineEmitter_->Initialize(engineParticleSystem_.get(), engineEmit, parameters_.engineParticleInterval);
 		enemyManager_.Initialize(context_.collisionWorld, context_.spriteCommon,
 			context_.object3dCommon, context_.textureManager, sphereModel_, lockOnTexture_);
 		weaponManager_.Initialize(context_.collisionWorld, context_.object3dCommon, context_.textureManager, context_.input,
@@ -80,6 +91,9 @@ void GameScene::ResetGame() {
 	enemyManager_.Reset();
 	weaponManager_.Reset(enemyManager_);
 	player_->Reset(parameters_.startingLives);
+	engineParticleSystem_->Reset();
+	engineEmitter_->Reset();
+	engineEmitter_->SetActive(parameters_.engineParticleEnabled);
 	parameterEditor_.SetPaused(false);
 	score_ = 0;
 	gameOver_ = false;
@@ -121,7 +135,7 @@ void GameScene::Update() {
 			}
 			gameOver_ = player_->IsDead();
 			if (gameOver_) { weaponManager_.ClearLockOn(enemyManager_); }
-			if (!gameOver_) {
+			if (!gameOver_ && parameters_.enemySpawningEnabled) {
 				enemyManager_.UpdateSpawning(deltaTime, player_->GetCameraZ(), parameters_, score_);
 			}
 		}
@@ -131,6 +145,7 @@ void GameScene::Update() {
 	const float enemyDeltaTime = (!gameOver_ && !parameterEditor_.IsPaused()) ? deltaTime : 0.0f;
 	enemyManager_.Update(player_->GetCamera(), enemyDeltaTime, parameters_.enemyRotationSpeed);
 	weaponManager_.UpdateProjectiles(player_->GetCamera(), enemyDeltaTime, enemyManager_);
+	UpdateEngineParticles(enemyDeltaTime);
 	context_.collisionWorld->Update();
 	score_ += weaponManager_.ResolveProjectileHits(enemyManager_);
 
@@ -168,6 +183,8 @@ void GameScene::Draw() {
 	player_->DrawShip();
 	enemyManager_.Draw();
 	weaponManager_.Draw();
+	// 不透明オブジェクトの後に半透明・加算パーティクルを描画する。
+	engineParticleSystem_->Draw(player_->GetCamera());
 	enemyManager_.DrawLockOnMarkers();
 	player_->DrawReticle();
 }
@@ -176,9 +193,46 @@ void GameScene::Finalize() {
 	// シーン所有物を解放してから、Frameworkへの非所有参照を破棄する
 	initialized_ = false;
 	parameterEditor_.Finalize();
-	weaponManager_.Reset(enemyManager_); enemyManager_.Reset(); mapSegments_.clear(); player_.reset();
+	weaponManager_.Reset(enemyManager_); enemyManager_.Reset(); mapSegments_.clear();
+	engineEmitter_.reset(); engineParticleSystem_.reset(); player_.reset();
 	mapModel_.reset(); missileModel_.reset(); playerModel_.reset(); sphereModel_.reset();
-	texture_ = 0; lockOnTexture_ = 0;
+	texture_ = 0; lockOnTexture_ = 0; particleTexture_ = 0;
 	moveAction_ = shootAction_ = lockOnAction_ = restartAction_ = kInvalidInputActionId;
 	context_ = {};
+}
+
+void GameScene::UpdateEngineParticles(float deltaTime) {
+	const float minLifetime = std::min(parameters_.engineParticleMinLifetime, parameters_.engineParticleMaxLifetime);
+	const float maxLifetime = std::max(parameters_.engineParticleMinLifetime, parameters_.engineParticleMaxLifetime);
+	const float minSpeed = std::min(parameters_.engineParticleMinSpeed, parameters_.engineParticleMaxSpeed);
+	const float maxSpeed = std::max(parameters_.engineParticleMinSpeed, parameters_.engineParticleMaxSpeed);
+
+	GPUParticlePreset preset{};
+	preset.acceleration = {0.0f, 0.0f, parameters_.engineParticleAccelerationZ};
+	preset.drag = parameters_.engineParticleDrag;
+	preset.startColor = parameters_.engineParticleStartColor;
+	preset.endColor = parameters_.engineParticleEndColor;
+	preset.startSize = {parameters_.engineParticleStartSize, parameters_.engineParticleStartSize};
+	preset.endSize = {parameters_.engineParticleEndSize, parameters_.engineParticleEndSize};
+	preset.minLifetime = minLifetime;
+	preset.maxLifetime = maxLifetime;
+	preset.blendMode = GPUParticleBlendMode::Additive;
+	engineParticleSystem_->SetPreset(preset);
+
+	GPUParticleEmitData emit{};
+	emit.count = parameters_.engineParticleCount;
+	emit.minVelocity = {-parameters_.engineParticleVelocitySpread, -parameters_.engineParticleVelocitySpread, -maxSpeed};
+	emit.maxVelocity = {parameters_.engineParticleVelocitySpread, parameters_.engineParticleVelocitySpread, -minSpeed};
+	emit.positionSpread = {parameters_.engineParticlePositionSpread,
+		parameters_.engineParticlePositionSpread, parameters_.engineParticlePositionSpread};
+	emit.seed = 0x454e474eu;
+	engineEmitter_->SetEmitTemplate(emit);
+	engineEmitter_->SetInterval(parameters_.engineParticleInterval);
+	engineEmitter_->SetActive(parameters_.engineParticleEnabled);
+
+	// プレイヤーモデルはローカル+Zが前方なので、-Z側の中央エンジン位置から噴射する。
+	const Vector3& position = player_->GetPosition();
+	engineEmitter_->Update(deltaTime, {position.x + parameters_.engineParticleOffsetX,
+		position.y + parameters_.engineParticleOffsetY, position.z + parameters_.engineParticleOffsetZ});
+	engineParticleSystem_->Update(deltaTime);
 }

@@ -51,6 +51,7 @@ bool GameParameterEditor::Draw(
 		}
 		// 敵生成と難易度上昇に関する値は変更後の更新から即時反映される
 		if (ImGui::CollapsingHeader("Enemy", ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::Checkbox("Enable Spawning", &parameters.enemySpawningEnabled);
 			ImGui::SliderFloat("Spawn Interval", &parameters.enemySpawnInterval, 0.15f, 3.0f, "%.2f s");
 			ImGui::SliderFloat("Minimum Interval", &parameters.minimumSpawnInterval, 0.1f, 1.5f, "%.2f s");
 			ImGui::SliderFloat("Score Acceleration", &parameters.spawnAccelerationPerScore, 0.0f, 0.05f, "%.3f");
@@ -58,6 +59,36 @@ bool GameParameterEditor::Draw(
 			ImGui::SliderFloat("Base Radius", &parameters.enemyBaseRadius, 0.2f, 3.0f, "%.2f");
 			ImGui::SliderFloat("Radius Variation", &parameters.enemyRadiusStep, 0.0f, 0.8f, "%.2f");
 			ImGui::SliderFloat("Rotation Speed", &parameters.enemyRotationSpeed, 0.0f, 8.0f, "%.2f rad/s");
+		}
+		if (ImGui::CollapsingHeader("Engine Particle", ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::Checkbox("Enabled##EngineParticle", &parameters.engineParticleEnabled);
+			int count = static_cast<int>(parameters.engineParticleCount);
+			if (ImGui::SliderInt("Particles / Burst", &count, 1, 64)) {
+				parameters.engineParticleCount = static_cast<uint32_t>(count);
+			}
+			ImGui::SliderFloat("Emission Interval", &parameters.engineParticleInterval,
+				1.0f / 240.0f, 0.1f, "%.4f s", ImGuiSliderFlags_Logarithmic);
+			ImGui::SliderFloat("Minimum Speed", &parameters.engineParticleMinSpeed, 0.0f, 30.0f, "%.1f");
+			ImGui::SliderFloat("Maximum Speed", &parameters.engineParticleMaxSpeed, 0.0f, 30.0f, "%.1f");
+			ImGui::SliderFloat("Velocity Spread", &parameters.engineParticleVelocitySpread, 0.0f, 3.0f, "%.2f");
+			ImGui::SliderFloat("Position Spread", &parameters.engineParticlePositionSpread, 0.0f, 0.5f, "%.3f");
+			ImGui::SliderFloat("Minimum Lifetime", &parameters.engineParticleMinLifetime, 0.05f, 3.0f, "%.2f s");
+			ImGui::SliderFloat("Maximum Lifetime", &parameters.engineParticleMaxLifetime, 0.05f, 3.0f, "%.2f s");
+			ImGui::SliderFloat("Start Size", &parameters.engineParticleStartSize, 0.01f, 2.0f, "%.2f");
+			ImGui::SliderFloat("End Size", &parameters.engineParticleEndSize, 0.0f, 2.0f, "%.2f");
+			ImGui::ColorEdit4("Start Color", &parameters.engineParticleStartColor.x,
+				ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Float);
+			ImGui::ColorEdit4("End Color", &parameters.engineParticleEndColor.x,
+				ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Float);
+			ImGui::SliderFloat("Acceleration Z", &parameters.engineParticleAccelerationZ, -30.0f, 30.0f, "%.1f");
+			ImGui::SliderFloat("Drag", &parameters.engineParticleDrag, 0.0f, 10.0f, "%.2f");
+			ImGui::SliderFloat("Nozzle Offset X", &parameters.engineParticleOffsetX, -1.0f, 1.0f, "%.2f");
+			ImGui::SliderFloat("Nozzle Offset Y", &parameters.engineParticleOffsetY, -1.0f, 1.0f, "%.2f");
+			ImGui::SliderFloat("Nozzle Offset Z", &parameters.engineParticleOffsetZ, -2.0f, 1.0f, "%.2f");
+			const float particlesPerSecond = parameters.engineParticleCount /
+				parameters.engineParticleInterval;
+			ImGui::Text("Approx. emission: %.0f particles/s", particlesPerSecond);
+			ImGui::TextDisabled("GPU pool capacity: 4096 particles");
 		}
 		DrawAudioControls();
 		DrawFrameRateControls(frameRateController);

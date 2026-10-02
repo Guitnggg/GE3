@@ -22,6 +22,7 @@ void MyGame::Initialize() {
 		SceneContext context{};
 		context.audio = audio_.get();
 		context.collisionWorld = collisionWorld_.get();
+		context.directXCommon = dxCommon_.get();
 		context.input = input_.get();
 		context.textureManager = textureManager_.get();
 		context.modelManager = modelManager_.get();

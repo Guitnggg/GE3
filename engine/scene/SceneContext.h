@@ -2,6 +2,7 @@
 
 class Audio;
 class CollisionWorld;
+class DirectXCommon;
 class FrameRateController;
 class ImGuiManager;
 class Input;
@@ -18,6 +19,7 @@ class Time;
 struct SceneContext {
 	Audio* audio = nullptr;
 	CollisionWorld* collisionWorld = nullptr;
+	DirectXCommon* directXCommon = nullptr;
 	Input* input = nullptr;
 	TextureManager* textureManager = nullptr;
 	ModelManager* modelManager = nullptr;

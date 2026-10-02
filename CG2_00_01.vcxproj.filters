@@ -79,6 +79,12 @@
 	<Filter Include="engine\effects">
 	  <UniqueIdentifier>{04F4F621-420F-4F43-B6DB-BB99C0808050}</UniqueIdentifier>
 	</Filter>
+	<Filter Include="engine\effects\particle">
+	  <UniqueIdentifier>{2C2836D0-64B9-4875-A236-A51048455710}</UniqueIdentifier>
+	</Filter>
+	<Filter Include="resource\shaders\particle">
+	  <UniqueIdentifier>{98595751-67F2-4D9F-A1C4-C7C4E437A63C}</UniqueIdentifier>
+	</Filter>
 	<Filter Include="engine\input">
 	  <UniqueIdentifier>{49CFFDE7-CC4D-4DA9-9E02-D681740761DD}</UniqueIdentifier>
 	</Filter>
@@ -146,6 +152,12 @@
 	</ClCompile>
 	<ClCompile Include="engine\effects\Tween.cpp">
 	  <Filter>engine\effects</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\effects\particle\GPUParticleSystem.cpp">
+	  <Filter>engine\effects\particle</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\effects\particle\GPUParticleEmitter.cpp">
+	  <Filter>engine\effects\particle</Filter>
 	</ClCompile>
     <ClCompile Include="externals\imgui\imgui.cpp">
       <Filter>imgui</Filter>
@@ -299,6 +311,15 @@
 	<ClInclude Include="engine\effects\Tween.h">
 	  <Filter>engine\effects</Filter>
 	</ClInclude>
+	<ClInclude Include="engine\effects\particle\GPUParticleCommon.h">
+	  <Filter>engine\effects\particle</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\effects\particle\GPUParticleSystem.h">
+	  <Filter>engine\effects\particle</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\effects\particle\GPUParticleEmitter.h">
+	  <Filter>engine\effects\particle</Filter>
+	</ClInclude>
     <ClInclude Include="externals\imgui\imgui.h">
       <Filter>imgui</Filter>
     </ClInclude>
@@ -432,6 +453,7 @@
     <None Include="resource\shaders\Object3d.hlsli">
       <Filter>リソース ファイル</Filter>
     </None>
+	<None Include="resource\shaders\particle\ParticleCommon.hlsli"><Filter>resource\shaders\particle</Filter></None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resource\shaders\Object3d.PS.hlsl">
@@ -440,5 +462,10 @@
     <FxCompile Include="resource\shaders\Object3d.VS.hlsl">
       <Filter>リソース ファイル</Filter>
     </FxCompile>
+	<FxCompile Include="resource\shaders\particle\ParticleInitialize.CS.hlsl"><Filter>resource\shaders\particle</Filter></FxCompile>
+	<FxCompile Include="resource\shaders\particle\ParticleEmit.CS.hlsl"><Filter>resource\shaders\particle</Filter></FxCompile>
+	<FxCompile Include="resource\shaders\particle\ParticleUpdate.CS.hlsl"><Filter>resource\shaders\particle</Filter></FxCompile>
+	<FxCompile Include="resource\shaders\particle\Particle.VS.hlsl"><Filter>resource\shaders\particle</Filter></FxCompile>
+	<FxCompile Include="resource\shaders\particle\Particle.PS.hlsl"><Filter>resource\shaders\particle</Filter></FxCompile>
   </ItemGroup>
 </Project>

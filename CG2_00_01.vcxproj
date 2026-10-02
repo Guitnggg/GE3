@@ -111,6 +111,8 @@
 	<ClCompile Include="engine\collision\CollisionWorld.cpp" />
 	<ClCompile Include="engine\effects\CameraShake.cpp" />
 	<ClCompile Include="engine\effects\Tween.cpp" />
+	<ClCompile Include="engine\effects\particle\GPUParticleSystem.cpp" />
+	<ClCompile Include="engine\effects\particle\GPUParticleEmitter.cpp" />
     <ClCompile Include="engine\2d\Sprite.cpp" />
     <ClCompile Include="engine\2d\SpriteCommon.cpp" />
     <ClCompile Include="engine\3d\camera\Camera.cpp" />
@@ -162,6 +164,9 @@
 	<ClInclude Include="engine\collision\CollisionWorld.h" />
 	<ClInclude Include="engine\effects\CameraShake.h" />
 	<ClInclude Include="engine\effects\Tween.h" />
+	<ClInclude Include="engine\effects\particle\GPUParticleCommon.h" />
+	<ClInclude Include="engine\effects\particle\GPUParticleSystem.h" />
+	<ClInclude Include="engine\effects\particle\GPUParticleEmitter.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h" />
     <ClInclude Include="engine\3d\camera\Camera.h" />
 	<ClInclude Include="engine\3d\model\MeshGenerator.h" />
@@ -217,6 +222,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </None>
+	<None Include="resource\shaders\particle\ParticleCommon.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resource\shaders\Object3d.PS.hlsl">
@@ -227,6 +233,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+	<FxCompile Include="resource\shaders\particle\ParticleInitialize.CS.hlsl"><ExcludedFromBuild>true</ExcludedFromBuild></FxCompile>
+	<FxCompile Include="resource\shaders\particle\ParticleEmit.CS.hlsl"><ExcludedFromBuild>true</ExcludedFromBuild></FxCompile>
+	<FxCompile Include="resource\shaders\particle\ParticleUpdate.CS.hlsl"><ExcludedFromBuild>true</ExcludedFromBuild></FxCompile>
+	<FxCompile Include="resource\shaders\particle\Particle.VS.hlsl"><ExcludedFromBuild>true</ExcludedFromBuild></FxCompile>
+	<FxCompile Include="resource\shaders\particle\Particle.PS.hlsl"><ExcludedFromBuild>true</ExcludedFromBuild></FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
