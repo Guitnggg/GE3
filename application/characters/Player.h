@@ -3,12 +3,12 @@
 #include "engine/2D/Sprite.h"
 #include "engine/3D/camera/Camera.h"
 #include "engine/3D/object/Object3d.h"
+#include "engine/input/Input.h"
 #include "engine/math/Mymath.h"
 #include <cstdint>
 #include <memory>
 #include <vector>
 
-class Input;
 class Model;
 class Object3dCommon;
 class SpriteCommon;
@@ -27,7 +27,8 @@ public:
 	/// <param name="model">プレイヤー機体に使用する共有モデル</param>
 	/// <param name="texture">照準に使用するテクスチャ番号</param>
 	void Initialize(SpriteCommon* spriteCommon, Object3dCommon* object3dCommon,
-		TextureManager* textureManager, Input* input, const std::shared_ptr<Model>& model, uint32_t texture);
+		TextureManager* textureManager, Input* input, const std::shared_ptr<Model>& model, uint32_t texture,
+		InputActionId moveAction, InputActionId shootAction);
 
 	/// <summary>カメラ、照準、ライフをゲーム開始時の状態へ戻す。</summary>
 	/// <param name="startingLives">ゲーム開始時のライフ数</param>
@@ -70,6 +71,8 @@ private:
 	void UpdateReticle();
 
 	Input* input_ = nullptr;                         // Frameworkが所有する入力機能への非所有参照
+	InputActionId moveAction_ = kInvalidInputActionId;
+	InputActionId shootAction_ = kInvalidInputActionId;
 	SpriteCommon* spriteCommon_ = nullptr;           // 照準描画に使用する共通機能への非所有参照
 	TextureManager* textureManager_ = nullptr;       // テクスチャ管理機能への非所有参照
 	Camera camera_{};                                // プレイヤー視点の3Dカメラ

@@ -29,6 +29,19 @@ void GameScene::Initialize(const SceneContext& context) {
 	if (initialized_) { throw std::logic_error("GameScene is already initialized."); }
 	context_ = context;
 	try {
+		// ゲームコードから物理デバイスを隠し、同じ操作へ複数デバイスを割り当てる
+		moveAction_ = context_.input->AddAxis2DAction("Move");
+		context_.input->BindKeyboardAxis2D(moveAction_, DIK_W, DIK_S, DIK_A, DIK_D);
+		context_.input->BindLeftStick(moveAction_);
+		shootAction_ = context_.input->AddButtonAction("Shoot");
+		context_.input->BindMouseButton(shootAction_, 0);
+		context_.input->BindPadButton(shootAction_, XINPUT_GAMEPAD_RIGHT_SHOULDER);
+		lockOnAction_ = context_.input->AddButtonAction("LockOn");
+		context_.input->BindMouseButton(lockOnAction_, 1);
+		context_.input->BindPadButton(lockOnAction_, XINPUT_GAMEPAD_LEFT_SHOULDER);
+		restartAction_ = context_.input->AddButtonAction("Restart");
+		context_.input->BindKey(restartAction_, DIK_R);
+		context_.input->BindPadButton(restartAction_, XINPUT_GAMEPAD_START);
 		// 敵と弾で共有するメッシュを1度だけ生成する
 		texture_ = context_.textureManager->Load("resource/textures/monsterBall.png");
 		lockOnTexture_ = context_.textureManager->Load("resource/textures/Lockon.png");
@@ -49,11 +62,11 @@ void GameScene::Initialize(const SceneContext& context) {
 		// プレイヤーとゲーム要素を生成する
 		player_ = std::make_unique<Player>();
 		player_->Initialize(context_.spriteCommon, context_.object3dCommon,
-			context_.textureManager, context_.input, playerModel_, texture_);
+			context_.textureManager, context_.input, playerModel_, texture_, moveAction_, shootAction_);
 		enemyManager_.Initialize(context_.collisionWorld, context_.spriteCommon,
 			context_.object3dCommon, context_.textureManager, sphereModel_, lockOnTexture_);
 		weaponManager_.Initialize(context_.collisionWorld, context_.object3dCommon, context_.textureManager, context_.input,
-			sphereModel_, missileModel_);
+			sphereModel_, missileModel_, lockOnAction_);
 #ifdef _DEBUG
 		parameterEditor_.Initialize(context_.audio);
 #endif
@@ -112,7 +125,7 @@ void GameScene::Update() {
 				enemyManager_.UpdateSpawning(deltaTime, player_->GetCameraZ(), parameters_, score_);
 			}
 		}
-	} else if (context_.input->TriggerKey(DIK_R)) { ResetGame(); }
+	} else if (context_.input->TriggerAction(restartAction_)) { ResetGame(); }
 	// 停止中も描画行列は更新し、現在の画面をそのまま表示できるようにする
 	UpdateEnvironment();
 	const float enemyDeltaTime = (!gameOver_ && !parameterEditor_.IsPaused()) ? deltaTime : 0.0f;
@@ -165,5 +178,7 @@ void GameScene::Finalize() {
 	parameterEditor_.Finalize();
 	weaponManager_.Reset(enemyManager_); enemyManager_.Reset(); mapSegments_.clear(); player_.reset();
 	mapModel_.reset(); missileModel_.reset(); playerModel_.reset(); sphereModel_.reset();
-	texture_ = 0; lockOnTexture_ = 0; context_ = {};
+	texture_ = 0; lockOnTexture_ = 0;
+	moveAction_ = shootAction_ = lockOnAction_ = restartAction_ = kInvalidInputActionId;
+	context_ = {};
 }

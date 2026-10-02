@@ -6,6 +6,7 @@
 #include "application/managers/WeaponManager.h"
 #include "engine/3D/object/Object3d.h"
 #include "engine/scene/IScene.h"
+#include "engine/input/Input.h"
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -73,6 +74,10 @@ private:
 	GameParameterEditor parameterEditor_{};               // ゲーム設定を操作するデバッグUI
 	uint32_t texture_ = 0;                                // 球と照準に使用するテクスチャ番号
 	uint32_t lockOnTexture_ = 0;                          // ロック対象へ重ねるマーカーテクスチャ
+	InputActionId moveAction_ = kInvalidInputActionId;
+	InputActionId shootAction_ = kInvalidInputActionId;
+	InputActionId lockOnAction_ = kInvalidInputActionId;
+	InputActionId restartAction_ = kInvalidInputActionId;
 	uint32_t score_ = 0;                                  // 撃破した敵の数
 	bool gameOver_ = false;                               // ゲームオーバー状態
 	bool initialized_ = false;                            // 多重初期化を防ぐ状態

@@ -15,7 +15,8 @@ constexpr float kFovY = 0.70f;
 }
 
 void Player::Initialize(SpriteCommon* spriteCommon, Object3dCommon* object3dCommon,
-	TextureManager* textureManager, Input* input, const std::shared_ptr<Model>& model, uint32_t texture) {
+	TextureManager* textureManager, Input* input, const std::shared_ptr<Model>& model, uint32_t texture,
+	InputActionId moveAction, InputActionId shootAction) {
 	// プレイヤーが利用する機能は所有せず、Frameworkより長く保持しない参照として保存する
 	if (!spriteCommon || !object3dCommon || !textureManager || !input || !model) {
 		throw std::invalid_argument("Player requires initialized engine services and a model.");
@@ -23,6 +24,8 @@ void Player::Initialize(SpriteCommon* spriteCommon, Object3dCommon* object3dComm
 	spriteCommon_ = spriteCommon;
 	textureManager_ = textureManager;
 	input_ = input;
+	moveAction_ = moveAction;
+	shootAction_ = shootAction;
 	camera_.SetFovY(kFovY);
 	camera_.SetFarClip(120.0f);
 	ship_ = std::make_unique<Object3d>();
@@ -63,23 +66,19 @@ bool Player::Update(float deltaTime, float railSpeed, float moveSpeed, bool acce
 	const POINT mousePosition = input_->GetMousePosition();
 	aim_ = {static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y)};
 	// マウス照準とは独立して、WASDでプレイヤー機体を画面内移動させる
-	float moveX = 0.0f;
-	float moveY = 0.0f;
-	if (input_->PushKey(DIK_A)) { moveX -= 1.0f; }
-	if (input_->PushKey(DIK_D)) { moveX += 1.0f; }
-	if (input_->PushKey(DIK_W)) { moveY += 1.0f; }
-	if (input_->PushKey(DIK_S)) { moveY -= 1.0f; }
+	const Vector2 move = input_->GetActionAxis2D(moveAction_);
+	const float moveX = move.x;
+	const float moveY = move.y;
 	if (moveX != 0.0f || moveY != 0.0f) {
-		const float inverseLength = 1.0f / std::sqrt(moveX * moveX + moveY * moveY);
-		shipPosition_.x += moveX * inverseLength * moveSpeed * deltaTime;
-		shipPosition_.y += moveY * inverseLength * moveSpeed * deltaTime;
+		shipPosition_.x += moveX * moveSpeed * deltaTime;
+		shipPosition_.y += moveY * moveSpeed * deltaTime;
 	}
 	shipPosition_.x = std::clamp(shipPosition_.x, -5.2f, 5.2f);
 	shipPosition_.y = std::clamp(shipPosition_.y, -2.8f, 3.0f);
 	// フレーム時間に依存しない速度でカメラを前進させる
 	cameraZ_ += railSpeed * deltaTime;
 	// 押した瞬間だけ射撃し、短時間だけ照準色を変えて反応を示す
-	const bool fired = acceptFireInput && input_->TriggerMouseButton(0);
+	const bool fired = acceptFireInput && input_->TriggerAction(shootAction_);
 	if (fired) { shotFlashTimer_ = 0.08f; }
 	shotFlashTimer_ = std::max(0.0f, shotFlashTimer_ - deltaTime);
 	camera_.SetTranslate({0.0f, 0.0f, cameraZ_});

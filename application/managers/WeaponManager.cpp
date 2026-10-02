@@ -13,7 +13,8 @@
 WeaponManager::~WeaponManager() = default;
 
 void WeaponManager::Initialize(CollisionWorld* collisionWorld, Object3dCommon* object3dCommon, TextureManager* textureManager, Input* input,
-	const std::shared_ptr<Model>& bulletModel, const std::shared_ptr<Model>& missileModel) {
+	const std::shared_ptr<Model>& bulletModel, const std::shared_ptr<Model>& missileModel,
+	InputActionId lockOnAction) {
 	if (!collisionWorld || !object3dCommon || !textureManager || !input || !bulletModel || !missileModel) {
 		throw std::invalid_argument("WeaponManager requires initialized services and models.");
 	}
@@ -21,6 +22,7 @@ void WeaponManager::Initialize(CollisionWorld* collisionWorld, Object3dCommon* o
 	object3dCommon_ = object3dCommon;
 	textureManager_ = textureManager;
 	input_ = input;
+	lockOnAction_ = lockOnAction;
 	bulletModel_ = bulletModel;
 	missileModel_ = missileModel;
 }
@@ -41,8 +43,8 @@ void WeaponManager::Shoot(const Vector3& origin, const Vector3& direction) {
 void WeaponManager::UpdateLockOn(float deltaTime, bool acceptMouseInput, const Vector3& direction,
 	const Vector3& missileOrigin, EnemyManager& enemies) {
 	if (!acceptMouseInput) { return; }
-	const bool holding = input_->PushMouseButton(1);
-	const bool released = input_->ReleaseMouseButton(1);
+	const bool holding = input_->PushAction(lockOnAction_);
+	const bool released = input_->ReleaseAction(lockOnAction_);
 	if (released) {
 		LaunchMissiles(missileOrigin, direction, enemies);
 		ClearLockOn(enemies);
