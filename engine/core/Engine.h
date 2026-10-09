@@ -21,13 +21,13 @@ class Audio;
 /// <summary>
 /// すべてのゲームで共通して使用するエンジン機能を管理する基底クラス。
 /// </summary>
-class Framework {
+class Engine {
   public:
-	Framework();
-	virtual ~Framework();
+	Engine();
+	virtual ~Engine();
 
-	Framework(const Framework &) = delete;
-	Framework &operator=(const Framework &) = delete;
+	Engine(const Engine &) = delete;
+	Engine &operator=(const Engine &) = delete;
 
 	/// <summary>
 	/// ウィンドウやDirectXなど、ゲーム共通機能を初期化する。

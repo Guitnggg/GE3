@@ -1,4 +1,4 @@
-#include "application/core/Framework.h"
+#include "engine/core/Engine.h"
 
 #include "engine/2d/SpriteCommon.h"
 #include "engine/3D/object/Object3dCommon.h"
@@ -18,13 +18,13 @@
 
 #include <stdexcept>
 
-Framework::Framework() = default;
+Engine::Engine() = default;
 
-Framework::~Framework() {
+Engine::~Engine() {
 	Finalize();
 }
 
-void Framework::Initialize() {
+void Engine::Initialize() {
 	if (initialized_ || winApp_ || input_ || audio_ || collisionWorld_ || dxCommon_ || srvManager_ || textureManager_ ||
 	    modelManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_ || gpuParticlePipeline_ ||
 	    shaderCompiler_
@@ -32,7 +32,7 @@ void Framework::Initialize() {
 	    || imguiManager_
 #endif
 	) {
-		throw std::logic_error("Framework is already initialized or partially initialized.");
+		throw std::logic_error("Engine is already initialized or partially initialized.");
 	}
 
 	try {
@@ -81,12 +81,12 @@ void Framework::Initialize() {
 
 		initialized_ = true;
 	} catch (...) {
-		Framework::Finalize();
+		Engine::Finalize();
 		throw;
 	}
 }
 
-void Framework::Update() {
+void Engine::Update() {
 	// すべてのゲームで必要になる毎フレーム処理を先に更新する
 	frameRateController_->BeginFrame();
 	time_->Update();
@@ -105,18 +105,18 @@ void Framework::Update() {
 }
 
 // 固定更新を使わないゲームもあるため、基底クラスの既定処理は空にする
-void Framework::FixedUpdate() {}
+void Engine::FixedUpdate() {}
 
-bool Framework::IsEndRequest() {
+bool Engine::IsEndRequest() {
 	return winApp_->ProcessMessage();
 }
 
-void Framework::BeginDraw() {
+void Engine::BeginDraw() {
 	// バックバッファを描画可能な状態にし、描画に必要な状態を設定する
 	dxCommon_->PreDraw();
 }
 
-void Framework::EndDraw() {
+void Engine::EndDraw() {
 #ifdef _DEBUG
 	// UI構築を確定してから、ゲーム画面の手前にImGuiを描画する
 	imguiManager_->EndFrame();
@@ -129,7 +129,7 @@ void Framework::EndDraw() {
 	frameRateController_->EndFrame();
 }
 
-void Framework::Finalize() {
+void Engine::Finalize() {
 	initialized_ = false;
 
 #ifdef _DEBUG

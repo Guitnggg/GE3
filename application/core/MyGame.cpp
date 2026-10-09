@@ -6,11 +6,11 @@ MyGame::~MyGame() {
 }
 
 void MyGame::Initialize() {
-	Framework::Initialize();
+	Engine::Initialize();
 }
 
 void MyGame::Update() {
-	Framework::Update();
+	Engine::Update();
 }
 
 void MyGame::FixedUpdate() {}
@@ -21,5 +21,5 @@ void MyGame::Draw() {
 }
 
 void MyGame::Finalize() {
-	Framework::Finalize();
+	Engine::Finalize();
 }

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "application/core/Framework.h"
+#include "engine/core/Engine.h"
 
 /// <summary>
 /// エンジンを起動する最小構成のアプリケーションクラス。
 /// </summary>
-class MyGame : public Framework {
+class MyGame : public Engine {
   public:
 	MyGame();
 	~MyGame() override;

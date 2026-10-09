@@ -15,7 +15,7 @@ class Time;
 
 /// <summary>
 /// シーンが利用するエンジン共通機能への参照をまとめた構造体。
-/// 所有権はFrameworkが持ち、シーンはこれらを解放しない。
+/// 所有権はEngineが持ち、シーンはこれらを解放しない。
 /// </summary>
 struct SceneContext {
 	Audio *audio = nullptr;

@@ -90,8 +90,8 @@
 	</Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="application\core\Framework.cpp">
-      <Filter>application\core</Filter>
+    <ClCompile Include="engine\core\Engine.cpp">
+      <Filter>engine\core</Filter>
     </ClCompile>
     <ClCompile Include="application\core\MyGame.cpp">
       <Filter>application\core</Filter>
@@ -227,8 +227,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\core\Framework.h">
-      <Filter>application\core</Filter>
+    <ClInclude Include="engine\core\Engine.h">
+      <Filter>engine\core</Filter>
     </ClInclude>
     <ClInclude Include="application\core\MyGame.h">
       <Filter>application\core</Filter>
