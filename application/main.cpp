@@ -15,25 +15,7 @@
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	try {
 		MyGame game;
-
-		// ゲームの初期化
-		game.Initialize();
-
-		while (true) {
-			// ゲームの更新
-			game.Update();
-
-			// 終了リクエストが来たら抜ける
-			if (game.IsEndRequest()) {
-				break;
-			}
-
-			// 描画
-			game.Draw();
-		}
-
-		// ゲームの終了
-		game.Finalize();
+		game.Run();
 	} catch (const std::exception &exception) {
 		const std::string message = std::string("Fatal error: ") + exception.what();
 		Logger::Log(message + "\n");

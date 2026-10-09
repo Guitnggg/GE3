@@ -24,6 +24,39 @@ Engine::~Engine() {
 	Finalize();
 }
 
+void Engine::Run() {
+	Initialize();
+	bool applicationInitialized = false;
+
+	try {
+		// 失敗途中でもOnFinalizeでゲーム側のリソースを片付けられるよう、呼び出し前に状態を立てる
+		applicationInitialized = true;
+		OnInitialize();
+
+		while (!IsEndRequest()) {
+			BeginFrame();
+			OnUpdate();
+			BeginDraw();
+			OnDraw();
+			EndDraw();
+		}
+
+		applicationInitialized = false;
+		OnFinalize();
+		Finalize();
+	} catch (...) {
+		if (applicationInitialized) {
+			try {
+				OnFinalize();
+			} catch (...) {
+				// 最初に発生した例外を維持したままエンジン共通リソースを解放する
+			}
+		}
+		Finalize();
+		throw;
+	}
+}
+
 void Engine::Initialize() {
 	if (initialized_ || winApp_ || input_ || audio_ || collisionWorld_ || dxCommon_ || srvManager_ || textureManager_ ||
 	    modelManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_ || gpuParticlePipeline_ ||
@@ -86,7 +119,7 @@ void Engine::Initialize() {
 	}
 }
 
-void Engine::Update() {
+void Engine::BeginFrame() {
 	// すべてのゲームで必要になる毎フレーム処理を先に更新する
 	frameRateController_->BeginFrame();
 	time_->Update();
@@ -100,12 +133,15 @@ void Engine::Update() {
 
 	// 蓄積時間が固定間隔を満たす間、物理・固定ロジックを一定刻みで進める
 	while (time_->ConsumeFixedStep()) {
-		FixedUpdate();
+		OnFixedUpdate();
 	}
 }
 
-// 固定更新を使わないゲームもあるため、基底クラスの既定処理は空にする
-void Engine::FixedUpdate() {}
+void Engine::OnInitialize() {}
+void Engine::OnUpdate() {}
+void Engine::OnFixedUpdate() {}
+void Engine::OnDraw() {}
+void Engine::OnFinalize() {}
 
 bool Engine::IsEndRequest() {
 	return winApp_->ProcessMessage();

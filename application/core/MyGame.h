@@ -8,33 +8,32 @@
 class MyGame : public Engine {
   public:
 	MyGame();
-	~MyGame() override;
+	~MyGame() override = default;
 	MyGame(const MyGame &) = delete;
 	MyGame &operator=(const MyGame &) = delete;
 
 	/// <summary>
-	/// エンジン共通機能を初期化する。
+	/// ゲーム固有の初期化処理。
 	/// </summary>
-	void Initialize() override;
+	void OnInitialize() override;
 
 	/// <summary>
-	/// エンジン共通処理を更新する。
+	/// ゲーム固有の毎フレーム更新処理。
 	/// </summary>
-	void Update() override;
+	void OnUpdate() override;
 
 	/// <summary>
 	/// 固定間隔ロジックを更新する。
 	/// </summary>
-	void FixedUpdate() override;
+	void OnFixedUpdate() override;
 
 	/// <summary>
 	/// 空のフレームとデバッグUIを描画する。
 	/// </summary>
-	void Draw() override;
+	void OnDraw() override;
 
 	/// <summary>
-	/// エンジン共通機能を終了する。
+	/// ゲーム固有の終了処理。
 	/// </summary>
-	void Finalize() override;
-
+	void OnFinalize() override;
 };

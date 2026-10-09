@@ -29,7 +29,7 @@ class Time {
 
 	/// <summary>
 	/// 固定更新1回分の時間を消費できるか判定する。
-	/// trueが返る間、EngineがFixedUpdateを繰り返し呼び出す。
+	/// trueが返る間、EngineがOnFixedUpdateを繰り返し呼び出す。
 	/// </summary>
 	/// <returns>固定更新を1回実行する必要がある場合はtrue</returns>
 	bool ConsumeFixedStep();

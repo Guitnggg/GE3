@@ -30,46 +30,35 @@ class Engine {
 	Engine &operator=(const Engine &) = delete;
 
 	/// <summary>
-	/// ウィンドウやDirectXなど、ゲーム共通機能を初期化する。
+	/// 初期化から終了までのメインループを実行する。
 	/// </summary>
-	virtual void Initialize();
-
-	/// <summary>
-	/// 入力と音声の状態を毎フレーム更新する。
-	/// </summary>
-	virtual void Update();
-
-	/// <summary>
-	/// 一定時間間隔で実行するゲームロジック・物理更新処理。
-	/// 派生クラスで必要に応じてオーバーライドする。
-	/// </summary>
-	virtual void FixedUpdate();
-
-	/// <summary>
-	/// ゲーム固有の描画処理。派生クラスで実装する。
-	/// </summary>
-	virtual void Draw() = 0;
-
-	/// <summary>
-	/// ゲーム共通機能を終了し、確保したリソースを解放する。
-	/// </summary>
-	virtual void Finalize();
-
-	/// <summary>
-	/// ウィンドウの終了要求を処理して返す。
-	/// </summary>
-	bool IsEndRequest();
+	void Run();
 
   protected:
 	/// <summary>
-	/// 1フレーム分の描画を開始する。
+	/// エンジン初期化後に一度だけ呼ばれるゲーム初期化処理。
 	/// </summary>
-	void BeginDraw();
+	virtual void OnInitialize();
 
 	/// <summary>
-	/// ImGuiを描画し、1フレーム分の描画を完了する。
+	/// 共通システム更新後に毎フレーム呼ばれるゲーム更新処理。
 	/// </summary>
-	void EndDraw();
+	virtual void OnUpdate();
+
+	/// <summary>
+	/// 一定時間間隔で呼ばれるゲームロジック・物理更新処理。
+	/// </summary>
+	virtual void OnFixedUpdate();
+
+	/// <summary>
+	/// 描画可能なフレーム内で呼ばれるゲーム描画処理。
+	/// </summary>
+	virtual void OnDraw();
+
+	/// <summary>
+	/// エンジン終了前に一度だけ呼ばれるゲーム終了処理。
+	/// </summary>
+	virtual void OnFinalize();
 
 	// 派生クラスから利用するゲーム共通機能
 	std::unique_ptr<WinApp> winApp_;
@@ -92,6 +81,13 @@ class Engine {
 #endif
 
   private:
+	void Initialize();
+	void BeginFrame();
+	void BeginDraw();
+	void EndDraw();
+	void Finalize();
+	bool IsEndRequest();
+
 	// Finalizeの二重実行を防ぐための初期化状態
 	bool initialized_ = false;
 };
