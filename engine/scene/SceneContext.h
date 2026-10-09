@@ -15,8 +15,7 @@ class TextureManager;
 class Time;
 
 /// <summary>
-/// シーンが利用するエンジン共通機能への参照をまとめた構造体。
-/// 所有権はEngineが持ち、シーンはこれらを解放しない。
+/// シーンへ貸し出すエンジンサービスの非所有参照をひとまとめにする。
 /// </summary>
 struct SceneContext {
 	Audio *audio = nullptr;

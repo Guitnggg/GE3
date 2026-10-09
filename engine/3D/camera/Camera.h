@@ -3,7 +3,7 @@
 #include "engine/math/MatrixMath.h"
 
 /// <summary>
-/// 3D空間を映すカメラの姿勢と投影設定を管理するクラス。
+/// 3Dカメラの姿勢、透視投影設定、描画用行列を一括管理する。
 /// </summary>
 class Camera {
   public:

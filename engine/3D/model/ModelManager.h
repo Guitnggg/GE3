@@ -13,8 +13,7 @@ class Model;
 class TextureManager;
 
 /// <summary>
-/// モデル資産の生成とキャッシュを管理するクラス。
-/// 同じパスのOBJは一度だけ読み込み、複数のObject3dへ共有する。
+/// OBJモデルをパス単位でキャッシュし、複数の描画オブジェクトへ共有する。
 /// </summary>
 class ModelManager {
   public:

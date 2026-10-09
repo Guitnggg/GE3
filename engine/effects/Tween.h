@@ -13,8 +13,7 @@ enum class TweenLoopMode {
 };
 
 /// <summary>
-/// 時間経過に合わせて値を補間する汎用Tween。
-/// float / Vector2 / Vector3 / Vector4で使用できる。
+/// 指定時間とイージングに沿って対応する数値型を始点から終点へ補間する。
 /// </summary>
 template <typename T> class Tween {
   public:

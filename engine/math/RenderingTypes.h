@@ -6,7 +6,7 @@
 #include <string>
 
 /// <summary>
-/// 頂点シェーダーへ渡す頂点データ
+/// 頂点シェーダーへ入力する位置、UV、法線の組。
 /// </summary>
 struct VertexData {
 	Vector4 position;
@@ -15,7 +15,7 @@ struct VertexData {
 };
 
 /// <summary>
-/// 描画用マテリアルデータ
+/// ピクセルシェーダーへ渡す表面色とUV変換情報。
 /// </summary>
 struct Material {
 	Vector4 color;
@@ -25,14 +25,14 @@ struct Material {
 };
 
 /// <summary>
-/// マテリアルファイルから読み込んだデータ
+/// 外部マテリアルから取得したテクスチャ参照情報。
 /// </summary>
 struct MaterialData {
 	std::string textureFilePath;
 };
 
 /// <summary>
-/// シェーダーへ渡す座標変換行列
+/// オブジェクト描画で使用するワールド行列と合成行列。
 /// </summary>
 struct TransformationMatrix {
 	Matrix4x4 WVP;
@@ -40,7 +40,7 @@ struct TransformationMatrix {
 };
 
 /// <summary>
-/// 平行光源データ
+/// 平行光源の色、向き、明るさをまとめた定数データ。
 /// </summary>
 struct DirectionalLight {
 	Vector4 color;

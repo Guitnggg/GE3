@@ -14,8 +14,7 @@ class DirectXCommon;
 class SrvManager;
 
 /// <summary>
-/// テクスチャの読み込み、GPUへの転送、SRVハンドルの管理を行うクラス。
-/// 同じパスのテクスチャは重複して読み込まない。
+/// 画像ファイルをGPUへ転送し、パスごとのSRVをキャッシュする。
 /// </summary>
 class TextureManager {
   public:

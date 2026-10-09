@@ -4,7 +4,7 @@
 #include <cstdint>
 
 /// <summary>
-/// 描画FPSから独立したフレーム時間とゲーム内時間を管理するクラス。
+/// 実時間、ゲーム内時間、固定更新の蓄積時間をフレームごとに管理する。
 /// </summary>
 class Time {
   public:

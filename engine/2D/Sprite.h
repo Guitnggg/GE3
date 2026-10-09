@@ -11,7 +11,7 @@ class SpriteCommon;
 class TextureManager;
 
 /// <summary>
-/// 2Dスプライト固有の頂点、座標変換、UV変換、テクスチャ、描画処理を管理するクラス。
+/// 1枚の2D画像に必要な頂点、座標変換、UV、テクスチャ参照を管理する。
 /// ゲーム側はTransformなどの表示設定を変更し、UpdateとDrawを呼ぶだけで描画できる。
 /// </summary>
 class Sprite {

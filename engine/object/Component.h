@@ -30,6 +30,6 @@ class Component {
 
   private:
 	friend class GameObject;
-	GameObject *owner_ = nullptr;
-	bool enabled_ = true;
+	GameObject *owner_ = nullptr; // このComponentを所有するGameObject
+	bool enabled_ = true;         // 更新と描画のコールバックを実行するか
 };

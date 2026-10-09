@@ -3,7 +3,7 @@
 #include <string>
 
 /// <summary>
-/// デバッグ出力用のログ関数群
+/// エンジンの診断文字列をデバッガへ送るログ関数群。
 /// </summary>
 namespace Logger {
 /// <summary>

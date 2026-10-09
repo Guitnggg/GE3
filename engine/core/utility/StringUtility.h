@@ -3,7 +3,7 @@
 #include <string>
 
 /// <summary>
-/// 文字列変換用のユーティリティ関数群
+/// UTF-8文字列とWindowsワイド文字列を相互変換する関数群。
 /// </summary>
 namespace StringUtility {
 /// <summary>

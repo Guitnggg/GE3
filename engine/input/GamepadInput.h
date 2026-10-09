@@ -9,7 +9,7 @@
 #include "engine/math/MathTypes.h"
 
 /// <summary>
-/// 1台のXInputゲームパッドの状態とフレーム間変化を管理する。
+/// 指定したXInputユーザーのボタン、スティック、トリガー状態を追跡する。
 /// </summary>
 class GamepadInput final {
   public:

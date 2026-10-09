@@ -1,6 +1,6 @@
 #pragma once
 
-// 後方互換用の総合ヘッダー。新しいコードでは必要な個別ヘッダーを直接使用する。
+// 旧コードとの互換性を保つ統合ヘッダー。新規コードでは用途別ヘッダーをインクルードする。
 #include "engine/math/Easing.h"
 #include "engine/math/MathTypes.h"
 #include "engine/math/MathUtility.h"

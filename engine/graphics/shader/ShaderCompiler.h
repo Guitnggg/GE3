@@ -6,7 +6,7 @@
 #include <wrl.h>
 
 /// <summary>
-/// DXCの初期化とHLSLコンパイルを担当する。
+/// DXCを利用してHLSLソースをDirectX 12用バイトコードへ変換する。
 /// </summary>
 class ShaderCompiler final {
   public:

@@ -27,9 +27,11 @@ struct EngineSettings;
 class Engine {
   public:
 	Engine();
+
 	virtual ~Engine();
 
 	Engine(const Engine &) = delete;
+
 	Engine &operator=(const Engine &) = delete;
 
 	/// <summary>
@@ -63,37 +65,47 @@ class Engine {
 	/// </summary>
 	virtual void OnFinalize();
 
-	// 派生クラスから利用するゲーム共通機能
-	std::unique_ptr<WinApp> winApp_;
-	std::unique_ptr<Input> input_;
-	std::unique_ptr<Audio> audio_;
-	std::unique_ptr<CollisionWorld> collisionWorld_;
-	std::unique_ptr<DirectXCommon> dxCommon_;
-	std::unique_ptr<SrvManager> srvManager_;
-	std::unique_ptr<TextureManager> textureManager_;
-	std::unique_ptr<ModelManager> modelManager_;
-	std::unique_ptr<SpriteCommon> spriteCommon_;
-	std::unique_ptr<Object3dCommon> object3dCommon_;
-	std::unique_ptr<GPUParticlePipeline> gpuParticlePipeline_;
-	std::unique_ptr<ShaderCompiler> shaderCompiler_;
-	std::unique_ptr<Time> time_;
-	std::unique_ptr<FrameRateController> frameRateController_;
-	std::unique_ptr<AssetManager> assetManager_;
-	std::unique_ptr<EngineSettings> engineSettings_;
+	// 派生クラスがゲーム処理を組み立てるために利用する共通機能
+	std::unique_ptr<WinApp> winApp_;                           // ウィンドウとWindowsメッセージの管理
+	std::unique_ptr<Input> input_;                             // キーボード・マウス・ゲームパッド入力
+	std::unique_ptr<Audio> audio_;                             // 音声データと再生ボイスの管理
+	std::unique_ptr<CollisionWorld> collisionWorld_;           // Colliderと衝突イベントの管理
+	std::unique_ptr<DirectXCommon> dxCommon_;                  // DirectX 12の描画基盤
+	std::unique_ptr<SrvManager> srvManager_;                   // SRVディスクリプタの割り当て管理
+	std::unique_ptr<TextureManager> textureManager_;           // テクスチャGPUリソースの管理
+	std::unique_ptr<ModelManager> modelManager_;               // 共有モデルの読み込みとキャッシュ
+	std::unique_ptr<SpriteCommon> spriteCommon_;               // 2D描画の共通パイプライン
+	std::unique_ptr<Object3dCommon> object3dCommon_;           // 3D描画の共通パイプライン
+	std::unique_ptr<GPUParticlePipeline> gpuParticlePipeline_; // GPUパーティクルの共通パイプライン
+	std::unique_ptr<ShaderCompiler> shaderCompiler_;           // HLSLシェーダーのコンパイル管理
+	std::unique_ptr<Time> time_;                               // フレーム時間と固定更新時間の管理
+	std::unique_ptr<FrameRateController> frameRateController_; // FPS計測とフレーム同期
+	std::unique_ptr<AssetManager> assetManager_;               // 各種アセットを読み込む統一窓口
+	std::unique_ptr<EngineSettings> engineSettings_;           // JSONから読み込んだエンジン設定
 
 #ifdef _DEBUG
-	std::unique_ptr<ImGuiManager> imguiManager_;
-	std::unique_ptr<DebugOverlay> debugOverlay_;
+	std::unique_ptr<ImGuiManager> imguiManager_; // ImGuiのフレームと描画管理
+	std::unique_ptr<DebugOverlay> debugOverlay_; // エンジン診断情報の表示
 #endif
 
   private:
+	/// <summary>エンジンを構成する各サブシステムを依存順に初期化する。</summary>
 	void Initialize();
+
+	/// <summary>時間・入力・デバッグUIのフレーム処理を開始する。</summary>
 	void BeginFrame();
+
+	/// <summary>描画コマンドの記録を開始する。</summary>
 	void BeginDraw();
+
+	/// <summary>描画コマンドをGPUへ送信してフレームを完了する。</summary>
 	void EndDraw();
+
+	/// <summary>初期化済みのサブシステムを逆順に終了する。</summary>
 	void Finalize();
+
+	/// <summary>ウィンドウまたはアプリケーションから終了が要求されたかを返す。</summary>
 	bool IsEndRequest();
 
-	// Finalizeの二重実行を防ぐための初期化状態
-	bool initialized_ = false;
+	bool initialized_ = false; // 初期化完了後かつ終了処理前であることを示す状態
 };

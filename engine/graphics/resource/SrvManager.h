@@ -9,7 +9,7 @@
 class DirectXCommon;
 
 /// <summary>
-/// SRVディスクリプタの割り当てと、CPU・GPUハンドルの取得を管理するクラス。
+/// SRVヒープの番号割り当てとCPU・GPUディスクリプタ参照を管理する。
 /// </summary>
 class SrvManager {
   public:

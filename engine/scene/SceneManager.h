@@ -16,8 +16,8 @@
 class SceneManager {
   public:
 	struct LayerOptions {
-		bool updateBelow = false;
-		bool drawBelow = true;
+		bool updateBelow = false; // 下にあるシーンも更新するか
+		bool drawBelow = true;    // 下にあるシーンも描画するか
 	};
 
 	SceneManager() = default;
@@ -55,20 +55,24 @@ class SceneManager {
 	/// </summary>
 	void ChangeScene(std::unique_ptr<IScene> nextScene);
 
-	/// <summary>現在のシーンを一時停止し、その上へ新しいシーンを積む。</summary>
+	/// <summary>
+	/// 現在のシーンを一時停止し、その上へ新しいシーンを積む。
+	/// </summary>
 	void PushScene(std::unique_ptr<IScene> scene, LayerOptions options = {});
 
-	/// <summary>最上位シーンを終了し、その下のシーンへ戻る。</summary>
+	/// <summary>
+	/// 最上位シーンを終了し、その下のシーンへ戻る。
+	/// </summary>
 	void PopScene();
 
 	template <typename T, typename... Args>
-		requires std::derived_from<T, IScene>
+	    requires std::derived_from<T, IScene>
 	void ChangeScene(Args &&...args) {
 		ChangeScene(std::make_unique<T>(std::forward<Args>(args)...));
 	}
 
 	template <typename T, typename... Args>
-		requires std::derived_from<T, IScene>
+	    requires std::derived_from<T, IScene>
 	void PushScene(LayerOptions options, Args &&...args) {
 		PushScene(std::make_unique<T>(std::forward<Args>(args)...), options);
 	}
@@ -80,15 +84,19 @@ class SceneManager {
 	[[nodiscard]] const IScene *GetTopScene() const;
 
   private:
-	enum class OperationType { Replace, Push, Pop };
+	enum class OperationType {
+		Replace,
+		Push,
+		Pop
+	};
 	struct SceneEntry {
-		std::unique_ptr<IScene> scene;
-		LayerOptions options{};
+		std::unique_ptr<IScene> scene; // SceneManagerが所有するシーン
+		LayerOptions options{};        // 下層シーンへ適用する実行条件
 	};
 	struct PendingOperation {
-		OperationType type = OperationType::Pop;
-		std::unique_ptr<IScene> scene;
-		LayerOptions options{};
+		OperationType type = OperationType::Pop; // 次フレーム先頭で行う操作
+		std::unique_ptr<IScene> scene;           // ReplaceまたはPushするシーン
+		LayerOptions options{};                  // Push時に使用するレイヤー設定
 	};
 
 	void ApplyPendingOperations();
@@ -99,8 +107,8 @@ class SceneManager {
 	[[nodiscard]] size_t FindFirstDrawScene() const;
 	void EnsureInitialized() const;
 
-	SceneContext context_{};
-	std::vector<SceneEntry> stack_;
-	std::deque<PendingOperation> pendingOperations_;
-	bool initialized_ = false;
+	SceneContext context_{};                         // 全シーンへ渡すエンジン機能
+	std::vector<SceneEntry> stack_;                  // 下層から上層へ並ぶ実行中シーン
+	std::deque<PendingOperation> pendingOperations_; // 適用待ちの安全なシーン操作
+	bool initialized_ = false;                       // 初期シーンを開始済みか
 };

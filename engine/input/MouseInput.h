@@ -14,7 +14,7 @@
 #include <cstdint>
 
 /// <summary>
-/// DirectInputマウスの相対入力とクライアント座標を管理する。
+/// DirectInputからマウスのボタン、移動量、クライアント座標を取得する。
 /// </summary>
 class MouseInput final {
   public:

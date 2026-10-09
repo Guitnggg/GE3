@@ -6,6 +6,7 @@
 #include <cmath>
 
 namespace Interpolation {
+/// <summary>フレーム時間に依存しない減衰補間で実数値を目標へ近づける。</summary>
 inline float Damp(float current, float target, float damping, float deltaTime) {
 	if (deltaTime <= 0.0f) {
 		return current;
@@ -14,6 +15,7 @@ inline float Damp(float current, float target, float damping, float deltaTime) {
 	return Lerp(current, target, factor);
 }
 
+/// <summary>フレーム時間に依存しない減衰補間で二次元値を目標へ近づける。</summary>
 inline Vector2 Damp(const Vector2 &current, const Vector2 &target, float damping, float deltaTime) {
 	if (deltaTime <= 0.0f) {
 		return current;
@@ -21,6 +23,7 @@ inline Vector2 Damp(const Vector2 &current, const Vector2 &target, float damping
 	return Lerp(current, target, 1.0f - std::exp(-std::max(0.0f, damping) * deltaTime));
 }
 
+/// <summary>フレーム時間に依存しない減衰補間で三次元値を目標へ近づける。</summary>
 inline Vector3 Damp(const Vector3 &current, const Vector3 &target, float damping, float deltaTime) {
 	if (deltaTime <= 0.0f) {
 		return current;
@@ -28,6 +31,7 @@ inline Vector3 Damp(const Vector3 &current, const Vector3 &target, float damping
 	return Lerp(current, target, 1.0f - std::exp(-std::max(0.0f, damping) * deltaTime));
 }
 
+/// <summary>フレーム時間に依存しない減衰補間で四次元値を目標へ近づける。</summary>
 inline Vector4 Damp(const Vector4 &current, const Vector4 &target, float damping, float deltaTime) {
 	if (deltaTime <= 0.0f) {
 		return current;
@@ -35,6 +39,7 @@ inline Vector4 Damp(const Vector4 &current, const Vector4 &target, float damping
 	return Lerp(current, target, 1.0f - std::exp(-std::max(0.0f, damping) * deltaTime));
 }
 
+/// <summary>速度を保持しながら実数値を滑らかに目標へ追従させる。</summary>
 inline float SmoothDamp(float current,
                         float target,
                         float &velocity,
@@ -63,6 +68,7 @@ inline float SmoothDamp(float current,
 	return output;
 }
 
+/// <summary>速度を保持しながら三次元値を滑らかに目標へ追従させる。</summary>
 inline Vector3 SmoothDamp(const Vector3 &current,
                           const Vector3 &target,
                           Vector3 &velocity,
@@ -76,6 +82,7 @@ inline Vector3 SmoothDamp(const Vector3 &current,
 	};
 }
 
+/// <summary>ばねと減衰の簡易モデルで実数値を目標へ移動させる。</summary>
 inline float Spring(float current, float target, float &velocity, float stiffness, float damping, float deltaTime) {
 	if (deltaTime <= 0.0f) {
 		return current;
@@ -85,6 +92,7 @@ inline float Spring(float current, float target, float &velocity, float stiffnes
 	return current + velocity * deltaTime;
 }
 
+/// <summary>ばねと減衰の簡易モデルで三次元値を目標へ移動させる。</summary>
 inline Vector3 Spring(
     const Vector3 &current, const Vector3 &target, Vector3 &velocity, float stiffness, float damping, float deltaTime) {
 	return {

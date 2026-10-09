@@ -12,7 +12,7 @@ enum class FrameRateMode {
 };
 
 /// <summary>
-/// 描画の同期方法、FPS上限、実測フレームレートを管理するクラス。
+/// フレーム同期方式とFPS上限を適用し、実測描画速度を集計する。
 /// </summary>
 class FrameRateController {
   public:

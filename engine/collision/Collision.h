@@ -3,7 +3,7 @@
 #include "engine/math/MathTypes.h"
 
 /// <summary>
-/// 中心座標と半径で表す球形コライダー。
+/// 中心位置と半径のみで構成する球形の衝突領域。
 /// </summary>
 struct SphereCollider {
 	Vector3 center{};
@@ -11,7 +11,7 @@ struct SphereCollider {
 };
 
 /// <summary>
-/// 回転を持たず、各軸に平行な直方体コライダー。
+/// 最小点と最大点で構成する軸平行直方体の衝突領域。
 /// </summary>
 struct AabbCollider {
 	Vector3 min{};

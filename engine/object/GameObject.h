@@ -23,7 +23,7 @@ class GameObject final {
 	GameObject &operator=(GameObject &&) = delete;
 
 	template <typename T, typename... Args>
-		requires std::derived_from<T, Component>
+	    requires std::derived_from<T, Component>
 	T &AddComponent(Args &&...args) {
 		EnsureComponentsMutable();
 		auto component = std::make_unique<T>(std::forward<Args>(args)...);
@@ -40,7 +40,7 @@ class GameObject final {
 	}
 
 	template <typename T>
-		requires std::derived_from<T, Component>
+	    requires std::derived_from<T, Component>
 	[[nodiscard]] T *GetComponent() {
 		for (const auto &component : components_) {
 			if (auto *result = dynamic_cast<T *>(component.get())) {
@@ -51,7 +51,7 @@ class GameObject final {
 	}
 
 	template <typename T>
-		requires std::derived_from<T, Component>
+	    requires std::derived_from<T, Component>
 	[[nodiscard]] const T *GetComponent() const {
 		for (const auto &component : components_) {
 			if (const auto *result = dynamic_cast<const T *>(component.get())) {
@@ -62,7 +62,7 @@ class GameObject final {
 	}
 
 	template <typename T>
-		requires std::derived_from<T, Component>
+	    requires std::derived_from<T, Component>
 	bool RemoveComponent() {
 		EnsureComponentsMutable();
 		for (auto it = components_.begin(); it != components_.end(); ++it) {
@@ -102,8 +102,7 @@ class GameObject final {
 	}
 
   private:
-	template <typename Callback>
-	void Dispatch(Callback &&callback) {
+	template <typename Callback> void Dispatch(Callback &&callback) {
 		if (!active_) {
 			return;
 		}
@@ -123,9 +122,9 @@ class GameObject final {
 
 	void EnsureComponentsMutable() const;
 
-	std::string name_;
-	TransformNode transform_;
-	std::vector<std::unique_ptr<Component>> components_;
-	bool active_ = true;
-	bool dispatching_ = false;
+	std::string name_;                                   // デバッグ表示や検索に使用する名前
+	TransformNode transform_;                            // 親子関係に対応した座標変換
+	std::vector<std::unique_ptr<Component>> components_; // このオブジェクトが所有する機能一覧
+	bool active_ = true;                                 // 更新と描画を実行するか
+	bool dispatching_ = false;                           // Componentコールバックを実行中か
 };

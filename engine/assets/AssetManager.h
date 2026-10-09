@@ -68,9 +68,9 @@ class AssetManager final {
 	[[nodiscard]] std::filesystem::path Resolve(const std::filesystem::path &path) const;
 	void EnsureInitialized() const;
 
-	TextureManager *textureManager_ = nullptr;
-	ModelManager *modelManager_ = nullptr;
-	Audio *audio_ = nullptr;
-	std::filesystem::path assetRoot_;
-	bool initialized_ = false;
+	TextureManager *textureManager_ = nullptr; // テクスチャ読み込み先への非所有参照
+	ModelManager *modelManager_ = nullptr;     // モデル読み込み先への非所有参照
+	Audio *audio_ = nullptr;                   // 音声読み込み先への非所有参照
+	std::filesystem::path assetRoot_;          // 相対パスの基準となるディレクトリ
+	bool initialized_ = false;                 // 利用可能な初期化状態か
 };

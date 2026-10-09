@@ -1,7 +1,7 @@
 #pragma once
 
 /// <summary>
-/// Direct3Dリソースのリークを終了時に確認するクラス
+/// スコープ終了時に生存中のDirect3Dオブジェクトを診断出力する。
 /// </summary>
 class D3DResourceLeakChecker {
   public:

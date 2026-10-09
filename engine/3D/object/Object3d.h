@@ -79,7 +79,7 @@ class Object3d {
 	Object3dCommon *object3dCommon_ = nullptr;                            // 3D描画パイプラインの参照
 	TextureManager *textureManager_ = nullptr;                            // テクスチャSRV管理の参照
 	std::shared_ptr<Model> model_;                                        // 複数オブジェクト間で共有するモデル資産
-	std::shared_ptr<MaterialInstance> material_;                           // 共有可能な描画マテリアル
+	std::shared_ptr<MaterialInstance> material_;                          // 共有可能な描画マテリアル
 	Transform transform_{{1.0f, 1.0f, 1.0f}, {}, {}};                     // シーン上の拡縮・回転・位置
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource_; // 行列定数バッファ
 	TransformationMatrix *transformationMatrixData_ = nullptr;            // マップ済み行列書き込み先

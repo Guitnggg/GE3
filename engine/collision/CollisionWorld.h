@@ -132,14 +132,14 @@ class CollisionWorld final {
 	/// <summary>
 	/// 指定球と重なるColliderを返す。
 	/// </summary>
-	[[nodiscard]] std::vector<ColliderHandle> OverlapSphere(
-	    const SphereCollider &sphere, const CollisionQueryFilter &filter = {}) const;
+	[[nodiscard]] std::vector<ColliderHandle> OverlapSphere(const SphereCollider &sphere,
+	                                                        const CollisionQueryFilter &filter = {}) const;
 
 	/// <summary>
 	/// 指定AABBと重なるColliderを返す。
 	/// </summary>
-	[[nodiscard]] std::vector<ColliderHandle> OverlapAabb(
-	    const AabbCollider &aabb, const CollisionQueryFilter &filter = {}) const;
+	[[nodiscard]] std::vector<ColliderHandle> OverlapAabb(const AabbCollider &aabb,
+	                                                      const CollisionQueryFilter &filter = {}) const;
 
 	uint32_t GetColliderCount() const {
 		return static_cast<uint32_t>(colliders_.size());

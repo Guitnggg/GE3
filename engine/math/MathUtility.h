@@ -6,7 +6,7 @@
 #include <cmath>
 
 /// <summary>
-/// 3次元ベクトルを正規化する
+/// 三次元ベクトルを長さ1へ正規化する。
 /// </summary>
 inline Vector3 Normalize(const Vector3 &v) {
 	const float lengthSquared = v.x * v.x + v.y * v.y + v.z * v.z;
@@ -18,7 +18,7 @@ inline Vector3 Normalize(const Vector3 &v) {
 	return {v.x * inverseLength, v.y * inverseLength, v.z * inverseLength};
 }
 
-/// <summary>2値を割合tで線形補間する。tは範囲外でもそのまま外挿する。</summary>
+/// <summary>割合tに従って2値を線形補間し、範囲外では外挿する。</summary>
 inline float Lerp(float start, float end, float t) {
 	return start + (end - start) * t;
 }
@@ -35,7 +35,7 @@ inline Vector4 Lerp(const Vector4 &start, const Vector4 &end, float t) {
 	return {Lerp(start.x, end.x, t), Lerp(start.y, end.y, t), Lerp(start.z, end.z, t), Lerp(start.s, end.s, t)};
 }
 
-/// <summary>valueがstartからendまでのどの割合にあるかを0～1で返す。</summary>
+/// <summary>指定値が始点から終点の間にある割合を0から1で返す。</summary>
 inline float InverseLerp(float start, float end, float value) {
 	if (std::abs(end - start) <= 1.0e-6f) {
 		return 0.0f;
@@ -43,7 +43,7 @@ inline float InverseLerp(float start, float end, float value) {
 	return std::clamp((value - start) / (end - start), 0.0f, 1.0f);
 }
 
-/// <summary>入力範囲の値を出力範囲へ線形変換する。</summary>
+/// <summary>ある数値範囲の値を別の数値範囲へ線形に写像する。</summary>
 inline float Remap(float inputStart, float inputEnd, float outputStart, float outputEnd, float value) {
 	return Lerp(outputStart, outputEnd, InverseLerp(inputStart, inputEnd, value));
 }

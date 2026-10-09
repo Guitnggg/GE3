@@ -12,7 +12,7 @@
 #include <dinput.h>
 
 /// <summary>
-/// DirectInputキーボードの状態とフレーム間変化を管理する。
+/// DirectInputの全キー状態を保持し、押下・開始・解放を判定する。
 /// </summary>
 class KeyboardInput final {
   public:

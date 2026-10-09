@@ -3,11 +3,13 @@
 #include "engine/math/MathUtility.h"
 
 namespace Curve {
+/// <summary>3点から二次ベジェ曲線上の位置を求める。</summary>
 inline Vector3 QuadraticBezier(const Vector3 &start, const Vector3 &control, const Vector3 &end, float t) {
 	t = std::clamp(t, 0.0f, 1.0f);
 	return Lerp(Lerp(start, control, t), Lerp(control, end, t), t);
 }
 
+/// <summary>4点から三次ベジェ曲線上の位置を求める。</summary>
 inline Vector3 CubicBezier(
     const Vector3 &start, const Vector3 &control1, const Vector3 &control2, const Vector3 &end, float t) {
 	t = std::clamp(t, 0.0f, 1.0f);
@@ -17,6 +19,7 @@ inline Vector3 CubicBezier(
 	return Lerp(Lerp(first, second, t), Lerp(second, third, t), t);
 }
 
+/// <summary>4点を用いたCatmull-Rom曲線上の位置を求める。</summary>
 inline Vector3 CatmullRom(const Vector3 &p0, const Vector3 &p1, const Vector3 &p2, const Vector3 &p3, float t) {
 	t = std::clamp(t, 0.0f, 1.0f);
 	const float t2 = t * t;

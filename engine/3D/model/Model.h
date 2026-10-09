@@ -10,8 +10,7 @@ class DirectXCommon;
 class TextureManager;
 
 /// <summary>
-/// メッシュと既定テクスチャをまとめた、共有可能なモデル資産クラス。
-/// 座標やライトなどの配置ごとの状態は持たず、Object3dがそれらを管理する。
+/// 共有可能なメッシュと既定テクスチャをまとめる3Dモデル資産。
 /// </summary>
 class Model {
   public:

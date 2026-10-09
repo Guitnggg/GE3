@@ -18,7 +18,7 @@ inline float HashToSignedFloat(uint32_t value) {
 	return static_cast<float>(Hash(value) & 0x00ffffffu) / 8388607.5f - 1.0f;
 }
 
-/// <summary>同じpositionとseedから常に同じ、連続した-1～1の値を返す。</summary>
+/// <summary>位置とシードから再現可能な-1から1の連続ノイズ値を生成する。</summary>
 inline float Value1D(float position, uint32_t seed = 0) {
 	const int32_t left = static_cast<int32_t>(std::floor(position));
 	const int32_t right = left + 1;

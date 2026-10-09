@@ -15,8 +15,7 @@
 #include <vector>
 
 /// <summary>
-/// XAudio2による音声の読み込みと再生を管理するクラス。
-/// 音声ファイルのデコードにはMedia Foundationを使用する。
+/// Media Foundationで音声をデコードし、XAudio2で複数ボイスの再生を管理する。
 /// </summary>
 class Audio {
   public:

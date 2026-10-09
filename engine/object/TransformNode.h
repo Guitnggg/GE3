@@ -56,9 +56,9 @@ class TransformNode final {
 	void MarkDirty();
 	[[nodiscard]] bool WouldCreateCycle(const TransformNode *parent) const;
 
-	Transform local_{{1.0f, 1.0f, 1.0f}, {}, {}};
-	TransformNode *parent_ = nullptr;
-	std::vector<TransformNode *> children_;
-	mutable Matrix4x4 worldMatrix_{};
-	mutable bool dirty_ = true;
+	Transform local_{{1.0f, 1.0f, 1.0f}, {}, {}}; // 親を基準にした拡縮・回転・位置
+	TransformNode *parent_ = nullptr;             // 所有権を持たない親Transform
+	std::vector<TransformNode *> children_;       // 所有権を持たない子Transform一覧
+	mutable Matrix4x4 worldMatrix_{};             // 遅延計算して保持するワールド行列
+	mutable bool dirty_ = true;                   // ワールド行列の再計算が必要か
 };

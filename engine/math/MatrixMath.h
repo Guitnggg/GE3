@@ -6,7 +6,7 @@
 #include <stdexcept>
 
 /// <summary>
-/// 4x4単位行列を作成する
+/// 変換を加えない4行4列の単位行列を生成する。
 /// </summary>
 inline Matrix4x4 MakeIdentity4x4() {
 	Matrix4x4 result{};
@@ -32,7 +32,7 @@ inline Matrix4x4 MakeIdentity4x4() {
 }
 
 /// <summary>
-/// 拡縮行列を作成する
+/// 各軸の倍率から拡縮行列を生成する。
 /// </summary>
 inline Matrix4x4 MakeScaleMatrix(Vector3 scale) {
 	Matrix4x4 result{};
@@ -57,7 +57,7 @@ inline Matrix4x4 MakeScaleMatrix(Vector3 scale) {
 }
 
 /// <summary>
-/// Z軸回転行列を作成する
+/// 指定角度だけZ軸周りに回転する行列を生成する。
 /// </summary>
 inline Matrix4x4 MakeRotateZMatrix(float radian) {
 	Matrix4x4 result{};
@@ -82,7 +82,7 @@ inline Matrix4x4 MakeRotateZMatrix(float radian) {
 }
 
 /// <summary>
-/// 平行移動行列を作成する
+/// 三次元の移動量から平行移動行列を生成する。
 /// </summary>
 inline Matrix4x4 MakeTranslateMatrix(Vector3 translate) {
 	Matrix4x4 result{};
@@ -108,7 +108,7 @@ inline Matrix4x4 MakeTranslateMatrix(Vector3 translate) {
 }
 
 /// <summary>
-/// 4x4行列同士を乗算する
+/// 2つの4行4列行列を順番どおりに合成する。
 /// </summary>
 inline Matrix4x4 Multiply(Matrix4x4 m1, Matrix4x4 m2) {
 	Matrix4x4 result{};
@@ -151,7 +151,7 @@ inline Matrix4x4 Multiply(Matrix4x4 m1, Matrix4x4 m2) {
 }
 
 /// <summary>
-/// 拡縮・回転・平行移動をまとめたアフィン変換行列を作成する
+/// 拡縮、回転、平行移動をまとめたアフィン変換行列を生成する。
 /// </summary>
 inline Matrix4x4 MakeAffineMatrix(const Vector3 &scale, const Vector3 &rotate, const Vector3 &translate) {
 
@@ -235,7 +235,7 @@ inline Matrix4x4 MakeAffineMatrix(const Vector3 &scale, const Vector3 &rotate, c
 
 #pragma region 逆数
 /// <summary>
-/// 4x4行列の逆行列を作成する
+/// 4行4列行列を逆変換する行列を生成する。
 /// </summary>
 inline bool TryInverse(const Matrix4x4 &m, Matrix4x4 &result) {
 	float A = m.m[0][0] * m.m[1][1] * m.m[2][2] * m.m[3][3] + m.m[0][0] * m.m[1][2] * m.m[2][3] * m.m[3][1] +

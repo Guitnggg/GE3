@@ -7,7 +7,7 @@
 #include <cstdint>
 
 /// <summary>
-/// Windowsアプリケーションのウィンドウ生成とメッセージ処理を管理するクラス
+/// Win32ウィンドウの生成、メッセージ配送、終了要求を管理する。
 /// </summary>
 class WinApp {
   public:

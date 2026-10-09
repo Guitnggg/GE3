@@ -7,7 +7,7 @@
 class GPUParticleSystem;
 
 /// <summary>
-/// 継続発生のタイミングとEmitテンプレートを保持する、軽量なCPU側エミッター。
+/// GPUパーティクルの生成内容と発生間隔をCPU側で制御するエミッター。
 /// </summary>
 class GPUParticleEmitter final {
   public:

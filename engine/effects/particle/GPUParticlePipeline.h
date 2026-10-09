@@ -9,7 +9,7 @@ class DirectXCommon;
 class ShaderCompiler;
 
 /// <summary>
-/// 全GPUパーティクルシステムで共有するRootSignatureとPSOを所有する。
+/// GPUパーティクルの生成・更新・描画で共用するルートシグネチャとPSOを保持する。
 /// </summary>
 class GPUParticlePipeline final {
   public:

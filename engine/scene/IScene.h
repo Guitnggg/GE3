@@ -3,7 +3,7 @@
 #include "engine/scene/SceneContext.h"
 
 /// <summary>
-/// すべてのゲームシーンが実装する共通インターフェース。
+/// SceneManagerが統一した手順で操作するシーンの基底インターフェース。
 /// </summary>
 class IScene {
   public:

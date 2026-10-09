@@ -10,7 +10,7 @@ enum class GPUParticleBlendMode {
 };
 
 /// <summary>
-/// 同じGPUパーティクル基盤を演出ごとに調整する設定値。
+/// GPUパーティクルの運動と見た目を演出単位で定義する設定値。
 /// </summary>
 struct GPUParticlePreset {
 	Vector3 acceleration{};
@@ -25,7 +25,7 @@ struct GPUParticlePreset {
 };
 
 /// <summary>
-/// 1回の発生要求。範囲内の値はGPU側で粒ごとにランダム化する。
+/// 1回分の生成数と、GPUでランダム化する各パラメーター範囲。
 /// </summary>
 struct GPUParticleEmitData {
 	Vector3 position{};

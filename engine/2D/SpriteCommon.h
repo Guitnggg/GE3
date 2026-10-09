@@ -8,7 +8,7 @@
 class ShaderCompiler;
 
 /// <summary>
-/// スプライト描画で共有するルートシグネチャとパイプラインを管理するクラス
+/// すべてのスプライトが共用する描画パイプラインとルートシグネチャを保持する。
 /// </summary>
 class SpriteCommon {
   public:

@@ -5,7 +5,7 @@ class DirectXCommon;
 class WinApp;
 
 /// <summary>
-/// Dear ImGuiの初期化、フレーム処理、描画、終了処理を管理するクラス
+/// Dear ImGuiのWin32・DirectX 12バックエンドとフレーム進行を管理する。
 /// </summary>
 class ImGuiManager {
   public:

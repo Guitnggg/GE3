@@ -6,7 +6,7 @@
 #include <string>
 
 /// <summary>
-/// JSONファイルの読み書きを行うユーティリティ関数群。
+/// JSON文書をファイルへ読み書きする共通関数群。
 /// </summary>
 namespace JsonUtility {
 using Json = nlohmann::json;

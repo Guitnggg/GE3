@@ -10,8 +10,7 @@
 class DirectXCommon;
 
 /// <summary>
-/// 頂点データをGPUへ転送し、頂点バッファと描画情報を管理するクラス。
-/// Modelから所有され、複数のObject3dから共有して使用される。
+/// 頂点列をGPUバッファへ転送し、メッシュ単位の描画命令を提供する。
 /// </summary>
 class Mesh {
   public:

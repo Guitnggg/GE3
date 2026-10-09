@@ -3,7 +3,7 @@
 #include "engine/core/Engine.h"
 
 /// <summary>
-/// エンジンを起動する最小構成のアプリケーションクラス。
+/// Engineのライフサイクルへ接続する、最小構成のアプリケーション実装。
 /// </summary>
 class MyGame : public Engine {
   public:
