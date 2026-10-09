@@ -34,6 +34,9 @@
 	<Filter Include="engine\graphics\material">
 	  <UniqueIdentifier>{7B671F07-B02C-4097-A98D-38385F5D2CA8}</UniqueIdentifier>
 	</Filter>
+	<Filter Include="engine\settings">
+	  <UniqueIdentifier>{E81C2801-45B8-4214-94C4-F2895558946B}</UniqueIdentifier>
+	</Filter>
 	<Filter Include="engine\object">
 	  <UniqueIdentifier>{EE30E102-A5FC-453C-BE82-88552844B232}</UniqueIdentifier>
 	</Filter>
@@ -114,6 +117,8 @@
 	<ClCompile Include="engine\graphics\material\MaterialInstance.cpp">
 	  <Filter>engine\graphics\material</Filter>
 	</ClCompile>
+	<ClCompile Include="engine\settings\EngineSettings.cpp"><Filter>engine\settings</Filter></ClCompile>
+	<ClCompile Include="engine\settings\SettingsStore.cpp"><Filter>engine\settings</Filter></ClCompile>
 	<ClCompile Include="engine\object\Component.cpp">
 	  <Filter>engine\object</Filter>
 	</ClCompile>
@@ -272,6 +277,8 @@
 	<ClInclude Include="engine\graphics\material\MaterialInstance.h">
 	  <Filter>engine\graphics\material</Filter>
 	</ClInclude>
+	<ClInclude Include="engine\settings\EngineSettings.h"><Filter>engine\settings</Filter></ClInclude>
+	<ClInclude Include="engine\settings\SettingsStore.h"><Filter>engine\settings</Filter></ClInclude>
 	<ClInclude Include="engine\object\Component.h">
 	  <Filter>engine\object</Filter>
 	</ClInclude>

@@ -1,0 +1,12 @@
+{
+    "schemaVersion": 1,
+    "frameRate": {
+        "mode": "vsync",
+        "targetFPS": 60.0
+    },
+    "time": {
+        "scale": 1.0,
+        "fixedDeltaTime": 0.016666667,
+        "maxFixedStepsPerFrame": 8
+    }
+}

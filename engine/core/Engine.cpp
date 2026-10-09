@@ -16,6 +16,7 @@
 #include "engine/core/timing/FrameRateController.h"
 #include "engine/graphics/debug/ImGuiManager.h"
 #include "engine/input/Input.h"
+#include "engine/settings/EngineSettings.h"
 #include "engine/core/timing/Time.h"
 #include "engine/core/WinApp.h"
 
@@ -63,7 +64,7 @@ void Engine::Run() {
 void Engine::Initialize() {
 	if (initialized_ || winApp_ || input_ || audio_ || collisionWorld_ || dxCommon_ || srvManager_ || textureManager_ ||
 	    modelManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_ || gpuParticlePipeline_ ||
-	    shaderCompiler_ || assetManager_
+	    shaderCompiler_ || assetManager_ || engineSettings_
 #ifdef _DEBUG
 	    || imguiManager_ || debugOverlay_
 #endif
@@ -77,6 +78,11 @@ void Engine::Initialize() {
 		time_->Initialize();
 		frameRateController_ = std::make_unique<FrameRateController>();
 		frameRateController_->Initialize();
+		engineSettings_ = std::make_unique<EngineSettings>();
+		std::string settingsError;
+		if (engineSettings_->Load("resource/config/engine.json", &settingsError)) {
+			engineSettings_->Apply(*frameRateController_, *time_);
+		}
 
 		// Windowsアプリケーションと入力の初期化
 		winApp_ = std::make_unique<WinApp>();
@@ -194,6 +200,7 @@ void Engine::Finalize() {
 
 	// 依存される側が後まで残る順序で共通機能を解放する
 	assetManager_.reset();
+	engineSettings_.reset();
 	gpuParticlePipeline_.reset();
 	object3dCommon_.reset();
 	spriteCommon_.reset();

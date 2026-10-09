@@ -19,6 +19,7 @@ class WinApp;
 class Audio;
 class AssetManager;
 class DebugOverlay;
+struct EngineSettings;
 
 /// <summary>
 /// すべてのゲームで共通して使用するエンジン機能を管理する基底クラス。
@@ -78,6 +79,7 @@ class Engine {
 	std::unique_ptr<Time> time_;
 	std::unique_ptr<FrameRateController> frameRateController_;
 	std::unique_ptr<AssetManager> assetManager_;
+	std::unique_ptr<EngineSettings> engineSettings_;
 
 #ifdef _DEBUG
 	std::unique_ptr<ImGuiManager> imguiManager_;

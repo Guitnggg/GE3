@@ -98,6 +98,8 @@
 	<ClCompile Include="engine\debug\DebugOverlay.cpp" />
 	<ClCompile Include="engine\debug\Profiler.cpp" />
 	<ClCompile Include="engine\graphics\material\MaterialInstance.cpp" />
+	<ClCompile Include="engine\settings\EngineSettings.cpp" />
+	<ClCompile Include="engine\settings\SettingsStore.cpp" />
 	<ClCompile Include="engine\object\Component.cpp" />
 	<ClCompile Include="engine\object\GameObject.cpp" />
 	<ClCompile Include="engine\object\TransformNode.cpp" />
@@ -152,6 +154,8 @@
 	<ClInclude Include="engine\debug\DebugOverlay.h" />
 	<ClInclude Include="engine\debug\Profiler.h" />
 	<ClInclude Include="engine\graphics\material\MaterialInstance.h" />
+	<ClInclude Include="engine\settings\EngineSettings.h" />
+	<ClInclude Include="engine\settings\SettingsStore.h" />
 	<ClInclude Include="engine\object\Component.h" />
 	<ClInclude Include="engine\object\GameObject.h" />
 	<ClInclude Include="engine\object\TransformNode.h" />
