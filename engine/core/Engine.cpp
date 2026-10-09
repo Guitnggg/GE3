@@ -6,6 +6,7 @@
 #include "engine/graphics/resource/SrvManager.h"
 #include "engine/graphics/resource/TextureManager.h"
 #include "engine/audio/Audio.h"
+#include "engine/assets/AssetManager.h"
 #include "engine/collision/CollisionWorld.h"
 #include "engine/core/DirectXCommon.h"
 #include "engine/effects/particle/GPUParticlePipeline.h"
@@ -60,7 +61,7 @@ void Engine::Run() {
 void Engine::Initialize() {
 	if (initialized_ || winApp_ || input_ || audio_ || collisionWorld_ || dxCommon_ || srvManager_ || textureManager_ ||
 	    modelManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_ || gpuParticlePipeline_ ||
-	    shaderCompiler_
+	    shaderCompiler_ || assetManager_
 #ifdef _DEBUG
 	    || imguiManager_
 #endif
@@ -97,6 +98,8 @@ void Engine::Initialize() {
 		textureManager_->Initialize(dxCommon_.get(), srvManager_.get());
 		modelManager_ = std::make_unique<ModelManager>();
 		modelManager_->Initialize(dxCommon_.get(), textureManager_.get());
+		assetManager_ = std::make_unique<AssetManager>();
+		assetManager_->Initialize(textureManager_.get(), modelManager_.get(), audio_.get());
 
 		// 2D・3D描画で共通使用するパイプラインの初期化
 		spriteCommon_ = std::make_unique<SpriteCommon>();
@@ -176,6 +179,7 @@ void Engine::Finalize() {
 #endif
 
 	// 依存される側が後まで残る順序で共通機能を解放する
+	assetManager_.reset();
 	gpuParticlePipeline_.reset();
 	object3dCommon_.reset();
 	spriteCommon_.reset();

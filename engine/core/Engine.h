@@ -17,6 +17,7 @@ class TextureManager;
 class Time;
 class WinApp;
 class Audio;
+class AssetManager;
 
 /// <summary>
 /// すべてのゲームで共通して使用するエンジン機能を管理する基底クラス。
@@ -75,6 +76,7 @@ class Engine {
 	std::unique_ptr<ShaderCompiler> shaderCompiler_;
 	std::unique_ptr<Time> time_;
 	std::unique_ptr<FrameRateController> frameRateController_;
+	std::unique_ptr<AssetManager> assetManager_;
 
 #ifdef _DEBUG
 	std::unique_ptr<ImGuiManager> imguiManager_;

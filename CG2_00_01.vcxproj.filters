@@ -25,6 +25,9 @@
     <Filter Include="engine">
       <UniqueIdentifier>{0a00b4e5-8996-409a-bcc6-4e0f3b8cbd83}</UniqueIdentifier>
     </Filter>
+	<Filter Include="engine\assets">
+	  <UniqueIdentifier>{7D70CE8D-5794-4F32-998B-BEB3A854C96D}</UniqueIdentifier>
+	</Filter>
     <Filter Include="engine\collision">
       <UniqueIdentifier>{4FBD2209-294F-4C1D-B94B-CB9BA92E958A}</UniqueIdentifier>
     </Filter>
@@ -90,6 +93,9 @@
 	</Filter>
   </ItemGroup>
   <ItemGroup>
+	<ClCompile Include="engine\assets\AssetManager.cpp">
+	  <Filter>engine\assets</Filter>
+	</ClCompile>
     <ClCompile Include="engine\core\Engine.cpp">
       <Filter>engine\core</Filter>
     </ClCompile>
@@ -227,6 +233,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+	<ClInclude Include="engine\assets\AssetManager.h">
+	  <Filter>engine\assets</Filter>
+	</ClInclude>
     <ClInclude Include="engine\core\Engine.h">
       <Filter>engine\core</Filter>
     </ClInclude>

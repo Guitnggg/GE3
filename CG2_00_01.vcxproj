@@ -94,6 +94,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+	<ClCompile Include="engine\assets\AssetManager.cpp" />
     <ClCompile Include="engine\core\Engine.cpp" />
     <ClCompile Include="application\core\MyGame.cpp" />
     <ClCompile Include="application\main.cpp" />
@@ -141,6 +142,7 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+	<ClInclude Include="engine\assets\AssetManager.h" />
     <ClInclude Include="engine\core\Engine.h" />
     <ClInclude Include="application\core\MyGame.h" />
     <ClInclude Include="engine\2d\Sprite.h" />
