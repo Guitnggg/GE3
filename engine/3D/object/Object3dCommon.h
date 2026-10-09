@@ -4,6 +4,7 @@
 #include <wrl.h>
 
 #include "engine/core/DirectXCommon.h"
+#include "engine/graphics/material/MaterialInstance.h"
 
 class ShaderCompiler;
 
@@ -22,6 +23,9 @@ class Object3dCommon {
 	/// 3D描画前に共通の描画設定をコマンドリストへ設定する
 	/// </summary>
 	void CommonDrawSetting();
+
+	/// <summary>後続の3D描画に使用するブレンド方式別PSOを設定する。</summary>
+	void SetBlendMode(BlendMode blendMode);
 
   public:
 	/// <summary>
@@ -49,5 +53,5 @@ class Object3dCommon {
 
 	// ===== パイプライン関連 =====
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStates_[static_cast<size_t>(BlendMode::Count)];
 };

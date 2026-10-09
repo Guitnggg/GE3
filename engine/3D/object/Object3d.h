@@ -7,6 +7,7 @@
 
 #include "engine/math/MatrixMath.h"
 #include "engine/math/RenderingTypes.h"
+#include "engine/graphics/material/MaterialInstance.h"
 
 class Camera;
 class Model;
@@ -57,23 +58,29 @@ class Object3d {
 	/// <summary>CPUから更新可能なマテリアル情報を取得する。</summary>
 	/// <returns>GPU定数バッファへマップされたマテリアルデータ</returns>
 	Material *GetMaterialData() const {
-		return materialData_;
+		return material_ ? &material_->GetData() : nullptr;
+	}
+
+	/// <summary>共有可能なマテリアルへ差し替える。</summary>
+	void SetMaterial(const std::shared_ptr<MaterialInstance> &material);
+	[[nodiscard]] const std::shared_ptr<MaterialInstance> &GetMaterial() const {
+		return material_;
 	}
 
 	/// <summary>このオブジェクトの描画に使用するテクスチャを変更する。</summary>
 	/// <param name="textureIndex">TextureManagerが発行したテクスチャ番号</param>
 	void SetTextureIndex(uint32_t textureIndex) {
-		textureIndex_ = textureIndex;
+		if (material_) {
+			material_->SetTextureIndex(textureIndex);
+		}
 	}
 
   private:
 	Object3dCommon *object3dCommon_ = nullptr;                            // 3D描画パイプラインの参照
 	TextureManager *textureManager_ = nullptr;                            // テクスチャSRV管理の参照
 	std::shared_ptr<Model> model_;                                        // 複数オブジェクト間で共有するモデル資産
-	uint32_t textureIndex_ = 0;                                           // この配置で使用するテクスチャ番号
+	std::shared_ptr<MaterialInstance> material_;                           // 共有可能な描画マテリアル
 	Transform transform_{{1.0f, 1.0f, 1.0f}, {}, {}};                     // シーン上の拡縮・回転・位置
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_;             // マテリアル定数バッファ
-	Material *materialData_ = nullptr;                                    // マップ済みマテリアル書き込み先
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource_; // 行列定数バッファ
 	TransformationMatrix *transformationMatrixData_ = nullptr;            // マップ済み行列書き込み先
 	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource_;     // 平行光源定数バッファ

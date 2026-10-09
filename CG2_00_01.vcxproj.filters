@@ -31,6 +31,9 @@
 	<Filter Include="engine\debug">
 	  <UniqueIdentifier>{024857C0-CDFC-491B-82A8-C573F474B7BA}</UniqueIdentifier>
 	</Filter>
+	<Filter Include="engine\graphics\material">
+	  <UniqueIdentifier>{7B671F07-B02C-4097-A98D-38385F5D2CA8}</UniqueIdentifier>
+	</Filter>
 	<Filter Include="engine\object">
 	  <UniqueIdentifier>{EE30E102-A5FC-453C-BE82-88552844B232}</UniqueIdentifier>
 	</Filter>
@@ -107,6 +110,9 @@
 	</ClCompile>
 	<ClCompile Include="engine\debug\Profiler.cpp">
 	  <Filter>engine\debug</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\graphics\material\MaterialInstance.cpp">
+	  <Filter>engine\graphics\material</Filter>
 	</ClCompile>
 	<ClCompile Include="engine\object\Component.cpp">
 	  <Filter>engine\object</Filter>
@@ -262,6 +268,9 @@
 	</ClInclude>
 	<ClInclude Include="engine\debug\Profiler.h">
 	  <Filter>engine\debug</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\graphics\material\MaterialInstance.h">
+	  <Filter>engine\graphics\material</Filter>
 	</ClInclude>
 	<ClInclude Include="engine\object\Component.h">
 	  <Filter>engine\object</Filter>

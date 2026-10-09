@@ -7,6 +7,7 @@
 #include "engine/3D/model/Model.h"
 #include "Object3dCommon.h"
 #include "engine/graphics/resource/TextureManager.h"
+#include "engine/graphics/material/MaterialInstance.h"
 #include "engine/core/diagnostics/HResult.h"
 
 void Object3d::Initialize(Object3dCommon *object3dCommon,
@@ -21,16 +22,10 @@ void Object3d::Initialize(Object3dCommon *object3dCommon,
 	object3dCommon_ = object3dCommon;
 	textureManager_ = textureManager;
 	model_ = model;
-	textureIndex_ = model_->GetDefaultTextureIndex();
 
 	auto *dxCommon = object3dCommon_->GetDxCommon();
-	// この配置だけが持つマテリアル定数バッファを生成して初期値を書き込む
-	materialResource_ = dxCommon->CreateBufferResource(sizeof(Material));
-	HResult::ThrowIfFailed(materialResource_->Map(0, nullptr, reinterpret_cast<void **>(&materialData_)),
-	                       "Mapping the 3D object material buffer");
-	materialData_->color = {1.0f, 1.0f, 1.0f, 1.0f};
-	materialData_->enableLighting = true;
-	materialData_->uvTransform = MakeIdentity4x4();
+	material_ = std::make_shared<MaterialInstance>();
+	material_->Initialize(dxCommon, model_->GetDefaultTextureIndex());
 
 	// ワールド行列とWVP行列を毎フレーム更新する定数バッファを生成する
 	transformationMatrixResource_ = dxCommon->CreateBufferResource(sizeof(TransformationMatrix));
@@ -67,15 +62,22 @@ void Object3d::Update(const Camera &camera) {
 
 void Object3d::Draw() const {
 	// 未初期化状態でGPUコマンドを記録しないよう検証する
-	if (object3dCommon_ == nullptr || textureManager_ == nullptr || model_ == nullptr) {
+	if (object3dCommon_ == nullptr || textureManager_ == nullptr || model_ == nullptr || material_ == nullptr) {
 		throw std::logic_error("Object3d is not initialized.");
 	}
 	// ルートパラメータ0～3へ、マテリアル・行列・テクスチャ・ライトを順番に設定する
 	auto *commandList = object3dCommon_->GetDxCommon()->GetCommandList();
-	commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
+	object3dCommon_->SetBlendMode(material_->GetBlendMode());
+	material_->Bind(commandList, *textureManager_);
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource_->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetSrvHandleGPU(textureIndex_));
 	commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource_->GetGPUVirtualAddress());
 	// 共有モデルが所有するメッシュの頂点バッファを設定して描画する
 	model_->Draw(commandList);
+}
+
+void Object3d::SetMaterial(const std::shared_ptr<MaterialInstance> &material) {
+	if (material == nullptr || !material->IsInitialized()) {
+		throw std::invalid_argument("Object3d requires an initialized material.");
+	}
+	material_ = material;
 }

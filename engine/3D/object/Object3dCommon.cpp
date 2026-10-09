@@ -22,8 +22,14 @@ void Object3dCommon::CommonDrawSetting() {
 	// 後続のObject3dが共有するルートシグネチャ、PSO、プリミティブ形式を設定する
 	auto *commandList = dxCommon_->GetCommandList();
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
-	commandList->SetPipelineState(graphicsPipelineState_.Get());
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+void Object3dCommon::SetBlendMode(BlendMode blendMode) {
+	if (blendMode >= BlendMode::Count) {
+		throw std::invalid_argument("Invalid 3D blend mode.");
+	}
+	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipelineStates_[static_cast<size_t>(blendMode)].Get());
 }
 
 // 3D描画用のルートシグネチャを作成する
@@ -119,10 +125,7 @@ void Object3dCommon::CreateGraphicsPipeline() {
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
 	inputLayoutDesc.NumElements = _countof(inputElementDescs);
 
-	// 全色成分を書き込み、背面カリングを行う基本描画状態を設定する
-	D3D12_BLEND_DESC blendDesc{};
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
+	// 背面カリングを行う基本描画状態を設定する
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
@@ -146,7 +149,6 @@ void Object3dCommon::CreateGraphicsPipeline() {
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
 	graphicsPipelineStateDesc.VS = {vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize()};
 	graphicsPipelineStateDesc.PS = {pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize()};
-	graphicsPipelineStateDesc.BlendState = blendDesc;
 	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
 	graphicsPipelineStateDesc.NumRenderTargets = 1;
 	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
@@ -157,13 +159,31 @@ void Object3dCommon::CreateGraphicsPipeline() {
 	// 手前の面だけを残せるよう、深度テストと深度書き込みを有効にする
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
 	depthStencilDesc.DepthEnable = true;
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-	// 完成した記述から再利用可能なパイプラインステートを生成する
-	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-	                                                                 IID_PPV_ARGS(&graphicsPipelineState_));
-	HResult::ThrowIfFailed(hr, "Creating the 3D graphics pipeline");
+	// 不透明、通常アルファ、加算の各描画状態をキャッシュする
+	for (size_t index = 0; index < static_cast<size_t>(BlendMode::Count); ++index) {
+		const BlendMode mode = static_cast<BlendMode>(index);
+		D3D12_BLEND_DESC blendDesc{};
+		auto &target = blendDesc.RenderTarget[0];
+		target.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+		if (mode != BlendMode::Opaque) {
+			target.BlendEnable = true;
+			target.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+			target.DestBlend = mode == BlendMode::Alpha ? D3D12_BLEND_INV_SRC_ALPHA : D3D12_BLEND_ONE;
+			target.BlendOp = D3D12_BLEND_OP_ADD;
+			target.SrcBlendAlpha = D3D12_BLEND_ONE;
+			target.DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+			target.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+		}
+		graphicsPipelineStateDesc.BlendState = blendDesc;
+		depthStencilDesc.DepthWriteMask =
+		    mode == BlendMode::Opaque ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
+		graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
+
+		const HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(
+		    &graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineStates_[index]));
+		HResult::ThrowIfFailed(hr, "Creating a 3D graphics pipeline");
+	}
 }
