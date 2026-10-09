@@ -93,6 +93,11 @@ void Framework::Update() {
 	input_->Update();
 	audio_->Update();
 
+#ifdef _DEBUG
+	// デバッグUIのフレーム管理はゲームシーンの有無に依存させない
+	imguiManager_->BeginFrame();
+#endif
+
 	// 蓄積時間が固定間隔を満たす間、物理・固定ロジックを一定刻みで進める
 	while (time_->ConsumeFixedStep()) {
 		FixedUpdate();
@@ -113,7 +118,8 @@ void Framework::BeginDraw() {
 
 void Framework::EndDraw() {
 #ifdef _DEBUG
-	// ゲーム画面の手前にImGuiを描画する
+	// UI構築を確定してから、ゲーム画面の手前にImGuiを描画する
+	imguiManager_->EndFrame();
 	imguiManager_->Draw(dxCommon_->GetCommandList());
 #endif
 

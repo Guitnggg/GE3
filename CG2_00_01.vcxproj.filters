@@ -19,33 +19,9 @@
     <Filter Include="application">
       <UniqueIdentifier>{b8f0197f-f56d-4c83-b1b4-1cc0b8cc3901}</UniqueIdentifier>
     </Filter>
-    <Filter Include="application\scenes">
-      <UniqueIdentifier>{386E3448-DAC1-437F-A5C1-C67F47A788C5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\characters">
-      <UniqueIdentifier>{A3CDA732-593A-4C78-BDAE-E8B320B6191F}</UniqueIdentifier>
-    </Filter>
-	<Filter Include="application\weapons">
-	  <UniqueIdentifier>{5270F590-A4ED-4B62-94F1-1E5CD245C630}</UniqueIdentifier>
-	</Filter>
-	<Filter Include="application\managers">
-	  <UniqueIdentifier>{BA5BEF47-5E4C-4D28-A55F-B64DD5D04725}</UniqueIdentifier>
-	</Filter>
     <Filter Include="application\core">
       <UniqueIdentifier>{84B37D22-1DFC-4C08-AEBE-68997723C73A}</UniqueIdentifier>
     </Filter>
-    <Filter Include="application\editor">
-      <UniqueIdentifier>{04A65FD4-3384-4574-B470-E784D9BDB05A}</UniqueIdentifier>
-    </Filter>
-	<Filter Include="application\effects">
-	  <UniqueIdentifier>{BC94AA98-251A-4F43-9177-71CE4A73062E}</UniqueIdentifier>
-	</Filter>
-	<Filter Include="application\environment">
-	  <UniqueIdentifier>{637243B6-F260-49F9-809E-A82A562616E3}</UniqueIdentifier>
-	</Filter>
-	<Filter Include="application\collision">
-	  <UniqueIdentifier>{93E1F0E7-B98B-4A06-991F-9A8A5D741A6E}</UniqueIdentifier>
-	</Filter>
     <Filter Include="engine">
       <UniqueIdentifier>{0a00b4e5-8996-409a-bcc6-4e0f3b8cbd83}</UniqueIdentifier>
     </Filter>
@@ -114,32 +90,8 @@
 	</Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="application\editor\GameParameterEditor.cpp">
-      <Filter>application\editor</Filter>
-    </ClCompile>
-    <ClCompile Include="application\characters\Enemy.cpp">
-      <Filter>application\characters</Filter>
-    </ClCompile>
-    <ClCompile Include="application\characters\Player.cpp">
-      <Filter>application\characters</Filter>
-    </ClCompile>
-	<ClCompile Include="application\managers\EnemyManager.cpp">
-	  <Filter>application\managers</Filter>
-	</ClCompile>
-	<ClCompile Include="application\managers\WeaponManager.cpp">
-	  <Filter>application\managers</Filter>
-	</ClCompile>
-	<ClCompile Include="application\weapons\Bullet.cpp">
-	  <Filter>application\weapons</Filter>
-	</ClCompile>
-	<ClCompile Include="application\weapons\Missile.cpp">
-	  <Filter>application\weapons</Filter>
-	</ClCompile>
     <ClCompile Include="application\core\Framework.cpp">
       <Filter>application\core</Filter>
-    </ClCompile>
-    <ClCompile Include="application\scenes\GameScene.cpp">
-      <Filter>application\scenes</Filter>
     </ClCompile>
     <ClCompile Include="application\core\MyGame.cpp">
       <Filter>application\core</Filter>
@@ -153,18 +105,6 @@
     <ClCompile Include="engine\collision\Collision.cpp">
       <Filter>engine\collision</Filter>
     </ClCompile>
-	<ClCompile Include="application\effects\EnemyDeathEffect.cpp">
-	  <Filter>application\effects</Filter>
-	</ClCompile>
-	<ClCompile Include="application\effects\MissileTrailEffect.cpp">
-	  <Filter>application\effects</Filter>
-	</ClCompile>
-	<ClCompile Include="application\effects\PlayerEngineEffect.cpp">
-	  <Filter>application\effects</Filter>
-	</ClCompile>
-	<ClCompile Include="application\environment\StageEnvironment.cpp">
-	  <Filter>application\environment</Filter>
-	</ClCompile>
 	<ClCompile Include="engine\collision\CollisionWorld.cpp">
 	  <Filter>engine\collision</Filter>
 	</ClCompile>
@@ -287,35 +227,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-	<ClInclude Include="application\collision\GameCollisionLayers.h">
-	  <Filter>application\collision</Filter>
-	</ClInclude>
-    <ClInclude Include="application\editor\GameParameterEditor.h">
-      <Filter>application\editor</Filter>
-    </ClInclude>
-    <ClInclude Include="application\characters\Enemy.h">
-      <Filter>application\characters</Filter>
-    </ClInclude>
-    <ClInclude Include="application\characters\Player.h">
-      <Filter>application\characters</Filter>
-    </ClInclude>
-	<ClInclude Include="application\managers\EnemyManager.h">
-	  <Filter>application\managers</Filter>
-	</ClInclude>
-	<ClInclude Include="application\managers\WeaponManager.h">
-	  <Filter>application\managers</Filter>
-	</ClInclude>
-	<ClInclude Include="application\weapons\Bullet.h">
-	  <Filter>application\weapons</Filter>
-	</ClInclude>
-	<ClInclude Include="application\weapons\Missile.h">
-	  <Filter>application\weapons</Filter>
-	</ClInclude>
     <ClInclude Include="application\core\Framework.h">
       <Filter>application\core</Filter>
-    </ClInclude>
-    <ClInclude Include="application\scenes\GameScene.h">
-      <Filter>application\scenes</Filter>
     </ClInclude>
     <ClInclude Include="application\core\MyGame.h">
       <Filter>application\core</Filter>
@@ -329,18 +242,6 @@
     <ClInclude Include="engine\collision\Collision.h">
       <Filter>engine\collision</Filter>
     </ClInclude>
-	<ClInclude Include="application\effects\EnemyDeathEffect.h">
-	  <Filter>application\effects</Filter>
-	</ClInclude>
-	<ClInclude Include="application\effects\MissileTrailEffect.h">
-	  <Filter>application\effects</Filter>
-	</ClInclude>
-	<ClInclude Include="application\effects\PlayerEngineEffect.h">
-	  <Filter>application\effects</Filter>
-	</ClInclude>
-	<ClInclude Include="application\environment\StageEnvironment.h">
-	  <Filter>application\environment</Filter>
-	</ClInclude>
 	<ClInclude Include="engine\collision\CollisionWorld.h">
 	  <Filter>engine\collision</Filter>
 	</ClInclude>

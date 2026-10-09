@@ -94,20 +94,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-	<ClInclude Include="application\collision\GameCollisionLayers.h" />
-	<ClCompile Include="application\editor\GameParameterEditor.cpp" />
-	<ClCompile Include="application\effects\EnemyDeathEffect.cpp" />
-	<ClCompile Include="application\effects\MissileTrailEffect.cpp" />
-	<ClCompile Include="application\effects\PlayerEngineEffect.cpp" />
-	<ClCompile Include="application\environment\StageEnvironment.cpp" />
-    <ClCompile Include="application\characters\Enemy.cpp" />
-    <ClCompile Include="application\characters\Player.cpp" />
-	<ClCompile Include="application\managers\EnemyManager.cpp" />
-	<ClCompile Include="application\managers\WeaponManager.cpp" />
-	<ClCompile Include="application\weapons\Bullet.cpp" />
-	<ClCompile Include="application\weapons\Missile.cpp" />
     <ClCompile Include="application\core\Framework.cpp" />
-    <ClCompile Include="application\scenes\GameScene.cpp" />
     <ClCompile Include="application\core\MyGame.cpp" />
     <ClCompile Include="application\main.cpp" />
 	<ClCompile Include="engine\audio\Audio.cpp" />
@@ -154,19 +141,7 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\editor\GameParameterEditor.h" />
-	<ClInclude Include="application\effects\EnemyDeathEffect.h" />
-	<ClInclude Include="application\effects\MissileTrailEffect.h" />
-	<ClInclude Include="application\effects\PlayerEngineEffect.h" />
-	<ClInclude Include="application\environment\StageEnvironment.h" />
-    <ClInclude Include="application\characters\Enemy.h" />
-    <ClInclude Include="application\characters\Player.h" />
-	<ClInclude Include="application\managers\EnemyManager.h" />
-	<ClInclude Include="application\managers\WeaponManager.h" />
-	<ClInclude Include="application\weapons\Bullet.h" />
-	<ClInclude Include="application\weapons\Missile.h" />
     <ClInclude Include="application\core\Framework.h" />
-    <ClInclude Include="application\scenes\GameScene.h" />
     <ClInclude Include="application\core\MyGame.h" />
     <ClInclude Include="engine\2d\Sprite.h" />
 	<ClInclude Include="engine\audio\Audio.h" />
