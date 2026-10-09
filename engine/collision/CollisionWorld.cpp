@@ -114,6 +114,7 @@ ColliderHandle CollisionWorld::RegisterSphere(const SphereColliderDesc &desc) {
 	collider.mask = desc.mask;
 	collider.userData = desc.userData;
 	collider.continuous = desc.continuous;
+	collider.isTrigger = desc.isTrigger;
 	collider.callback = desc.callback;
 	colliders_.emplace(handle.value, std::move(collider));
 	return handle;
@@ -130,6 +131,7 @@ ColliderHandle CollisionWorld::RegisterAabb(const AabbColliderDesc &desc) {
 	collider.layer = desc.layer;
 	collider.mask = desc.mask;
 	collider.userData = desc.userData;
+	collider.isTrigger = desc.isTrigger;
 	collider.callback = desc.callback;
 	colliders_.emplace(handle.value, std::move(collider));
 	return handle;
@@ -150,8 +152,12 @@ void CollisionWorld::Unregister(ColliderHandle handle) {
 		const auto remainingIt = colliders_.find(remaining);
 		const auto removedIt = colliders_.find(handle.value);
 		if (remainingIt != colliders_.end() && removedIt != colliders_.end() && remainingIt->second.callback) {
-			remainingIt->second.callback(
-			    {CollisionEventType::Exit, {remaining}, handle, removedIt->second.layer, removedIt->second.userData});
+			remainingIt->second.callback({CollisionEventType::Exit,
+			                              {remaining},
+			                              handle,
+			                              removedIt->second.layer,
+			                              removedIt->second.userData,
+			                              remainingIt->second.isTrigger || removedIt->second.isTrigger});
 		}
 		activePairs_.erase(pair);
 	}
@@ -197,6 +203,27 @@ void CollisionWorld::SetEnabled(ColliderHandle handle, bool enabled) {
 	Require(handle).enabled = enabled;
 }
 
+void CollisionWorld::SetFilter(ColliderHandle handle, CollisionLayer layer, CollisionLayer mask) {
+	if (layer == 0) {
+		throw std::invalid_argument("Collision layer must not be zero.");
+	}
+	Collider &collider = Require(handle);
+	collider.layer = layer;
+	collider.mask = mask;
+}
+
+void CollisionWorld::SetTrigger(ColliderHandle handle, bool isTrigger) {
+	Require(handle).isTrigger = isTrigger;
+}
+
+bool CollisionWorld::IsTrigger(ColliderHandle handle) const {
+	const auto found = colliders_.find(handle.value);
+	if (found == colliders_.end()) {
+		throw std::invalid_argument("Collider handle is not registered.");
+	}
+	return found->second.isTrigger;
+}
+
 bool CollisionWorld::IsRegistered(ColliderHandle handle) const {
 	return handle && colliders_.contains(handle.value);
 }
@@ -236,10 +263,10 @@ void CollisionWorld::Dispatch(const Pair &pair, CollisionEventType type) {
 	const Collider first = firstIt->second;
 	const Collider second = secondIt->second;
 	if (first.callback) {
-		first.callback({type, {pair.first}, {pair.second}, second.layer, second.userData});
+		first.callback({type, {pair.first}, {pair.second}, second.layer, second.userData, first.isTrigger || second.isTrigger});
 	}
 	if (second.callback && colliders_.contains(pair.second)) {
-		second.callback({type, {pair.second}, {pair.first}, first.layer, first.userData});
+		second.callback({type, {pair.second}, {pair.first}, first.layer, first.userData, first.isTrigger || second.isTrigger});
 	}
 }
 
@@ -291,29 +318,80 @@ bool CollisionWorld::Raycast(const Vector3 &origin,
                              float maxDistance,
                              CollisionLayer layerMask,
                              RaycastHit &hit) const {
+	const std::vector<RaycastHit> hits = RaycastAll(origin, direction, maxDistance, {layerMask, true});
+	if (hits.empty()) {
+		return false;
+	}
+	hit = hits.front();
+	return true;
+}
+
+std::vector<RaycastHit> CollisionWorld::RaycastAll(const Vector3 &origin,
+                                                   const Vector3 &direction,
+                                                   float maxDistance,
+                                                   const CollisionQueryFilter &filter) const {
 	const float lengthSquared = Dot(direction, direction);
 	if (!std::isfinite(maxDistance) || maxDistance < 0.0f || lengthSquared <= 1.0e-12f) {
 		throw std::invalid_argument("Raycast requires a direction and finite non-negative distance.");
 	}
 	const float inverseLength = 1.0f / std::sqrt(lengthSquared);
 	const Vector3 normalized{direction.x * inverseLength, direction.y * inverseLength, direction.z * inverseLength};
-	bool found = false;
-	float closest = maxDistance;
+	std::vector<RaycastHit> hits;
 	for (const auto &[handle, collider] : colliders_) {
-		if (!collider.enabled || (collider.layer & layerMask) == 0) {
+		if (!collider.enabled || (collider.layer & filter.layerMask) == 0 || (!filter.includeTriggers && collider.isTrigger)) {
 			continue;
 		}
 		float distance = 0.0f;
 		Vector3 normal{};
 		const bool intersects = collider.type == ShapeType::Sphere
-		                            ? RaySphere(origin, normalized, collider.sphere, closest, distance, normal)
-		                            : RayAabb(origin, normalized, collider.aabb, closest, distance, normal);
-		if (!intersects || distance > closest) {
+		                            ? RaySphere(origin, normalized, collider.sphere, maxDistance, distance, normal)
+		                            : RayAabb(origin, normalized, collider.aabb, maxDistance, distance, normal);
+		if (!intersects) {
 			continue;
 		}
-		found = true;
-		closest = distance;
-		hit = {{handle}, AddScaled(origin, normalized, distance), normal, distance, collider.layer, collider.userData};
+		hits.push_back(
+		    {{handle}, AddScaled(origin, normalized, distance), normal, distance, collider.layer, collider.userData, collider.isTrigger});
 	}
-	return found;
+	std::sort(hits.begin(), hits.end(), [](const RaycastHit &left, const RaycastHit &right) {
+		return left.distance < right.distance;
+	});
+	return hits;
+}
+
+std::vector<ColliderHandle> CollisionWorld::OverlapSphere(const SphereCollider &sphere,
+                                                          const CollisionQueryFilter &filter) const {
+	if (!Collision::IsValid(sphere)) {
+		throw std::invalid_argument("OverlapSphere requires a valid sphere.");
+	}
+	std::vector<ColliderHandle> results;
+	for (const auto &[handle, collider] : colliders_) {
+		if (!collider.enabled || (collider.layer & filter.layerMask) == 0 || (!filter.includeTriggers && collider.isTrigger)) {
+			continue;
+		}
+		const bool overlaps = collider.type == ShapeType::Sphere ? Collision::Intersects(sphere, collider.sphere)
+		                                                          : Collision::Intersects(sphere, collider.aabb);
+		if (overlaps) {
+			results.push_back({handle});
+		}
+	}
+	return results;
+}
+
+std::vector<ColliderHandle> CollisionWorld::OverlapAabb(const AabbCollider &aabb,
+                                                        const CollisionQueryFilter &filter) const {
+	if (!Collision::IsValid(aabb)) {
+		throw std::invalid_argument("OverlapAabb requires a valid AABB.");
+	}
+	std::vector<ColliderHandle> results;
+	for (const auto &[handle, collider] : colliders_) {
+		if (!collider.enabled || (collider.layer & filter.layerMask) == 0 || (!filter.includeTriggers && collider.isTrigger)) {
+			continue;
+		}
+		const bool overlaps = collider.type == ShapeType::Sphere ? Collision::Intersects(collider.sphere, aabb)
+		                                                          : Collision::Intersects(aabb, collider.aabb);
+		if (overlaps) {
+			results.push_back({handle});
+		}
+	}
+	return results;
 }

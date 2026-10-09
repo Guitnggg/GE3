@@ -7,6 +7,7 @@
 #include <limits>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 using CollisionLayer = uint32_t;
 
@@ -36,6 +37,7 @@ struct CollisionEvent {
 	ColliderHandle other{};
 	CollisionLayer otherLayer = 0;
 	uint64_t otherUserData = 0;
+	bool isTrigger = false;
 };
 
 using CollisionCallback = std::function<void(const CollisionEvent &)>;
@@ -49,6 +51,7 @@ struct SphereColliderDesc {
 	CollisionLayer mask = std::numeric_limits<CollisionLayer>::max();
 	uint64_t userData = 0;
 	bool continuous = false;
+	bool isTrigger = false;
 	CollisionCallback callback{};
 };
 
@@ -60,9 +63,13 @@ struct AabbColliderDesc {
 	CollisionLayer layer = 1;
 	CollisionLayer mask = std::numeric_limits<CollisionLayer>::max();
 	uint64_t userData = 0;
+	bool isTrigger = false;
 	CollisionCallback callback{};
 };
 
+/// <summary>
+/// レイキャストの衝突情報を格納する構造体。
+/// </summary>
 struct RaycastHit {
 	ColliderHandle collider{};
 	Vector3 point{};
@@ -70,6 +77,15 @@ struct RaycastHit {
 	float distance = 0.0f;
 	CollisionLayer layer = 0;
 	uint64_t userData = 0;
+	bool isTrigger = false;
+};
+
+/// <summary>
+/// RaycastとOverlapで共通利用する対象フィルター。
+/// </summary>
+struct CollisionQueryFilter {
+	CollisionLayer layerMask = std::numeric_limits<CollisionLayer>::max();
+	bool includeTriggers = true;
 };
 
 /// <summary>
@@ -86,6 +102,9 @@ class CollisionWorld final {
 	void SetSphere(ColliderHandle handle, const SphereCollider &sphere);
 	void SetAabb(ColliderHandle handle, const AabbCollider &aabb);
 	void SetEnabled(ColliderHandle handle, bool enabled);
+	void SetFilter(ColliderHandle handle, CollisionLayer layer, CollisionLayer mask);
+	void SetTrigger(ColliderHandle handle, bool isTrigger);
+	[[nodiscard]] bool IsTrigger(ColliderHandle handle) const;
 	bool IsRegistered(ColliderHandle handle) const;
 
 	/// <summary>
@@ -101,6 +120,26 @@ class CollisionWorld final {
 	             float maxDistance,
 	             CollisionLayer layerMask,
 	             RaycastHit &hit) const;
+
+	/// <summary>
+	/// フィルターに一致するすべてのRaycast結果を距離順で返す。
+	/// </summary>
+	[[nodiscard]] std::vector<RaycastHit> RaycastAll(const Vector3 &origin,
+	                                                 const Vector3 &direction,
+	                                                 float maxDistance,
+	                                                 const CollisionQueryFilter &filter = {}) const;
+
+	/// <summary>
+	/// 指定球と重なるColliderを返す。
+	/// </summary>
+	[[nodiscard]] std::vector<ColliderHandle> OverlapSphere(
+	    const SphereCollider &sphere, const CollisionQueryFilter &filter = {}) const;
+
+	/// <summary>
+	/// 指定AABBと重なるColliderを返す。
+	/// </summary>
+	[[nodiscard]] std::vector<ColliderHandle> OverlapAabb(
+	    const AabbCollider &aabb, const CollisionQueryFilter &filter = {}) const;
 
 	uint32_t GetColliderCount() const {
 		return static_cast<uint32_t>(colliders_.size());
@@ -120,6 +159,7 @@ class CollisionWorld final {
 		CollisionLayer mask = std::numeric_limits<CollisionLayer>::max();
 		uint64_t userData = 0;
 		bool continuous = false;
+		bool isTrigger = false;
 		bool enabled = true;
 		CollisionCallback callback{};
 	};
