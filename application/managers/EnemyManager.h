@@ -24,6 +24,7 @@ class EnemyManager final {
 	/// 所有している敵と衝突判定を安全に破棄する。
 	/// </summary>
 	~EnemyManager();
+
 	/// <summary>
 	/// 敵の生成に必要なサービス、共有モデル、ロックオン画像を設定する。
 	/// </summary>
@@ -37,18 +38,22 @@ class EnemyManager final {
 	/// すべての敵を破棄し、生成状態をゲーム開始時へ戻す。
 	/// </summary>
 	void Reset();
+
 	/// <summary>
 	/// 全敵の移動、回転、衝突判定、ロックオン表示を更新する。
 	/// </summary>
 	void Update(const Camera &camera, float deltaTime, float rotationSpeed);
+
 	/// <summary>
 	/// 難易度設定と得点に従い、必要なタイミングで敵を生成する。
 	/// </summary>
 	void UpdateSpawning(float deltaTime, float cameraZ, const GameParameters &parameters, uint32_t score);
+	
 	/// <summary>
 	/// 生存している全敵を描画する。
 	/// </summary>
 	void Draw() const;
+	
 	/// <summary>
 	/// ロック中の敵に照準マーカーを描画する。
 	/// </summary>
@@ -58,18 +63,22 @@ class EnemyManager final {
 	/// 指定IDの敵を検索する。見つからない場合はnullptrを返す。
 	/// </summary>
 	Enemy *Find(uint64_t id) const;
+	
 	/// <summary>
 	/// 除外ID以外から、指定位置に最も近いロック可能な敵を検索する。
 	/// </summary>
 	Enemy *FindNearestLockTarget(const Vector3 &origin, const std::vector<uint64_t> &excludedIds) const;
+	
 	/// <summary>
 	/// 指定ID群と一致する敵のロック表示を有効にする。
 	/// </summary>
 	void SetLockedEnemies(const std::vector<uint64_t> &ids);
+	
 	/// <summary>
 	/// 指定IDの敵を削除する。削除できた場合はtrueを返す。
 	/// </summary>
 	bool Remove(uint64_t id);
+	
 	/// <summary>
 	/// プレイヤー後方へ通過した敵を削除し、そのID一覧を返す。
 	/// </summary>
