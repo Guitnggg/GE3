@@ -18,6 +18,7 @@ class Time;
 class WinApp;
 class Audio;
 class AssetManager;
+class DebugOverlay;
 
 /// <summary>
 /// すべてのゲームで共通して使用するエンジン機能を管理する基底クラス。
@@ -80,6 +81,7 @@ class Engine {
 
 #ifdef _DEBUG
 	std::unique_ptr<ImGuiManager> imguiManager_;
+	std::unique_ptr<DebugOverlay> debugOverlay_;
 #endif
 
   private:

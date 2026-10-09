@@ -28,6 +28,9 @@
 	<Filter Include="engine\assets">
 	  <UniqueIdentifier>{7D70CE8D-5794-4F32-998B-BEB3A854C96D}</UniqueIdentifier>
 	</Filter>
+	<Filter Include="engine\debug">
+	  <UniqueIdentifier>{024857C0-CDFC-491B-82A8-C573F474B7BA}</UniqueIdentifier>
+	</Filter>
 	<Filter Include="engine\object">
 	  <UniqueIdentifier>{EE30E102-A5FC-453C-BE82-88552844B232}</UniqueIdentifier>
 	</Filter>
@@ -98,6 +101,12 @@
   <ItemGroup>
 	<ClCompile Include="engine\assets\AssetManager.cpp">
 	  <Filter>engine\assets</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\debug\DebugOverlay.cpp">
+	  <Filter>engine\debug</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\debug\Profiler.cpp">
+	  <Filter>engine\debug</Filter>
 	</ClCompile>
 	<ClCompile Include="engine\object\Component.cpp">
 	  <Filter>engine\object</Filter>
@@ -247,6 +256,12 @@
   <ItemGroup>
 	<ClInclude Include="engine\assets\AssetManager.h">
 	  <Filter>engine\assets</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\debug\DebugOverlay.h">
+	  <Filter>engine\debug</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\debug\Profiler.h">
+	  <Filter>engine\debug</Filter>
 	</ClInclude>
 	<ClInclude Include="engine\object\Component.h">
 	  <Filter>engine\object</Filter>

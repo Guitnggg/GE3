@@ -9,6 +9,8 @@
 #include "engine/assets/AssetManager.h"
 #include "engine/collision/CollisionWorld.h"
 #include "engine/core/DirectXCommon.h"
+#include "engine/debug/DebugOverlay.h"
+#include "engine/debug/Profiler.h"
 #include "engine/effects/particle/GPUParticlePipeline.h"
 #include "engine/graphics/shader/ShaderCompiler.h"
 #include "engine/core/timing/FrameRateController.h"
@@ -63,7 +65,7 @@ void Engine::Initialize() {
 	    modelManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_ || gpuParticlePipeline_ ||
 	    shaderCompiler_ || assetManager_
 #ifdef _DEBUG
-	    || imguiManager_
+	    || imguiManager_ || debugOverlay_
 #endif
 	) {
 		throw std::logic_error("Engine is already initialized or partially initialized.");
@@ -113,6 +115,8 @@ void Engine::Initialize() {
 		// デバッグビルド時のみImGuiを使用する
 		imguiManager_ = std::make_unique<ImGuiManager>();
 		imguiManager_->Initialize(winApp_.get(), dxCommon_.get());
+		debugOverlay_ = std::make_unique<DebugOverlay>();
+		debugOverlay_->Initialize(frameRateController_.get(), time_.get());
 #endif
 
 		initialized_ = true;
@@ -123,6 +127,10 @@ void Engine::Initialize() {
 }
 
 void Engine::BeginFrame() {
+#ifdef _DEBUG
+	Profiler::Get().BeginFrame();
+	PROFILE_SCOPE("Engine BeginFrame");
+#endif
 	// すべてのゲームで必要になる毎フレーム処理を先に更新する
 	frameRateController_->BeginFrame();
 	time_->Update();
@@ -157,6 +165,8 @@ void Engine::BeginDraw() {
 
 void Engine::EndDraw() {
 #ifdef _DEBUG
+	debugOverlay_->Draw();
+	Profiler::Get().EndFrame();
 	// UI構築を確定してから、ゲーム画面の手前にImGuiを描画する
 	imguiManager_->EndFrame();
 	imguiManager_->Draw(dxCommon_->GetCommandList());
@@ -172,6 +182,10 @@ void Engine::Finalize() {
 	initialized_ = false;
 
 #ifdef _DEBUG
+	if (debugOverlay_) {
+		debugOverlay_->Finalize();
+	}
+	debugOverlay_.reset();
 	if (imguiManager_) {
 		imguiManager_->Finalize();
 	}
