@@ -97,6 +97,7 @@
 	<ClCompile Include="engine\assets\AssetManager.cpp" />
 	<ClCompile Include="engine\object\Component.cpp" />
 	<ClCompile Include="engine\object\GameObject.cpp" />
+	<ClCompile Include="engine\object\TransformNode.cpp" />
     <ClCompile Include="engine\core\Engine.cpp" />
     <ClCompile Include="application\core\MyGame.cpp" />
     <ClCompile Include="application\main.cpp" />
@@ -147,6 +148,7 @@
 	<ClInclude Include="engine\assets\AssetManager.h" />
 	<ClInclude Include="engine\object\Component.h" />
 	<ClInclude Include="engine\object\GameObject.h" />
+	<ClInclude Include="engine\object\TransformNode.h" />
     <ClInclude Include="engine\core\Engine.h" />
     <ClInclude Include="application\core\MyGame.h" />
     <ClInclude Include="engine\2d\Sprite.h" />

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "engine/math/MathTypes.h"
 #include "engine/object/Component.h"
+#include "engine/object/TransformNode.h"
 
 #include <concepts>
 #include <memory>
@@ -91,10 +91,10 @@ class GameObject final {
 	void SetActive(bool active) {
 		active_ = active;
 	}
-	[[nodiscard]] Transform &GetTransform() {
+	[[nodiscard]] TransformNode &GetTransform() {
 		return transform_;
 	}
-	[[nodiscard]] const Transform &GetTransform() const {
+	[[nodiscard]] const TransformNode &GetTransform() const {
 		return transform_;
 	}
 	[[nodiscard]] size_t GetComponentCount() const {
@@ -124,7 +124,7 @@ class GameObject final {
 	void EnsureComponentsMutable() const;
 
 	std::string name_;
-	Transform transform_{{1.0f, 1.0f, 1.0f}, {}, {}};
+	TransformNode transform_;
 	std::vector<std::unique_ptr<Component>> components_;
 	bool active_ = true;
 	bool dispatching_ = false;
