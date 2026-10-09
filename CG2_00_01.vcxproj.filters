@@ -28,6 +28,9 @@
 	<Filter Include="engine\assets">
 	  <UniqueIdentifier>{7D70CE8D-5794-4F32-998B-BEB3A854C96D}</UniqueIdentifier>
 	</Filter>
+	<Filter Include="engine\object">
+	  <UniqueIdentifier>{EE30E102-A5FC-453C-BE82-88552844B232}</UniqueIdentifier>
+	</Filter>
     <Filter Include="engine\collision">
       <UniqueIdentifier>{4FBD2209-294F-4C1D-B94B-CB9BA92E958A}</UniqueIdentifier>
     </Filter>
@@ -95,6 +98,12 @@
   <ItemGroup>
 	<ClCompile Include="engine\assets\AssetManager.cpp">
 	  <Filter>engine\assets</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\object\Component.cpp">
+	  <Filter>engine\object</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\object\GameObject.cpp">
+	  <Filter>engine\object</Filter>
 	</ClCompile>
     <ClCompile Include="engine\core\Engine.cpp">
       <Filter>engine\core</Filter>
@@ -235,6 +244,12 @@
   <ItemGroup>
 	<ClInclude Include="engine\assets\AssetManager.h">
 	  <Filter>engine\assets</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\object\Component.h">
+	  <Filter>engine\object</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\object\GameObject.h">
+	  <Filter>engine\object</Filter>
 	</ClInclude>
     <ClInclude Include="engine\core\Engine.h">
       <Filter>engine\core</Filter>
