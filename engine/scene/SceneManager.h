@@ -1,16 +1,25 @@
 #pragma once
 
+#include "engine/scene/IScene.h"
 #include "engine/scene/SceneContext.h"
 
+#include <concepts>
+#include <cstddef>
+#include <deque>
 #include <memory>
-
-class IScene;
+#include <utility>
+#include <vector>
 
 /// <summary>
 /// 現在のシーンのライフサイクルと安全な切り替えを管理するクラス。
 /// </summary>
 class SceneManager {
   public:
+	struct LayerOptions {
+		bool updateBelow = false;
+		bool drawBelow = true;
+	};
+
 	SceneManager() = default;
 	~SceneManager();
 	SceneManager(const SceneManager &) = delete;
@@ -46,14 +55,52 @@ class SceneManager {
 	/// </summary>
 	void ChangeScene(std::unique_ptr<IScene> nextScene);
 
+	/// <summary>現在のシーンを一時停止し、その上へ新しいシーンを積む。</summary>
+	void PushScene(std::unique_ptr<IScene> scene, LayerOptions options = {});
+
+	/// <summary>最上位シーンを終了し、その下のシーンへ戻る。</summary>
+	void PopScene();
+
+	template <typename T, typename... Args>
+		requires std::derived_from<T, IScene>
+	void ChangeScene(Args &&...args) {
+		ChangeScene(std::make_unique<T>(std::forward<Args>(args)...));
+	}
+
+	template <typename T, typename... Args>
+		requires std::derived_from<T, IScene>
+	void PushScene(LayerOptions options, Args &&...args) {
+		PushScene(std::make_unique<T>(std::forward<Args>(args)...), options);
+	}
+
+	[[nodiscard]] size_t GetSceneCount() const {
+		return stack_.size();
+	}
+	[[nodiscard]] IScene *GetTopScene();
+	[[nodiscard]] const IScene *GetTopScene() const;
+
   private:
-	/// <summary>
-	/// 切り替え待ちのシーンがあれば、現在のシーンと入れ替える。
-	/// </summary>
-	void ApplyPendingScene();
+	enum class OperationType { Replace, Push, Pop };
+	struct SceneEntry {
+		std::unique_ptr<IScene> scene;
+		LayerOptions options{};
+	};
+	struct PendingOperation {
+		OperationType type = OperationType::Pop;
+		std::unique_ptr<IScene> scene;
+		LayerOptions options{};
+	};
+
+	void ApplyPendingOperations();
+	void ApplyReplace(std::unique_ptr<IScene> scene);
+	void ApplyPush(std::unique_ptr<IScene> scene, LayerOptions options);
+	void ApplyPop();
+	[[nodiscard]] size_t FindFirstUpdateScene() const;
+	[[nodiscard]] size_t FindFirstDrawScene() const;
+	void EnsureInitialized() const;
 
 	SceneContext context_{};
-	std::unique_ptr<IScene> currentScene_;
-	std::unique_ptr<IScene> pendingScene_;
+	std::vector<SceneEntry> stack_;
+	std::deque<PendingOperation> pendingOperations_;
 	bool initialized_ = false;
 };

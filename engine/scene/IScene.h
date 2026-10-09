@@ -15,6 +15,16 @@ class IScene {
 	virtual void Initialize(const SceneContext &context) = 0;
 
 	/// <summary>
+	/// 上に別シーンが重なり、このシーンの操作が一時停止するときに呼ばれる。
+	/// </summary>
+	virtual void OnPause() {}
+
+	/// <summary>
+	/// 上のシーンが閉じられ、このシーンへ操作が戻るときに呼ばれる。
+	/// </summary>
+	virtual void OnResume() {}
+
+	/// <summary>
 	/// 入力や時間に応じて、シーンの状態を毎フレーム更新する。
 	/// </summary>
 	virtual void Update() = 0;

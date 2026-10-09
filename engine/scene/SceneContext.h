@@ -1,6 +1,7 @@
 #pragma once
 
 class Audio;
+class AssetManager;
 class CollisionWorld;
 class DirectXCommon;
 class FrameRateController;
@@ -19,6 +20,7 @@ class Time;
 /// </summary>
 struct SceneContext {
 	Audio *audio = nullptr;
+	AssetManager *assets = nullptr;
 	CollisionWorld *collisionWorld = nullptr;
 	DirectXCommon *directXCommon = nullptr;
 	Input *input = nullptr;
@@ -29,6 +31,7 @@ struct SceneContext {
 	Time *time = nullptr;
 	FrameRateController *frameRateController = nullptr;
 	GPUParticlePipeline *gpuParticlePipeline = nullptr;
+
 #ifdef _DEBUG
 	ImGuiManager *imguiManager = nullptr;
 #endif

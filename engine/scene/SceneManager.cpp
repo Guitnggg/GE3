@@ -15,28 +15,31 @@ void SceneManager::Initialize(const SceneContext &context, std::unique_ptr<IScen
 	}
 	// 共通機能を保持し、所有権を受け取った最初のシーンを開始する
 	context_ = context;
-	currentScene_ = std::move(initialScene);
-	currentScene_->Initialize(context_);
+	initialScene->Initialize(context_);
+	stack_.push_back({std::move(initialScene), {false, false}});
 	initialized_ = true;
 }
 
 void SceneManager::Update() {
-	// 更新中のシーン破棄を避けるため、予約された切り替えをフレーム先頭で適用する
-	ApplyPendingScene();
-	if (currentScene_) {
-		currentScene_->Update();
+	EnsureInitialized();
+	// コールバック中のシーン破棄を避けるため、予約操作はフレーム先頭で適用する
+	ApplyPendingOperations();
+	for (size_t index = FindFirstUpdateScene(); index < stack_.size(); ++index) {
+		stack_[index].scene->Update();
 	}
 }
 
 void SceneManager::FixedUpdate() {
-	if (currentScene_) {
-		currentScene_->FixedUpdate();
+	EnsureInitialized();
+	for (size_t index = FindFirstUpdateScene(); index < stack_.size(); ++index) {
+		stack_[index].scene->FixedUpdate();
 	}
 }
 
 void SceneManager::Draw() {
-	if (currentScene_) {
-		currentScene_->Draw();
+	EnsureInitialized();
+	for (size_t index = FindFirstDrawScene(); index < stack_.size(); ++index) {
+		stack_[index].scene->Draw();
 	}
 }
 
@@ -45,30 +48,111 @@ void SceneManager::ChangeScene(std::unique_ptr<IScene> nextScene) {
 	if (!nextScene) {
 		throw std::invalid_argument("Next scene must not be null.");
 	}
-	// 実際の切り替えは次のUpdate開始時まで遅延する
-	pendingScene_ = std::move(nextScene);
+	EnsureInitialized();
+	pendingOperations_.push_back({OperationType::Replace, std::move(nextScene), {false, false}});
 }
 
-void SceneManager::ApplyPendingScene() {
-	if (!pendingScene_) {
+void SceneManager::PushScene(std::unique_ptr<IScene> scene, LayerOptions options) {
+	if (!scene) {
+		throw std::invalid_argument("Scene to push must not be null.");
+	}
+	EnsureInitialized();
+	pendingOperations_.push_back({OperationType::Push, std::move(scene), options});
+}
+
+void SceneManager::PopScene() {
+	EnsureInitialized();
+	pendingOperations_.push_back({OperationType::Pop, nullptr, {}});
+}
+
+IScene *SceneManager::GetTopScene() {
+	return stack_.empty() ? nullptr : stack_.back().scene.get();
+}
+
+const IScene *SceneManager::GetTopScene() const {
+	return stack_.empty() ? nullptr : stack_.back().scene.get();
+}
+
+void SceneManager::ApplyPendingOperations() {
+	while (!pendingOperations_.empty()) {
+		PendingOperation operation = std::move(pendingOperations_.front());
+		pendingOperations_.pop_front();
+		switch (operation.type) {
+		case OperationType::Replace:
+			ApplyReplace(std::move(operation.scene));
+			break;
+		case OperationType::Push:
+			ApplyPush(std::move(operation.scene), operation.options);
+			break;
+		case OperationType::Pop:
+			ApplyPop();
+			break;
+		}
+	}
+}
+
+void SceneManager::ApplyReplace(std::unique_ptr<IScene> scene) {
+	for (auto it = stack_.rbegin(); it != stack_.rend(); ++it) {
+		it->scene->Finalize();
+	}
+	stack_.clear();
+	scene->Initialize(context_);
+	stack_.push_back({std::move(scene), {false, false}});
+}
+
+void SceneManager::ApplyPush(std::unique_ptr<IScene> scene, LayerOptions options) {
+	if (!stack_.empty()) {
+		stack_.back().scene->OnPause();
+	}
+	try {
+		scene->Initialize(context_);
+		stack_.push_back({std::move(scene), options});
+	} catch (...) {
+		if (!stack_.empty()) {
+			stack_.back().scene->OnResume();
+		}
+		throw;
+	}
+}
+
+void SceneManager::ApplyPop() {
+	// 最後のシーンは維持し、空のSceneManagerが実行される状態を防ぐ
+	if (stack_.size() <= 1) {
 		return;
 	}
+	stack_.back().scene->Finalize();
+	stack_.pop_back();
+	stack_.back().scene->OnResume();
+}
 
-	// 現在のシーンを終了してから、同じ共通機能で次のシーンを開始する
-	if (currentScene_) {
-		currentScene_->Finalize();
+size_t SceneManager::FindFirstUpdateScene() const {
+	size_t index = stack_.size() - 1;
+	while (index > 0 && stack_[index].options.updateBelow) {
+		--index;
 	}
-	currentScene_ = std::move(pendingScene_);
-	currentScene_->Initialize(context_);
+	return index;
+}
+
+size_t SceneManager::FindFirstDrawScene() const {
+	size_t index = stack_.size() - 1;
+	while (index > 0 && stack_[index].options.drawBelow) {
+		--index;
+	}
+	return index;
+}
+
+void SceneManager::EnsureInitialized() const {
+	if (!initialized_ || stack_.empty()) {
+		throw std::logic_error("SceneManager is not initialized.");
+	}
 }
 
 void SceneManager::Finalize() {
-	// 未開始の予約シーンを破棄し、実行中のシーンだけ終了処理を呼ぶ
-	pendingScene_.reset();
-	if (currentScene_) {
-		currentScene_->Finalize();
+	pendingOperations_.clear();
+	for (auto it = stack_.rbegin(); it != stack_.rend(); ++it) {
+		it->scene->Finalize();
 	}
-	currentScene_.reset();
+	stack_.clear();
 	context_ = {};
 	initialized_ = false;
 }
