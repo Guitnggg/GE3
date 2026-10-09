@@ -16,11 +16,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	try {
 		MyGame game;
 		game.Run();
+
 	} catch (const std::exception &exception) {
 		const std::string message = std::string("Fatal error: ") + exception.what();
 		Logger::Log(message + "\n");
 		MessageBoxA(nullptr, message.c_str(), "MadeEngine Fatal Error", MB_OK | MB_ICONERROR);
 		return EXIT_FAILURE;
+
 	} catch (...) {
 		constexpr char message[] = "Fatal error: unknown exception.";
 		Logger::Log(std::string(message) + "\n");
