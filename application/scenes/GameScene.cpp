@@ -17,10 +17,14 @@ namespace {
 constexpr uint32_t kSphereSubdivisions = 12;
 }
 
-GameScene::~GameScene() { Finalize(); }
+GameScene::~GameScene() {
+	Finalize();
+}
 
-void GameScene::Initialize(const SceneContext& context) {
-	if (initialized_) { throw std::logic_error("GameScene is already initialized."); }
+void GameScene::Initialize(const SceneContext &context) {
+	if (initialized_) {
+		throw std::logic_error("GameScene is already initialized.");
+	}
 	context_ = context;
 	try {
 		InitializeInputActions();
@@ -63,23 +67,41 @@ void GameScene::InitializeGameObjects() {
 	stageEnvironment_ = std::make_unique<StageEnvironment>();
 	stageEnvironment_->Initialize(context_.object3dCommon, context_.textureManager, mapModel);
 	player_ = std::make_unique<Player>();
-	player_->Initialize(context_.spriteCommon, context_.object3dCommon,
-		context_.textureManager, context_.input, playerModel_, texture_, moveAction_, shootAction_);
+	player_->Initialize(context_.spriteCommon,
+	                    context_.object3dCommon,
+	                    context_.textureManager,
+	                    context_.input,
+	                    playerModel_,
+	                    texture_,
+	                    moveAction_,
+	                    shootAction_);
 
 	playerEngineEffect_ = std::make_unique<PlayerEngineEffect>();
-	playerEngineEffect_->Initialize(context_.directXCommon, context_.gpuParticlePipeline, context_.textureManager,
-		particleTexture_, parameters_.engineParticle);
+	playerEngineEffect_->Initialize(context_.directXCommon,
+	                                context_.gpuParticlePipeline,
+	                                context_.textureManager,
+	                                particleTexture_,
+	                                parameters_.engineParticle);
 	enemyDeathEffect_ = std::make_unique<EnemyDeathEffect>();
-	enemyDeathEffect_->Initialize(context_.directXCommon, context_.gpuParticlePipeline,
-		context_.textureManager, particleTexture_);
+	enemyDeathEffect_->Initialize(
+	    context_.directXCommon, context_.gpuParticlePipeline, context_.textureManager, particleTexture_);
 	missileTrailEffect_ = std::make_unique<MissileTrailEffect>();
-	missileTrailEffect_->Initialize(context_.directXCommon, context_.gpuParticlePipeline,
-		context_.textureManager, particleTexture_);
+	missileTrailEffect_->Initialize(
+	    context_.directXCommon, context_.gpuParticlePipeline, context_.textureManager, particleTexture_);
 
-	enemyManager_.Initialize(context_.collisionWorld, context_.spriteCommon,
-		context_.object3dCommon, context_.textureManager, sphereModel_, lockOnTexture_);
-	weaponManager_.Initialize(context_.collisionWorld, context_.object3dCommon,
-		context_.textureManager, context_.input, sphereModel_, missileModel_, lockOnAction_);
+	enemyManager_.Initialize(context_.collisionWorld,
+	                         context_.spriteCommon,
+	                         context_.object3dCommon,
+	                         context_.textureManager,
+	                         sphereModel_,
+	                         lockOnTexture_);
+	weaponManager_.Initialize(context_.collisionWorld,
+	                          context_.object3dCommon,
+	                          context_.textureManager,
+	                          context_.input,
+	                          sphereModel_,
+	                          missileModel_,
+	                          lockOnAction_);
 }
 
 void GameScene::ResetGame() {
@@ -116,8 +138,8 @@ void GameScene::UpdateGameplay(float deltaTime, bool acceptFireInput) {
 	if (player_->Update(deltaTime, parameters_.railSpeed, parameters_.playerMoveSpeed, acceptFireInput)) {
 		weaponManager_.Shoot(player_->GetShotOrigin(), player_->GetShotDirection());
 	}
-	weaponManager_.UpdateLockOn(deltaTime, acceptFireInput,
-		player_->GetShotDirection(), player_->GetPosition(), enemyManager_);
+	weaponManager_.UpdateLockOn(
+	    deltaTime, acceptFireInput, player_->GetShotDirection(), player_->GetPosition(), enemyManager_);
 
 	for (const uint64_t id : enemyManager_.RemovePassed(player_->GetPosition().z)) {
 		weaponManager_.OnEnemyRemoved(id);
@@ -144,7 +166,9 @@ void GameScene::UpdateFrameSystems(float deltaTime) {
 
 	context_.collisionWorld->Update();
 	const std::vector<Vector3> destroyedPositions = weaponManager_.ResolveProjectileHits(enemyManager_);
-	for (const Vector3& position : destroyedPositions) { enemyDeathEffect_->Emit(position); }
+	for (const Vector3 &position : destroyedPositions) {
+		enemyDeathEffect_->Emit(position);
+	}
 	score_ += static_cast<uint32_t>(destroyedPositions.size());
 	enemyDeathEffect_->Update(deltaTime);
 }
@@ -158,8 +182,9 @@ void GameScene::DrawDebugUi() {
 	}
 	ImGui::SetNextWindowPos({12.0f, 12.0f}, ImGuiCond_Always);
 	ImGui::SetNextWindowBgAlpha(0.72f);
-	ImGui::Begin("3D RAIL SHOOTER", nullptr,
-		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+	ImGui::Begin("3D RAIL SHOOTER",
+	             nullptr,
+	             ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 	ImGui::Text("SCORE  %u", score_);
 	ImGui::Text("LIVES  %u", player_->GetLives());
 	ImGui::TextUnformatted("MOVE: WASD    AIM: Mouse    NORMAL: Left Click");
@@ -167,7 +192,9 @@ void GameScene::DrawDebugUi() {
 	if (weaponManager_.HasLock()) {
 		ImGui::TextColored({1.0f, 0.85f, 0.1f, 1.0f}, "LOCKED  %zu / 5", weaponManager_.GetLockCount());
 	}
-	if (parameterEditor_.IsPaused()) { ImGui::TextColored({1.0f, 0.8f, 0.2f, 1.0f}, "PAUSED"); }
+	if (parameterEditor_.IsPaused()) {
+		ImGui::TextColored({1.0f, 0.8f, 0.2f, 1.0f}, "PAUSED");
+	}
 	if (gameOver_) {
 		ImGui::Separator();
 		ImGui::TextColored({1.0f, 0.25f, 0.2f, 1.0f}, "GAME OVER");
@@ -201,7 +228,9 @@ void GameScene::Finalize() {
 	missileTrailEffect_.reset();
 	enemyDeathEffect_.reset();
 	playerEngineEffect_.reset();
-	if (stageEnvironment_) { stageEnvironment_->Finalize(); }
+	if (stageEnvironment_) {
+		stageEnvironment_->Finalize();
+	}
 	stageEnvironment_.reset();
 	player_.reset();
 	missileModel_.reset();

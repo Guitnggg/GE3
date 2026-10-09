@@ -11,23 +11,30 @@
 using Microsoft::WRL::ComPtr;
 
 namespace {
-void SerializeRootSignature(ID3D12Device* device, const D3D12_ROOT_SIGNATURE_DESC& desc,
-	ComPtr<ID3D12RootSignature>& destination, const char* context) {
+void SerializeRootSignature(ID3D12Device *device,
+                            const D3D12_ROOT_SIGNATURE_DESC &desc,
+                            ComPtr<ID3D12RootSignature> &destination,
+                            const char *context) {
 	ComPtr<ID3DBlob> blob;
 	ComPtr<ID3DBlob> error;
 	const HRESULT result = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &blob, &error);
 	if (FAILED(result) && error) {
-		Logger::Log(std::string(static_cast<const char*>(error->GetBufferPointer())) + "\n");
+		Logger::Log(std::string(static_cast<const char *>(error->GetBufferPointer())) + "\n");
 	}
 	HResult::ThrowIfFailed(result, context);
-	HResult::ThrowIfFailed(device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(),
-		IID_PPV_ARGS(&destination)), context);
+	HResult::ThrowIfFailed(
+	    device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(&destination)),
+	    context);
 }
-}
+} // namespace
 
-void GPUParticlePipeline::Initialize(DirectXCommon* dxCommon, ShaderCompiler* shaderCompiler) {
-	if (dxCommon_ != nullptr) { throw std::logic_error("GPUParticlePipeline is already initialized."); }
-	if (dxCommon == nullptr || shaderCompiler == nullptr) { throw std::invalid_argument("GPUParticlePipeline requires rendering services."); }
+void GPUParticlePipeline::Initialize(DirectXCommon *dxCommon, ShaderCompiler *shaderCompiler) {
+	if (dxCommon_ != nullptr) {
+		throw std::logic_error("GPUParticlePipeline is already initialized.");
+	}
+	if (dxCommon == nullptr || shaderCompiler == nullptr) {
+		throw std::invalid_argument("GPUParticlePipeline requires rendering services.");
+	}
 	dxCommon_ = dxCommon;
 	shaderCompiler_ = shaderCompiler;
 	CreateRootSignatures();
@@ -35,7 +42,7 @@ void GPUParticlePipeline::Initialize(DirectXCommon* dxCommon, ShaderCompiler* sh
 	CreateGraphicsPipelines();
 }
 
-ID3D12PipelineState* GPUParticlePipeline::GetGraphicsPipeline(GPUParticleBlendMode blendMode) const {
+ID3D12PipelineState *GPUParticlePipeline::GetGraphicsPipeline(GPUParticleBlendMode blendMode) const {
 	return blendMode == GPUParticleBlendMode::Additive ? additivePipeline_.Get() : alphaPipeline_.Get();
 }
 
@@ -50,8 +57,10 @@ void GPUParticlePipeline::CreateRootSignatures() {
 	D3D12_ROOT_SIGNATURE_DESC computeDesc{};
 	computeDesc.NumParameters = _countof(computeParameters);
 	computeDesc.pParameters = computeParameters;
-	SerializeRootSignature(dxCommon_->GetDevice().Get(), computeDesc, computeRootSignature_,
-		"Creating GPU particle compute root signature");
+	SerializeRootSignature(dxCommon_->GetDevice().Get(),
+	                       computeDesc,
+	                       computeRootSignature_,
+	                       "Creating GPU particle compute root signature");
 
 	D3D12_DESCRIPTOR_RANGE textureRange{};
 	textureRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -79,35 +88,41 @@ void GPUParticlePipeline::CreateRootSignatures() {
 	graphicsDesc.pParameters = graphicsParameters;
 	graphicsDesc.NumStaticSamplers = 1;
 	graphicsDesc.pStaticSamplers = &sampler;
-	SerializeRootSignature(dxCommon_->GetDevice().Get(), graphicsDesc, graphicsRootSignature_,
-		"Creating GPU particle graphics root signature");
+	SerializeRootSignature(dxCommon_->GetDevice().Get(),
+	                       graphicsDesc,
+	                       graphicsRootSignature_,
+	                       "Creating GPU particle graphics root signature");
 }
 
 void GPUParticlePipeline::CreateComputePipelines() {
-	struct Entry { const wchar_t* path; ComPtr<ID3D12PipelineState>* pipeline; } entries[] = {
-		{L"resource/shaders/particle/ParticleInitialize.CS.hlsl", &initializePipeline_},
-		{L"resource/shaders/particle/ParticleEmit.CS.hlsl", &emitPipeline_},
-		{L"resource/shaders/particle/ParticleUpdate.CS.hlsl", &updatePipeline_},
+	struct Entry {
+		const wchar_t *path;
+		ComPtr<ID3D12PipelineState> *pipeline;
+	} entries[] = {
+	    {L"resource/shaders/particle/ParticleInitialize.CS.hlsl", &initializePipeline_},
+	    {L"resource/shaders/particle/ParticleEmit.CS.hlsl", &emitPipeline_},
+	    {L"resource/shaders/particle/ParticleUpdate.CS.hlsl", &updatePipeline_},
 	};
-	for (const auto& entry : entries) {
+	for (const auto &entry : entries) {
 		ComPtr<IDxcBlob> shader = shaderCompiler_->Compile(entry.path, L"cs_6_0");
 		D3D12_COMPUTE_PIPELINE_STATE_DESC desc{};
 		desc.pRootSignature = computeRootSignature_.Get();
 		desc.CS = {shader->GetBufferPointer(), shader->GetBufferSize()};
-		HResult::ThrowIfFailed(dxCommon_->GetDevice()->CreateComputePipelineState(
-			&desc, IID_PPV_ARGS(entry.pipeline->GetAddressOf())), "Creating GPU particle compute pipeline");
+		HResult::ThrowIfFailed(
+		    dxCommon_->GetDevice()->CreateComputePipelineState(&desc, IID_PPV_ARGS(entry.pipeline->GetAddressOf())),
+		    "Creating GPU particle compute pipeline");
 	}
 }
 
 void GPUParticlePipeline::CreateGraphicsPipelines() {
 	ComPtr<IDxcBlob> vertexShader = shaderCompiler_->Compile(L"resource/shaders/particle/Particle.VS.hlsl", L"vs_6_0");
 	ComPtr<IDxcBlob> pixelShader = shaderCompiler_->Compile(L"resource/shaders/particle/Particle.PS.hlsl", L"ps_6_0");
-	auto create = [&](bool additive, ComPtr<ID3D12PipelineState>& destination) {
+	auto create = [&](bool additive, ComPtr<ID3D12PipelineState> &destination) {
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
 		desc.pRootSignature = graphicsRootSignature_.Get();
 		desc.VS = {vertexShader->GetBufferPointer(), vertexShader->GetBufferSize()};
 		desc.PS = {pixelShader->GetBufferPointer(), pixelShader->GetBufferSize()};
-		auto& blend = desc.BlendState.RenderTarget[0];
+		auto &blend = desc.BlendState.RenderTarget[0];
 		blend.BlendEnable = TRUE;
 		blend.SrcBlend = D3D12_BLEND_SRC_ALPHA;
 		blend.DestBlend = additive ? D3D12_BLEND_ONE : D3D12_BLEND_INV_SRC_ALPHA;
@@ -127,8 +142,8 @@ void GPUParticlePipeline::CreateGraphicsPipelines() {
 		desc.RTVFormats[0] = dxCommon_->GetRenderTargetFormat();
 		desc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		desc.SampleDesc.Count = 1;
-		HResult::ThrowIfFailed(dxCommon_->GetDevice()->CreateGraphicsPipelineState(
-			&desc, IID_PPV_ARGS(&destination)), "Creating GPU particle graphics pipeline");
+		HResult::ThrowIfFailed(dxCommon_->GetDevice()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&destination)),
+		                       "Creating GPU particle graphics pipeline");
 	};
 	create(false, alphaPipeline_);
 	create(true, additivePipeline_);

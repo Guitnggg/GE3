@@ -45,10 +45,8 @@ void FrameRateController::BeginFrame() {
 	constexpr double kSmoothingFactor = 0.1;
 	if (currentFPS_ == 0.0) {
 		frameTimeMilliseconds_ = measuredFrameTimeMilliseconds;
-	}
-	else {
-		frameTimeMilliseconds_ +=
-			(measuredFrameTimeMilliseconds - frameTimeMilliseconds_) * kSmoothingFactor;
+	} else {
+		frameTimeMilliseconds_ += (measuredFrameTimeMilliseconds - frameTimeMilliseconds_) * kSmoothingFactor;
 	}
 	currentFPS_ = 1000.0 / frameTimeMilliseconds_;
 }
@@ -64,8 +62,7 @@ void FrameRateController::EndFrame() {
 
 	// フレーム開始時刻から目標フレーム時間後を待機期限とする
 	const std::chrono::duration<double> targetDuration(1.0 / targetFPS_);
-	const Clock::time_point deadline = frameStartTime_ +
-		std::chrono::duration_cast<Clock::duration>(targetDuration);
+	const Clock::time_point deadline = frameStartTime_ + std::chrono::duration_cast<Clock::duration>(targetDuration);
 	constexpr auto kFineWaitDuration = std::chrono::microseconds(500);
 
 	// 大部分はsleepでCPU負荷を抑え、最後だけyieldで待機精度を補う
@@ -93,8 +90,7 @@ void FrameRateController::SetMode(FrameRateMode mode) {
 	if (!initialized_) {
 		throw std::logic_error("FrameRateController is not initialized.");
 	}
-	if (mode != FrameRateMode::VSync && mode != FrameRateMode::Limited &&
-		mode != FrameRateMode::Unlimited) {
+	if (mode != FrameRateMode::VSync && mode != FrameRateMode::Limited && mode != FrameRateMode::Unlimited) {
 		throw std::invalid_argument("Invalid frame rate mode.");
 	}
 	mode_ = mode;

@@ -9,11 +9,12 @@
 #include "engine/graphics/resource/TextureManager.h"
 #include "engine/core/diagnostics/HResult.h"
 
-void Object3d::Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager,
-	const std::shared_ptr<Model>& model) {
+void Object3d::Initialize(Object3dCommon *object3dCommon,
+                          TextureManager *textureManager,
+                          const std::shared_ptr<Model> &model) {
 	// 描画に必要な管理クラスとモデルが揃っていることを確認する
-	if (object3dCommon == nullptr || object3dCommon->GetDxCommon() == nullptr ||
-		textureManager == nullptr || model == nullptr) {
+	if (object3dCommon == nullptr || object3dCommon->GetDxCommon() == nullptr || textureManager == nullptr ||
+	    model == nullptr) {
 		throw std::invalid_argument("Object3d requires Object3dCommon, TextureManager, and Model.");
 	}
 	// モデルはshared_ptrで保持し、同じGPUメッシュを複数配置から共有する
@@ -22,11 +23,11 @@ void Object3d::Initialize(Object3dCommon* object3dCommon, TextureManager* textur
 	model_ = model;
 	textureIndex_ = model_->GetDefaultTextureIndex();
 
-	auto* dxCommon = object3dCommon_->GetDxCommon();
+	auto *dxCommon = object3dCommon_->GetDxCommon();
 	// この配置だけが持つマテリアル定数バッファを生成して初期値を書き込む
 	materialResource_ = dxCommon->CreateBufferResource(sizeof(Material));
-	HResult::ThrowIfFailed(materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_)),
-		"Mapping the 3D object material buffer");
+	HResult::ThrowIfFailed(materialResource_->Map(0, nullptr, reinterpret_cast<void **>(&materialData_)),
+	                       "Mapping the 3D object material buffer");
 	materialData_->color = {1.0f, 1.0f, 1.0f, 1.0f};
 	materialData_->enableLighting = true;
 	materialData_->uvTransform = MakeIdentity4x4();
@@ -34,30 +35,29 @@ void Object3d::Initialize(Object3dCommon* object3dCommon, TextureManager* textur
 	// ワールド行列とWVP行列を毎フレーム更新する定数バッファを生成する
 	transformationMatrixResource_ = dxCommon->CreateBufferResource(sizeof(TransformationMatrix));
 	HResult::ThrowIfFailed(
-		transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_)),
-		"Mapping the 3D object transformation buffer");
+	    transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void **>(&transformationMatrixData_)),
+	    "Mapping the 3D object transformation buffer");
 	transformationMatrixData_->World = MakeIdentity4x4();
 	transformationMatrixData_->WVP = MakeIdentity4x4();
 
 	// この配置に適用する平行光源用定数バッファを生成する
 	directionalLightResource_ = dxCommon->CreateBufferResource(sizeof(DirectionalLight));
 	HResult::ThrowIfFailed(
-		directionalLightResource_->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData_)),
-		"Mapping the 3D object directional-light buffer");
+	    directionalLightResource_->Map(0, nullptr, reinterpret_cast<void **>(&directionalLightData_)),
+	    "Mapping the 3D object directional-light buffer");
 	directionalLightData_->color = {1.0f, 1.0f, 1.0f, 1.0f};
 	directionalLightData_->direction = {0.0f, -1.0f, 0.0f};
 	directionalLightData_->intensity = 1.0f;
 }
 
-void Object3d::Update(const Camera& camera) {
+void Object3d::Update(const Camera &camera) {
 	// 初期化前は行列の書き込み先を持たないため更新を拒否する
 	if (transformationMatrixData_ == nullptr || directionalLightData_ == nullptr) {
 		throw std::logic_error("Object3d is not initialized.");
 	}
 
 	// 配置情報からワールド行列を作り、カメラのViewProjectionと合成する
-	const Matrix4x4 worldMatrix =
-		MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
+	const Matrix4x4 worldMatrix = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
 	transformationMatrixData_->World = worldMatrix;
 	transformationMatrixData_->WVP = Multiply(worldMatrix, camera.GetViewProjectionMatrix());
 
@@ -71,7 +71,7 @@ void Object3d::Draw() const {
 		throw std::logic_error("Object3d is not initialized.");
 	}
 	// ルートパラメータ0～3へ、マテリアル・行列・テクスチャ・ライトを順番に設定する
-	auto* commandList = object3dCommon_->GetDxCommon()->GetCommandList();
+	auto *commandList = object3dCommon_->GetDxCommon()->GetCommandList();
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource_->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetSrvHandleGPU(textureIndex_));

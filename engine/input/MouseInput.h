@@ -17,16 +17,16 @@
 /// DirectInputマウスの相対入力とクライアント座標を管理する。
 /// </summary>
 class MouseInput final {
-public:
+  public:
 	MouseInput() = default;
 	~MouseInput();
-	MouseInput(const MouseInput&) = delete;
-	MouseInput& operator=(const MouseInput&) = delete;
+	MouseInput(const MouseInput &) = delete;
+	MouseInput &operator=(const MouseInput &) = delete;
 
 	/// <summary>
 	/// 共有DirectInputからマウスデバイスを生成する。
 	/// </summary>
-	void Initialize(IDirectInput8* directInput, HWND hwnd);
+	void Initialize(IDirectInput8 *directInput, HWND hwnd);
 
 	/// <summary>
 	/// 相対入力とウィンドウ内の絶対カーソル座標を更新する。
@@ -38,7 +38,7 @@ public:
 	/// </summary>
 	void Finalize() noexcept;
 
-public:
+  public:
 	/// <summary>
 	/// 今フレームの水平方向の相対移動量を取得する。
 	/// </summary>
@@ -77,9 +77,11 @@ public:
 	/// <summary>
 	/// マウス入力が初期化済みか判定する。
 	/// </summary>
-	bool IsInitialized() const { return initialized_; }
+	bool IsInitialized() const {
+		return initialized_;
+	}
 
-private:
+  private:
 	/// <summary>
 	/// DIMOUSESTATE2が保持する8ボタンの範囲外アクセスを防ぐ。
 	/// </summary>
@@ -87,9 +89,9 @@ private:
 	void ValidateButton(uint32_t button) const;
 
 	Microsoft::WRL::ComPtr<IDirectInputDevice8> device_; // DirectInputマウスデバイス
-	DIMOUSESTATE2 current_{};                           // 今フレームの相対移動・ボタン状態
-	DIMOUSESTATE2 previous_{};                          // 前フレームのボタン状態
-	POINT position_{};                                  // クライアント座標系の絶対位置
-	HWND hwnd_ = nullptr;                               // 座標変換に使う非所有ウィンドウハンドル
+	DIMOUSESTATE2 current_{};                            // 今フレームの相対移動・ボタン状態
+	DIMOUSESTATE2 previous_{};                           // 前フレームのボタン状態
+	POINT position_{};                                   // クライアント座標系の絶対位置
+	HWND hwnd_ = nullptr;                                // 座標変換に使う非所有ウィンドウハンドル
 	bool initialized_ = false;
 };

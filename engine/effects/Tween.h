@@ -16,12 +16,13 @@ enum class TweenLoopMode {
 /// 時間経過に合わせて値を補間する汎用Tween。
 /// float / Vector2 / Vector3 / Vector4で使用できる。
 /// </summary>
-template <typename T>
-class Tween {
-public:
-	void Start(const T& start, const T& end, float duration,
-		EasingType easing = EasingType::Linear,
-		TweenLoopMode loopMode = TweenLoopMode::None) {
+template <typename T> class Tween {
+  public:
+	void Start(const T &start,
+	           const T &end,
+	           float duration,
+	           EasingType easing = EasingType::Linear,
+	           TweenLoopMode loopMode = TweenLoopMode::None) {
 		if (!std::isfinite(duration) || duration <= 0.0f) {
 			throw std::invalid_argument("Tween duration must be finite and greater than zero.");
 		}
@@ -67,7 +68,9 @@ public:
 		value_ = EaseLerp(start_, end_, normalizedTime, easing_);
 	}
 
-	void Stop() { isPlaying_ = false; }
+	void Stop() {
+		isPlaying_ = false;
+	}
 
 	void Reset() {
 		value_ = start_;
@@ -77,17 +80,25 @@ public:
 		isComplete_ = false;
 	}
 
-	const T& GetValue() const { return value_; }
-	bool IsPlaying() const { return isPlaying_; }
-	bool IsComplete() const { return isComplete_; }
+	const T &GetValue() const {
+		return value_;
+	}
+	bool IsPlaying() const {
+		return isPlaying_;
+	}
+	bool IsComplete() const {
+		return isComplete_;
+	}
 
 	float GetNormalizedTime() const {
-		if (duration_ <= 0.0f) { return 0.0f; }
+		if (duration_ <= 0.0f) {
+			return 0.0f;
+		}
 		const float time = std::clamp(elapsed_ / duration_, 0.0f, 1.0f);
 		return forward_ ? time : 1.0f - time;
 	}
 
-private:
+  private:
 	T start_{};
 	T end_{};
 	T value_{};

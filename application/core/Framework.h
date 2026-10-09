@@ -22,12 +22,12 @@ class Audio;
 /// すべてのゲームで共通して使用するエンジン機能を管理する基底クラス。
 /// </summary>
 class Framework {
-public:
+  public:
 	Framework();
 	virtual ~Framework();
 
-	Framework(const Framework&) = delete;
-	Framework& operator=(const Framework&) = delete;
+	Framework(const Framework &) = delete;
+	Framework &operator=(const Framework &) = delete;
 
 	/// <summary>
 	/// ウィンドウやDirectXなど、ゲーム共通機能を初期化する。
@@ -60,7 +60,7 @@ public:
 	/// </summary>
 	bool IsEndRequest();
 
-protected:
+  protected:
 	/// <summary>
 	/// 1フレーム分の描画を開始する。
 	/// </summary>
@@ -91,7 +91,7 @@ protected:
 	std::unique_ptr<ImGuiManager> imguiManager_;
 #endif
 
-private:
+  private:
 	// Finalizeの二重実行を防ぐための初期化状態
 	bool initialized_ = false;
 };

@@ -55,8 +55,7 @@ void Time::Update() {
 	const double rawDeltaTime = std::max(0.0, elapsed.count());
 
 	// デバッグ停止などの大きな時間飛びはDeltaTimeだけ上限で抑える
-	unscaledDeltaTime_ = static_cast<float>(
-		std::min(rawDeltaTime, static_cast<double>(maxDeltaTime_)));
+	unscaledDeltaTime_ = static_cast<float>(std::min(rawDeltaTime, static_cast<double>(maxDeltaTime_)));
 	deltaTime_ = unscaledDeltaTime_ * timeScale_;
 	// 実時間とゲーム内時間を別々に累積する
 	unscaledElapsedTime_ += rawDeltaTime;
@@ -67,9 +66,13 @@ void Time::Update() {
 }
 
 bool Time::ConsumeFixedStep() {
-	if (!initialized_) { throw std::logic_error("Time is not initialized."); }
+	if (!initialized_) {
+		throw std::logic_error("Time is not initialized.");
+	}
 	const double step = static_cast<double>(fixedDeltaTime_);
-	if (fixedAccumulator_ < step) { return false; }
+	if (fixedAccumulator_ < step) {
+		return false;
+	}
 
 	// 上限を超える遅延は捨て、処理落ちがさらに固定更新を増やす悪循環を防ぐ
 	if (fixedStepsThisFrame_ >= maxFixedStepsPerFrame_) {
@@ -122,9 +125,10 @@ void Time::SetMaxDeltaTime(float maxDeltaTime) {
 }
 
 float Time::GetFixedInterpolationAlpha() const {
-	if (fixedDeltaTime_ <= 0.0f) { return 0.0f; }
-	return static_cast<float>(std::clamp(
-		fixedAccumulator_ / static_cast<double>(fixedDeltaTime_), 0.0, 1.0));
+	if (fixedDeltaTime_ <= 0.0f) {
+		return 0.0f;
+	}
+	return static_cast<float>(std::clamp(fixedAccumulator_ / static_cast<double>(fixedDeltaTime_), 0.0, 1.0));
 }
 
 void Time::SetFixedDeltaTime(float fixedDeltaTime) {
@@ -137,6 +141,8 @@ void Time::SetFixedDeltaTime(float fixedDeltaTime) {
 }
 
 void Time::SetMaxFixedStepsPerFrame(uint32_t maxSteps) {
-	if (maxSteps == 0) { throw std::invalid_argument("Maximum fixed steps must be at least one."); }
+	if (maxSteps == 0) {
+		throw std::invalid_argument("Maximum fixed steps must be at least one.");
+	}
 	maxFixedStepsPerFrame_ = maxSteps;
 }

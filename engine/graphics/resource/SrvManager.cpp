@@ -4,7 +4,7 @@
 
 #include "engine/core/DirectXCommon.h"
 
-void SrvManager::Initialize(DirectXCommon* dxCommon) {
+void SrvManager::Initialize(DirectXCommon *dxCommon) {
 	// SRVヒープはDirectXCommonが生成済みである必要がある
 	if (dxCommon == nullptr || dxCommon->GetSRVDescriptorHeap() == nullptr) {
 		throw std::invalid_argument("SrvManager requires an initialized DirectXCommon instance.");
@@ -22,7 +22,9 @@ uint32_t SrvManager::Allocate() {
 	return index;
 }
 
-void SrvManager::CreateSRVforTexture2D(uint32_t srvIndex, ID3D12Resource* resource, const DirectX::TexMetadata& metadata) {
+void SrvManager::CreateSRVforTexture2D(uint32_t srvIndex,
+                                       ID3D12Resource *resource,
+                                       const DirectX::TexMetadata &metadata) {
 	if (dxCommon_ == nullptr || resource == nullptr || srvIndex >= kMaxSRVCount) {
 		throw std::invalid_argument("Invalid texture SRV creation request.");
 	}

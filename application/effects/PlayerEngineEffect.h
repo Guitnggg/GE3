@@ -36,16 +36,18 @@ struct PlayerEngineEffectSettings {
 /// 中央噴射口の設定反映、発生、更新、描画をまとめる。
 /// </summary>
 class PlayerEngineEffect final {
-public:
-	void Initialize(DirectXCommon* dxCommon, GPUParticlePipeline* pipeline,
-		TextureManager* textureManager, uint32_t textureHandle,
-		const PlayerEngineEffectSettings& settings);
-	void Reset(const PlayerEngineEffectSettings& settings);
-	void Update(float deltaTime, const Vector3& playerPosition, const PlayerEngineEffectSettings& settings);
-	void Draw(const Camera& camera);
+  public:
+	void Initialize(DirectXCommon *dxCommon,
+	                GPUParticlePipeline *pipeline,
+	                TextureManager *textureManager,
+	                uint32_t textureHandle,
+	                const PlayerEngineEffectSettings &settings);
+	void Reset(const PlayerEngineEffectSettings &settings);
+	void Update(float deltaTime, const Vector3 &playerPosition, const PlayerEngineEffectSettings &settings);
+	void Draw(const Camera &camera);
 
-private:
-	void ApplySettings(const PlayerEngineEffectSettings& settings);
+  private:
+	void ApplySettings(const PlayerEngineEffectSettings &settings);
 
 	GPUParticleSystem particleSystem_{};
 	GPUParticleEmitter emitter_{};

@@ -14,8 +14,7 @@ WinApp::~WinApp() {
 	Finalize();
 }
 
-LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
+LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	// Windowsメッセージに応じてアプリ固有の処理を行う
 	switch (msg) {
 	case WM_DESTROY:
@@ -35,64 +34,60 @@ LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-void WinApp::Initialize()
-{
+void WinApp::Initialize() {
 	if (initialized_ || comInitialized_ || classRegistered_ || hwnd != nullptr) {
 		throw std::logic_error("WinApp is already initialized or partially initialized.");
 	}
 
 	try {
-	// COMライブラリをマルチスレッドで初期化する
-	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
-	HResult::ThrowIfFailed(hr, "Initializing COM");
-	comInitialized_ = true;
+		// COMライブラリをマルチスレッドで初期化する
+		HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
+		HResult::ThrowIfFailed(hr, "Initializing COM");
+		comInitialized_ = true;
 
-	// ウィンドウクラスを設定する
-	wc.lpfnWndProc = WindowProc;
-	wc.lpszClassName = L"C62WindowClass";
-	wc.hInstance = GetModuleHandle(nullptr);
-	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+		// ウィンドウクラスを設定する
+		wc.lpfnWndProc = WindowProc;
+		wc.lpszClassName = L"C62WindowClass";
+		wc.hInstance = GetModuleHandle(nullptr);
+		wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 
-	// ウィンドウクラスを登録する
-	if (RegisterClass(&wc) == 0) {
-		throw std::runtime_error("Failed to register the window class.");
-	}
-	classRegistered_ = true;
+		// ウィンドウクラスを登録する
+		if (RegisterClass(&wc) == 0) {
+			throw std::runtime_error("Failed to register the window class.");
+		}
+		classRegistered_ = true;
 
-	// クライアント領域のサイズから実際のウィンドウサイズを計算する
-	constexpr DWORD windowStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
-	RECT wrc = { 0, 0,kClientWidth,kClientHeight };
-	AdjustWindowRect(&wrc, windowStyle, false);
+		// クライアント領域のサイズから実際のウィンドウサイズを計算する
+		constexpr DWORD windowStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+		RECT wrc = {0, 0, kClientWidth, kClientHeight};
+		AdjustWindowRect(&wrc, windowStyle, false);
 
-	// ウィンドウを生成する
-		hwnd = CreateWindow(
-		wc.lpszClassName,
-		L"CG2",
-		windowStyle,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		wrc.right - wrc.left,
-		wrc.bottom - wrc.top,
-		nullptr,
-		nullptr,
-		wc.hInstance,
-			nullptr);
-	if (hwnd == nullptr) {
-		throw std::runtime_error("Failed to create the application window.");
-	}
+		// ウィンドウを生成する
+		hwnd = CreateWindow(wc.lpszClassName,
+		                    L"CG2",
+		                    windowStyle,
+		                    CW_USEDEFAULT,
+		                    CW_USEDEFAULT,
+		                    wrc.right - wrc.left,
+		                    wrc.bottom - wrc.top,
+		                    nullptr,
+		                    nullptr,
+		                    wc.hInstance,
+		                    nullptr);
+		if (hwnd == nullptr) {
+			throw std::runtime_error("Failed to create the application window.");
+		}
 
-	// 生成したウィンドウを表示する
-	ShowWindow(hwnd, SW_SHOW);
-	initialized_ = true;
-	}
-	catch (...) {
+		// 生成したウィンドウを表示する
+		ShowWindow(hwnd, SW_SHOW);
+		initialized_ = true;
+	} catch (...) {
 		Finalize();
 		throw;
 	}
 }
 
-void WinApp::Finalize()
-{
+void WinApp::Finalize() {
 	initialized_ = false;
 
 	// 途中までしか初期化されていない場合も、完了した処理だけを元に戻す
@@ -110,8 +105,7 @@ void WinApp::Finalize()
 	}
 }
 
-bool WinApp::ProcessMessage()
-{
+bool WinApp::ProcessMessage() {
 	MSG msg{};
 
 	// キューにあるWindowsメッセージを処理する

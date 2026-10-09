@@ -5,7 +5,7 @@
 #include "engine/graphics/resource/SrvManager.h"
 #include "engine/core/DirectXCommon.h"
 
-void TextureManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager) {
+void TextureManager::Initialize(DirectXCommon *dxCommon, SrvManager *srvManager) {
 	// テクスチャ生成とSRV作成に必要な管理クラスを保持する
 	if (dxCommon == nullptr || srvManager == nullptr) {
 		throw std::invalid_argument("TextureManager requires DirectXCommon and SrvManager.");
@@ -14,7 +14,7 @@ void TextureManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager)
 	srvManager_ = srvManager;
 }
 
-uint32_t TextureManager::Load(const std::string& filePath) {
+uint32_t TextureManager::Load(const std::string &filePath) {
 	if (dxCommon_ == nullptr || srvManager_ == nullptr) {
 		throw std::logic_error("TextureManager is not initialized.");
 	}
@@ -26,7 +26,7 @@ uint32_t TextureManager::Load(const std::string& filePath) {
 
 	// 画像を読み込み、ミップマップを含むテクスチャリソースをGPUへ転送する
 	DirectX::ScratchImage mipImages = dxCommon_->LoadTexture(filePath);
-	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
+	const DirectX::TexMetadata &metadata = mipImages.GetMetadata();
 
 	TextureData textureData{};
 	textureData.metadata = metadata;

@@ -20,7 +20,7 @@ struct VertexData {
 struct Material {
 	Vector4 color;
 	int32_t enableLighting;
-	float padding[3];  // 定数バッファのアライメント調整用
+	float padding[3]; // 定数バッファのアライメント調整用
 	Matrix4x4 uvTransform;
 };
 
@@ -47,4 +47,3 @@ struct DirectionalLight {
 	Vector3 direction;
 	float intensity;
 };
-

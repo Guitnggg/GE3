@@ -7,7 +7,7 @@
 #include "engine/graphics/resource/TextureManager.h"
 #include "engine/core/diagnostics/HResult.h"
 
-void Sprite::Initialize(SpriteCommon* spriteCommon, TextureManager* textureManager, uint32_t textureIndex) {
+void Sprite::Initialize(SpriteCommon *spriteCommon, TextureManager *textureManager, uint32_t textureIndex) {
 	// 描画パイプラインとテクスチャ管理の両方が利用可能か確認する
 	if (spriteCommon == nullptr || spriteCommon->GetDXCommon() == nullptr || textureManager == nullptr) {
 		throw std::invalid_argument("Sprite requires SpriteCommon and TextureManager.");
@@ -15,16 +15,15 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, TextureManager* textureManag
 	spriteCommon_ = spriteCommon;
 	textureManager_ = textureManager;
 	textureIndex_ = textureIndex;
-	DirectXCommon* dxCommon = spriteCommon_->GetDXCommon();
+	DirectXCommon *dxCommon = spriteCommon_->GetDXCommon();
 
 	// CPUから毎フレーム書き換えられる矩形頂点バッファを生成する
 	vertexResource_ = dxCommon->CreateBufferResource(sizeof(VertexData) * 4);
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
 	vertexBufferView_.StrideInBytes = sizeof(VertexData);
-	HResult::ThrowIfFailed(
-		vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_)),
-		"Mapping the sprite vertex buffer");
+	HResult::ThrowIfFailed(vertexResource_->Map(0, nullptr, reinterpret_cast<void **>(&vertexData_)),
+	                       "Mapping the sprite vertex buffer");
 	UpdateVertexData();
 
 	// 矩形を2枚の三角形として描画するインデックスバッファを生成する
@@ -32,10 +31,9 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, TextureManager* textureManag
 	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
 	indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
 	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
-	uint32_t* indexData = nullptr;
-	HResult::ThrowIfFailed(
-		indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData)),
-		"Mapping the sprite index buffer");
+	uint32_t *indexData = nullptr;
+	HResult::ThrowIfFailed(indexResource_->Map(0, nullptr, reinterpret_cast<void **>(&indexData)),
+	                       "Mapping the sprite index buffer");
 	indexData[0] = 0;
 	indexData[1] = 1;
 	indexData[2] = 2;
@@ -46,16 +44,15 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, TextureManager* textureManag
 	// 画面座標変換用の定数バッファを生成し、単位行列で初期化する
 	transformationMatrixResource_ = dxCommon->CreateBufferResource(sizeof(TransformationMatrix));
 	HResult::ThrowIfFailed(
-		transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_)),
-		"Mapping the sprite transformation buffer");
+	    transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void **>(&transformationMatrixData_)),
+	    "Mapping the sprite transformation buffer");
 	transformationMatrixData_->World = MakeIdentity4x4();
 	transformationMatrixData_->WVP = MakeIdentity4x4();
 
 	// スプライト色とUV変換をシェーダーへ渡す定数バッファを生成する
 	materialResource_ = dxCommon->CreateBufferResource(sizeof(Material));
-	HResult::ThrowIfFailed(
-		materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_)),
-		"Mapping the sprite material buffer");
+	HResult::ThrowIfFailed(materialResource_->Map(0, nullptr, reinterpret_cast<void **>(&materialData_)),
+	                       "Mapping the sprite material buffer");
 	materialData_->color = {1.0f, 1.0f, 1.0f, 1.0f};
 	materialData_->enableLighting = false;
 	materialData_->uvTransform = MakeIdentity4x4();
@@ -66,18 +63,16 @@ void Sprite::Update(float viewportWidth, float viewportHeight) {
 	if (transformationMatrixData_ == nullptr || materialData_ == nullptr) {
 		throw std::logic_error("Sprite is not initialized.");
 	}
-	if (!std::isfinite(viewportWidth) || !std::isfinite(viewportHeight) ||
-		viewportWidth <= 0.0f || viewportHeight <= 0.0f) {
+	if (!std::isfinite(viewportWidth) || !std::isfinite(viewportHeight) || viewportWidth <= 0.0f ||
+	    viewportHeight <= 0.0f) {
 		throw std::invalid_argument("Sprite viewport size must be finite and positive.");
 	}
 	// SetSizeやSetAnchorPointで変更された矩形形状を頂点バッファへ反映する
 	UpdateVertexData();
 
 	// 左上を原点とする画面座標へ、スプライト自身のTransformを適用する
-	const Matrix4x4 worldMatrix =
-		MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
-	const Matrix4x4 projectionMatrix =
-		MakeOrthographicMatrix(0.0f, 0.0f, viewportWidth, viewportHeight, 0.0f, 100.0f);
+	const Matrix4x4 worldMatrix = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
+	const Matrix4x4 projectionMatrix = MakeOrthographicMatrix(0.0f, 0.0f, viewportWidth, viewportHeight, 0.0f, 100.0f);
 	transformationMatrixData_->World = worldMatrix;
 	transformationMatrixData_->WVP = Multiply(worldMatrix, projectionMatrix);
 
@@ -90,14 +85,14 @@ void Sprite::Update(float viewportWidth, float viewportHeight) {
 
 void Sprite::Draw() const {
 	// 描画に必要な管理クラスとGPUリソースが揃っているか確認する
-	if (spriteCommon_ == nullptr || textureManager_ == nullptr ||
-		materialResource_ == nullptr || transformationMatrixResource_ == nullptr) {
+	if (spriteCommon_ == nullptr || textureManager_ == nullptr || materialResource_ == nullptr ||
+	    transformationMatrixResource_ == nullptr) {
 		throw std::logic_error("Sprite is not initialized.");
 	}
 
 	// スプライト用パイプラインを設定し、各バッファとテクスチャをバインドする
 	spriteCommon_->CommonDrawSetting();
-	auto* commandList = spriteCommon_->GetDXCommon()->GetCommandList();
+	auto *commandList = spriteCommon_->GetDXCommon()->GetCommandList();
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
 	commandList->IASetIndexBuffer(&indexBufferView_);
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
@@ -106,7 +101,7 @@ void Sprite::Draw() const {
 	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }
 
-void Sprite::SetSize(const Vector2& size) {
+void Sprite::SetSize(const Vector2 &size) {
 	if (!std::isfinite(size.x) || !std::isfinite(size.y) || size.x <= 0.0f || size.y <= 0.0f) {
 		throw std::invalid_argument("Sprite size must be finite and positive.");
 	}
@@ -114,7 +109,9 @@ void Sprite::SetSize(const Vector2& size) {
 }
 
 void Sprite::UpdateVertexData() {
-	if (vertexData_ == nullptr) { throw std::logic_error("Sprite vertex buffer is not mapped."); }
+	if (vertexData_ == nullptr) {
+		throw std::logic_error("Sprite vertex buffer is not mapped.");
+	}
 	const float left = -anchorPoint_.x * size_.x;
 	const float right = left + size_.x;
 	const float top = -anchorPoint_.y * size_.y;

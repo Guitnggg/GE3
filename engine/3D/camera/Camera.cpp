@@ -12,40 +12,64 @@ void Camera::Update() {
 	viewProjectionMatrix_ = Multiply(viewMatrix_, projectionMatrix_);
 }
 
-void Camera::SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
+void Camera::SetRotate(const Vector3 &rotate) {
+	transform_.rotate = rotate;
+}
 
-void Camera::SetTranslate(const Vector3& translate) { transform_.translate = translate; }
+void Camera::SetTranslate(const Vector3 &translate) {
+	transform_.translate = translate;
+}
 
 void Camera::SetFovY(float fovY) {
 	// 0度や180度では正しい透視投影行列を作れないため除外する
-	if (fovY <= 0.0f || fovY >= std::numbers::pi_v<float>) { throw std::invalid_argument("Camera FOV must be between 0 and pi."); }
+	if (fovY <= 0.0f || fovY >= std::numbers::pi_v<float>) {
+		throw std::invalid_argument("Camera FOV must be between 0 and pi.");
+	}
 	fovY_ = fovY;
 }
 
 void Camera::SetAspectRatio(float aspectRatio) {
-	if (aspectRatio <= 0.0f) { throw std::invalid_argument("Camera aspect ratio must be positive."); }
+	if (aspectRatio <= 0.0f) {
+		throw std::invalid_argument("Camera aspect ratio must be positive.");
+	}
 	aspectRatio_ = aspectRatio;
 }
 
 void Camera::SetNearClip(float nearClip) {
 	// Nearはカメラより前方、かつFarより手前である必要がある
-	if (nearClip <= 0.0f || nearClip >= farClip_) { throw std::invalid_argument("Camera near clip must be positive and less than the far clip."); }
+	if (nearClip <= 0.0f || nearClip >= farClip_) {
+		throw std::invalid_argument("Camera near clip must be positive and less than the far clip.");
+	}
 	nearClip_ = nearClip;
 }
 
 void Camera::SetFarClip(float farClip) {
-	if (farClip <= nearClip_) { throw std::invalid_argument("Camera far clip must be greater than the near clip."); }
+	if (farClip <= nearClip_) {
+		throw std::invalid_argument("Camera far clip must be greater than the near clip.");
+	}
 	farClip_ = farClip;
 }
 
-const Matrix4x4& Camera::GetWorldMatrix() const { return worldMatrix_; }
+const Matrix4x4 &Camera::GetWorldMatrix() const {
+	return worldMatrix_;
+}
 
-const Matrix4x4& Camera::GetViewMatrix() const { return viewMatrix_; }
+const Matrix4x4 &Camera::GetViewMatrix() const {
+	return viewMatrix_;
+}
 
-const Matrix4x4& Camera::GetProjectionMatrix() const { return projectionMatrix_; }
+const Matrix4x4 &Camera::GetProjectionMatrix() const {
+	return projectionMatrix_;
+}
 
-const Matrix4x4& Camera::GetViewProjectionMatrix() const { return viewProjectionMatrix_; }
+const Matrix4x4 &Camera::GetViewProjectionMatrix() const {
+	return viewProjectionMatrix_;
+}
 
-const Vector3& Camera::GetRotate() const { return transform_.rotate; }
+const Vector3 &Camera::GetRotate() const {
+	return transform_.rotate;
+}
 
-const Vector3& Camera::GetTranslate() const { return transform_.translate; }
+const Vector3 &Camera::GetTranslate() const {
+	return transform_.translate;
+}

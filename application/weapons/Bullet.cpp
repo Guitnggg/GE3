@@ -9,11 +9,17 @@
 #include <stdexcept>
 
 Bullet::~Bullet() {
-	if (collisionWorld_) { collisionWorld_->Unregister(collider_); }
+	if (collisionWorld_) {
+		collisionWorld_->Unregister(collider_);
+	}
 }
 
-void Bullet::Initialize(CollisionWorld* collisionWorld, Object3dCommon* object3dCommon, TextureManager* textureManager,
-	const std::shared_ptr<Model>& model, const Vector3& position, const Vector3& direction) {
+void Bullet::Initialize(CollisionWorld *collisionWorld,
+                        Object3dCommon *object3dCommon,
+                        TextureManager *textureManager,
+                        const std::shared_ptr<Model> &model,
+                        const Vector3 &position,
+                        const Vector3 &direction) {
 	if (!collisionWorld || !object3dCommon || !textureManager || !model) {
 		throw std::invalid_argument("Bullet requires initialized rendering services and a model.");
 	}
@@ -26,17 +32,24 @@ void Bullet::Initialize(CollisionWorld* collisionWorld, Object3dCommon* object3d
 	velocity_ = {normalized.x * kSpeed, normalized.y * kSpeed, normalized.z * kSpeed};
 	remainingLifetime_ = 2.0f;
 	collisionWorld_ = collisionWorld;
-	collider_ = collisionWorld_->RegisterSphere({{position, radius_}, GameCollisionLayers::PlayerProjectile,
-		GameCollisionLayers::Enemy, 0, true, [this](const CollisionEvent& event) {
-			if (event.type == CollisionEventType::Enter && event.otherLayer == GameCollisionLayers::Enemy) {
-				hitEnemyId_ = event.otherUserData;
-			}
-		}});
+	collider_ = collisionWorld_->RegisterSphere({{position, radius_},
+	                                             GameCollisionLayers::PlayerProjectile,
+	                                             GameCollisionLayers::Enemy,
+	                                             0,
+	                                             true,
+	                                             [this](const CollisionEvent &event) {
+		                                             if (event.type == CollisionEventType::Enter &&
+		                                                 event.otherLayer == GameCollisionLayers::Enemy) {
+			                                             hitEnemyId_ = event.otherUserData;
+		                                             }
+	                                             }});
 }
 
-void Bullet::Update(const Camera& camera, float deltaTime) {
-	if (!object_) { throw std::logic_error("Bullet is not initialized."); }
-	auto& position = object_->GetTransform().translate;
+void Bullet::Update(const Camera &camera, float deltaTime) {
+	if (!object_) {
+		throw std::logic_error("Bullet is not initialized.");
+	}
+	auto &position = object_->GetTransform().translate;
 	position.x += velocity_.x * deltaTime;
 	position.y += velocity_.y * deltaTime;
 	position.z += velocity_.z * deltaTime;
@@ -46,7 +59,9 @@ void Bullet::Update(const Camera& camera, float deltaTime) {
 }
 
 void Bullet::Draw() const {
-	if (!object_) { throw std::logic_error("Bullet is not initialized."); }
+	if (!object_) {
+		throw std::logic_error("Bullet is not initialized.");
+	}
 	object_->Draw();
 }
 

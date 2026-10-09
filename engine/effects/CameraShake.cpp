@@ -7,14 +7,13 @@
 #include <cmath>
 #include <stdexcept>
 
-void CameraShake::Start(float duration, float positionAmplitude, float rotationAmplitude,
-	float frequency, uint32_t seed) {
+void CameraShake::Start(
+    float duration, float positionAmplitude, float rotationAmplitude, float frequency, uint32_t seed) {
 	if (!std::isfinite(duration) || duration <= 0.0f) {
 		throw std::invalid_argument("CameraShake duration must be finite and greater than zero.");
 	}
-	if (!std::isfinite(positionAmplitude) || !std::isfinite(rotationAmplitude) ||
-		!std::isfinite(frequency) || positionAmplitude < 0.0f ||
-		rotationAmplitude < 0.0f || frequency < 0.0f) {
+	if (!std::isfinite(positionAmplitude) || !std::isfinite(rotationAmplitude) || !std::isfinite(frequency) ||
+	    positionAmplitude < 0.0f || rotationAmplitude < 0.0f || frequency < 0.0f) {
 		throw std::invalid_argument("CameraShake amplitudes and frequency must be finite and non-negative.");
 	}
 
@@ -49,14 +48,14 @@ void CameraShake::Update(float deltaTime) {
 	const float positionScale = positionAmplitude_ * envelope;
 	const float rotationScale = rotationAmplitude_ * envelope;
 	positionOffset_ = {
-		positionNoise.x * positionScale,
-		positionNoise.y * positionScale,
-		positionNoise.z * positionScale,
+	    positionNoise.x * positionScale,
+	    positionNoise.y * positionScale,
+	    positionNoise.z * positionScale,
 	};
 	rotationOffset_ = {
-		rotationNoise.x * rotationScale,
-		rotationNoise.y * rotationScale,
-		rotationNoise.z * rotationScale,
+	    rotationNoise.x * rotationScale,
+	    rotationNoise.y * rotationScale,
+	    rotationNoise.z * rotationScale,
 	};
 }
 

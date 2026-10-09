@@ -6,7 +6,9 @@
 #include <stdexcept>
 
 MyGame::MyGame() = default;
-MyGame::~MyGame() { Finalize(); }
+MyGame::~MyGame() {
+	Finalize();
+}
 
 void MyGame::Initialize() {
 	// 多重初期化や前回の不完全な初期化状態を検出する
@@ -54,7 +56,9 @@ void MyGame::Update() {
 
 void MyGame::FixedUpdate() {
 	// 初期化失敗後の終了処理でも安全に呼べるよう存在を確認する
-	if (sceneManager_) { sceneManager_->FixedUpdate(); }
+	if (sceneManager_) {
+		sceneManager_->FixedUpdate();
+	}
 }
 
 void MyGame::Draw() {
@@ -68,7 +72,9 @@ void MyGame::Finalize() {
 	initialized_ = false;
 
 	// シーンが参照する共通機能より先にシーンを終了する
-	if (sceneManager_) { sceneManager_->Finalize(); }
+	if (sceneManager_) {
+		sceneManager_->Finalize();
+	}
 	sceneManager_.reset();
 	Framework::Finalize();
 }

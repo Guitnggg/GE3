@@ -15,9 +15,14 @@ namespace {
 constexpr float kFovY = 0.70f;
 }
 
-void Player::Initialize(SpriteCommon* spriteCommon, Object3dCommon* object3dCommon,
-	TextureManager* textureManager, Input* input, const std::shared_ptr<Model>& model, uint32_t texture,
-	InputActionId moveAction, InputActionId shootAction) {
+void Player::Initialize(SpriteCommon *spriteCommon,
+                        Object3dCommon *object3dCommon,
+                        TextureManager *textureManager,
+                        Input *input,
+                        const std::shared_ptr<Model> &model,
+                        uint32_t texture,
+                        InputActionId moveAction,
+                        InputActionId shootAction) {
 	// プレイヤーが利用する機能は所有せず、Frameworkより長く保持しない参照として保存する
 	if (!spriteCommon || !object3dCommon || !textureManager || !input || !model) {
 		throw std::invalid_argument("Player requires initialized engine services and a model.");
@@ -80,7 +85,9 @@ bool Player::Update(float deltaTime, float railSpeed, float moveSpeed, bool acce
 	cameraZ_ += railSpeed * deltaTime;
 	// 押した瞬間だけ射撃し、短時間だけ照準色を変えて反応を示す
 	const bool fired = acceptFireInput && input_->TriggerAction(shootAction_);
-	if (fired) { shotFlashTimer_ = 0.08f; }
+	if (fired) {
+		shotFlashTimer_ = 0.08f;
+	}
 	shotFlashTimer_ = std::max(0.0f, shotFlashTimer_ - deltaTime);
 	camera_.SetTranslate({0.0f, 0.0f, cameraZ_});
 	camera_.Update();
@@ -94,7 +101,7 @@ bool Player::Update(float deltaTime, float railSpeed, float moveSpeed, bool acce
 
 void Player::UpdateReticle() {
 	// 2本のスプライトへ同じ位置と射撃中の色を反映する
-	for (auto& part : reticle_) {
+	for (auto &part : reticle_) {
 		part->GetTransform().translate = {aim_.x, aim_.y, 0.0f};
 		part->SetColor(shotFlashTimer_ > 0.0f ? Vector4{1.0f, 1.0f, 0.2f, 1.0f} : Vector4{1.0f, 0.2f, 0.12f, 0.9f});
 		part->Update(WinApp::kClientWidth, WinApp::kClientHeight);
@@ -102,9 +109,13 @@ void Player::UpdateReticle() {
 }
 
 // カメラはX・Y方向へ移動しないため、レール上のZ座標だけを射線始点へ反映する
-Vector3 Player::GetShotOrigin() const { return ship_->GetTransform().translate; }
+Vector3 Player::GetShotOrigin() const {
+	return ship_->GetTransform().translate;
+}
 
-const Vector3& Player::GetPosition() const { return ship_->GetTransform().translate; }
+const Vector3 &Player::GetPosition() const {
+	return ship_->GetTransform().translate;
+}
 
 Vector3 Player::GetShotDirection() const {
 	// 画面座標を透視投影の正規化座標へ直し、カメラ前方へ向かう射線を作る
@@ -112,23 +123,32 @@ Vector3 Player::GetShotDirection() const {
 	const float normalizedY = 1.0f - aim_.y / (WinApp::kClientHeight * 0.5f);
 	const float tanHalfFov = std::tan(kFovY * 0.5f);
 	const float aspect = static_cast<float>(WinApp::kClientWidth) / WinApp::kClientHeight;
-	const Vector3 cameraDirection = Normalize(
-		{normalizedX * aspect * tanHalfFov, normalizedY * tanHalfFov, 1.0f});
+	const Vector3 cameraDirection = Normalize({normalizedX * aspect * tanHalfFov, normalizedY * tanHalfFov, 1.0f});
 	// カメラの照準レイ上へ収束させ、移動した機体から撃っても照準との視差を抑える
 	constexpr float kAimDistance = 100.0f;
 	const Vector3 aimPoint{
-		cameraDirection.x * kAimDistance,
-		cameraDirection.y * kAimDistance,
-		cameraZ_ + cameraDirection.z * kAimDistance,
+	    cameraDirection.x * kAimDistance,
+	    cameraDirection.y * kAimDistance,
+	    cameraZ_ + cameraDirection.z * kAimDistance,
 	};
-	const Vector3& origin = ship_->GetTransform().translate;
+	const Vector3 &origin = ship_->GetTransform().translate;
 	return Normalize({aimPoint.x - origin.x, aimPoint.y - origin.y, aimPoint.z - origin.z});
 }
 
 // unsigned整数のアンダーフローを防ぐため、0より大きい場合だけ減算する
-void Player::Damage() { if (lives_ > 0) { --lives_; } }
+void Player::Damage() {
+	if (lives_ > 0) {
+		--lives_;
+	}
+}
 
 // 2Dパイプラインへの切り替えはSprite::Drawが行うため、各部品を順番に描画する
-void Player::DrawReticle() const { for (const auto& part : reticle_) { part->Draw(); } }
+void Player::DrawReticle() const {
+	for (const auto &part : reticle_) {
+		part->Draw();
+	}
+}
 
-void Player::DrawShip() const { ship_->Draw(); }
+void Player::DrawShip() const {
+	ship_->Draw();
+}

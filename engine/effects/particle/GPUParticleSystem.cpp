@@ -13,7 +13,7 @@
 using Microsoft::WRL::ComPtr;
 
 namespace {
-ComPtr<ID3D12Resource> CreateUavBuffer(ID3D12Device* device, uint64_t size) {
+ComPtr<ID3D12Resource> CreateUavBuffer(ID3D12Device *device, uint64_t size) {
 	D3D12_HEAP_PROPERTIES heap{};
 	heap.Type = D3D12_HEAP_TYPE_DEFAULT;
 	D3D12_RESOURCE_DESC desc{};
@@ -27,15 +27,20 @@ ComPtr<ID3D12Resource> CreateUavBuffer(ID3D12Device* device, uint64_t size) {
 	desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 	ComPtr<ID3D12Resource> resource;
 	// D3D12ではバッファの生成時状態は実質COMMON固定。使用直前に明示的にUAVへ遷移する。
-	HResult::ThrowIfFailed(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc,
-		D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&resource)), "Creating a GPU particle UAV buffer");
+	HResult::ThrowIfFailed(
+	    device->CreateCommittedResource(
+	        &heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&resource)),
+	    "Creating a GPU particle UAV buffer");
 	return resource;
 }
 
-}
+} // namespace
 
-void GPUParticleSystem::Initialize(DirectXCommon* dxCommon, GPUParticlePipeline* pipeline, TextureManager* textureManager,
-	uint32_t textureHandle, uint32_t maxParticles) {
+void GPUParticleSystem::Initialize(DirectXCommon *dxCommon,
+                                   GPUParticlePipeline *pipeline,
+                                   TextureManager *textureManager,
+                                   uint32_t textureHandle,
+                                   uint32_t maxParticles) {
 	if (!dxCommon || !pipeline || !textureManager || maxParticles == 0) {
 		throw std::invalid_argument("GPUParticleSystem requires services and at least one particle.");
 	}
@@ -48,18 +53,21 @@ void GPUParticleSystem::Initialize(DirectXCommon* dxCommon, GPUParticlePipeline*
 	CreateResources();
 }
 
-void GPUParticleSystem::SetPreset(const GPUParticlePreset& preset) {
-	if (!std::isfinite(preset.minLifetime) || !std::isfinite(preset.maxLifetime) ||
-		preset.minLifetime <= 0.0f || preset.maxLifetime < preset.minLifetime ||
-		!std::isfinite(preset.drag) || preset.drag < 0.0f) {
+void GPUParticleSystem::SetPreset(const GPUParticlePreset &preset) {
+	if (!std::isfinite(preset.minLifetime) || !std::isfinite(preset.maxLifetime) || preset.minLifetime <= 0.0f ||
+	    preset.maxLifetime < preset.minLifetime || !std::isfinite(preset.drag) || preset.drag < 0.0f) {
 		throw std::invalid_argument("Invalid GPU particle preset.");
 	}
 	preset_ = preset;
 }
 
-void GPUParticleSystem::Emit(const GPUParticleEmitData& emitData) {
-	if (!dxCommon_) { throw std::logic_error("GPUParticleSystem is not initialized."); }
-	if (emitData.count == 0) { return; }
+void GPUParticleSystem::Emit(const GPUParticleEmitData &emitData) {
+	if (!dxCommon_) {
+		throw std::logic_error("GPUParticleSystem is not initialized.");
+	}
+	if (emitData.count == 0) {
+		return;
+	}
 	if (pendingEmits_.size() >= kMaxEmitCommandsPerFrame) {
 		throw std::runtime_error("Too many GPU particle emit commands in one frame.");
 	}
@@ -70,11 +78,13 @@ void GPUParticleSystem::Update(float deltaTime) {
 	deltaTime_ = std::isfinite(deltaTime) ? std::max(0.0f, deltaTime) : 0.0f;
 }
 
-void GPUParticleSystem::Draw(const Camera& camera) {
-	if (!dxCommon_) { throw std::logic_error("GPUParticleSystem is not initialized."); }
-	auto* commandList = dxCommon_->GetCommandList();
+void GPUParticleSystem::Draw(const Camera &camera) {
+	if (!dxCommon_) {
+		throw std::logic_error("GPUParticleSystem is not initialized.");
+	}
+	auto *commandList = dxCommon_->GetCommandList();
 	if (simulationBuffersAreCommon_) {
-		ID3D12Resource* resources[] = {particleResource_.Get(), freeListResource_.Get(), freeListIndexResource_.Get()};
+		ID3D12Resource *resources[] = {particleResource_.Get(), freeListResource_.Get(), freeListIndexResource_.Get()};
 		D3D12_RESOURCE_BARRIER barriers[_countof(resources)]{};
 		for (uint32_t i = 0; i < _countof(resources); ++i) {
 			barriers[i].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -91,14 +101,16 @@ void GPUParticleSystem::Draw(const Camera& camera) {
 		particleBufferIsSrv_ = false;
 	}
 	commandList->SetComputeRootSignature(pipeline_->GetComputeRootSignature());
-	if (needsInitialize_) { DispatchInitialize(); }
+	if (needsInitialize_) {
+		DispatchInitialize();
+	}
 	DispatchEmitCommands();
 	DispatchUpdate();
 	TransitionParticleBuffer(D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	particleBufferIsSrv_ = true;
 
 	drawConstants_->viewProjection = camera.GetViewProjectionMatrix();
-	const Matrix4x4& cameraWorld = camera.GetWorldMatrix();
+	const Matrix4x4 &cameraWorld = camera.GetWorldMatrix();
 	drawConstants_->cameraRight = {cameraWorld.m[0][0], cameraWorld.m[0][1], cameraWorld.m[0][2]};
 	drawConstants_->cameraUp = {cameraWorld.m[1][0], cameraWorld.m[1][1], cameraWorld.m[1][2]};
 
@@ -124,9 +136,13 @@ void GPUParticleSystem::CreateResources() {
 	simulationConstantResource_ = dxCommon_->CreateBufferResource(sizeof(SimulationConstants));
 	emitConstantResource_ = dxCommon_->CreateBufferResource(sizeof(EmitConstants) * kMaxEmitCommandsPerFrame);
 	drawConstantResource_ = dxCommon_->CreateBufferResource(sizeof(DrawConstants));
-	HResult::ThrowIfFailed(simulationConstantResource_->Map(0, nullptr, reinterpret_cast<void**>(&simulationConstants_)), "Mapping particle simulation constants");
-	HResult::ThrowIfFailed(emitConstantResource_->Map(0, nullptr, reinterpret_cast<void**>(&emitConstants_)), "Mapping particle emit constants");
-	HResult::ThrowIfFailed(drawConstantResource_->Map(0, nullptr, reinterpret_cast<void**>(&drawConstants_)), "Mapping particle draw constants");
+	HResult::ThrowIfFailed(
+	    simulationConstantResource_->Map(0, nullptr, reinterpret_cast<void **>(&simulationConstants_)),
+	    "Mapping particle simulation constants");
+	HResult::ThrowIfFailed(emitConstantResource_->Map(0, nullptr, reinterpret_cast<void **>(&emitConstants_)),
+	                       "Mapping particle emit constants");
+	HResult::ThrowIfFailed(drawConstantResource_->Map(0, nullptr, reinterpret_cast<void **>(&drawConstants_)),
+	                       "Mapping particle draw constants");
 }
 
 void GPUParticleSystem::TransitionParticleBuffer(D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
@@ -140,7 +156,7 @@ void GPUParticleSystem::TransitionParticleBuffer(D3D12_RESOURCE_STATES before, D
 }
 
 void GPUParticleSystem::DispatchInitialize() {
-	auto* commandList = dxCommon_->GetCommandList();
+	auto *commandList = dxCommon_->GetCommandList();
 	simulationConstants_->maxParticles = maxParticles_;
 	commandList->SetPipelineState(pipeline_->GetInitializePipeline());
 	commandList->SetComputeRootConstantBufferView(0, simulationConstantResource_->GetGPUVirtualAddress());
@@ -157,11 +173,11 @@ void GPUParticleSystem::DispatchInitialize() {
 }
 
 void GPUParticleSystem::DispatchEmitCommands() {
-	auto* commandList = dxCommon_->GetCommandList();
+	auto *commandList = dxCommon_->GetCommandList();
 	commandList->SetPipelineState(pipeline_->GetEmitPipeline());
 	for (size_t i = 0; i < pendingEmits_.size(); ++i) {
-		const auto& source = pendingEmits_[i];
-		auto& target = emitConstants_[i];
+		const auto &source = pendingEmits_[i];
+		auto &target = emitConstants_[i];
 		target.position = source.position;
 		target.count = std::min(source.count, maxParticles_);
 		target.minVelocity = source.minVelocity;
@@ -174,7 +190,8 @@ void GPUParticleSystem::DispatchEmitCommands() {
 		target.endColor = preset_.endColor;
 		target.startSize = preset_.startSize;
 		target.endSize = preset_.endSize;
-		commandList->SetComputeRootConstantBufferView(0, emitConstantResource_->GetGPUVirtualAddress() + sizeof(EmitConstants) * i);
+		commandList->SetComputeRootConstantBufferView(
+		    0, emitConstantResource_->GetGPUVirtualAddress() + sizeof(EmitConstants) * i);
 		commandList->SetComputeRootUnorderedAccessView(1, particleResource_->GetGPUVirtualAddress());
 		commandList->SetComputeRootUnorderedAccessView(2, freeListResource_->GetGPUVirtualAddress());
 		commandList->SetComputeRootUnorderedAccessView(3, freeListIndexResource_->GetGPUVirtualAddress());
@@ -188,7 +205,7 @@ void GPUParticleSystem::DispatchEmitCommands() {
 }
 
 void GPUParticleSystem::DispatchUpdate() {
-	auto* commandList = dxCommon_->GetCommandList();
+	auto *commandList = dxCommon_->GetCommandList();
 	simulationConstants_->deltaTime = deltaTime_;
 	simulationConstants_->maxParticles = maxParticles_;
 	simulationConstants_->acceleration = preset_.acceleration;

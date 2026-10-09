@@ -1,0 +1,28 @@
+---
+BasedOnStyle: Microsoft
+
+# 授業制作のコードを横スクロールせず読める幅に保つ。
+ColumnLimit: 120
+IndentWidth: 4
+TabWidth: 4
+UseTab: ForIndentation
+
+# 関数や条件分岐の処理を1行へ詰め込まず、制御フローを追いやすくする。
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# 既存プロジェクトの波括弧スタイルを維持する。
+BreakBeforeBraces: Attach
+Cpp11BracedListStyle: true
+
+# 宣言と呼び出しの引数は、長い場合にまとまり単位で折り返す。
+BinPackArguments: false
+BinPackParameters: false
+AlignAfterOpenBracket: Align
+
+# includeを勝手に並べ替えると依存関係が変わり得るため、現状を維持する。
+SortIncludes: Never
+...

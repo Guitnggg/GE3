@@ -12,12 +12,12 @@
 /// 1台のXInputゲームパッドの状態とフレーム間変化を管理する。
 /// </summary>
 class GamepadInput final {
-public:
+  public:
 	/// <param name="userIndex">XInputのユーザー番号（0～3）</param>
 	explicit GamepadInput(DWORD userIndex = 0) : userIndex_(userIndex) {}
 	~GamepadInput();
-	GamepadInput(const GamepadInput&) = delete;
-	GamepadInput& operator=(const GamepadInput&) = delete;
+	GamepadInput(const GamepadInput &) = delete;
+	GamepadInput &operator=(const GamepadInput &) = delete;
 
 	/// <summary>
 	/// 指定ユーザー番号のゲームパッド状態を初期化する。
@@ -34,11 +34,13 @@ public:
 	/// </summary>
 	void Finalize() noexcept;
 
-public:
+  public:
 	/// <summary>
 	/// ゲームパッドが現在接続されているか取得する。
 	/// </summary>
-	bool IsConnected() const { return connected_; }
+	bool IsConnected() const {
+		return connected_;
+	}
 
 	/// <summary>
 	/// 指定したボタンマスクがすべて押されているか判定する。
@@ -79,15 +81,19 @@ public:
 	/// ゲームパッドが初期化されているか取得する。
 	/// </summary>
 	/// <returns>初期化されていればtrue、それ以外はfalse</returns>
-	bool IsInitialized() const { return initialized_; }
+	bool IsInitialized() const {
+		return initialized_;
+	}
 
 	/// <summary>
 	/// XInputが識別するユーザー番号（0～3）を取得する。
 	/// </summary>
 	/// <returns>ユーザー番号（0～3）</returns>
-	DWORD GetUserIndex() const { return userIndex_; }
+	DWORD GetUserIndex() const {
+		return userIndex_;
+	}
 
-private:
+  private:
 	/// <summary>
 	/// 指定したボタンマスクが有効か検証する。
 	/// </summary>
@@ -99,8 +105,9 @@ private:
 	/// </summary>
 	/// <param name="x">スティックの X 軸入力（SHORT 型）。</param>
 	/// <param name="y">スティックの Y 軸入力（SHORT 型）。</param>
-	/// <param name="deadZone">デッドゾーンの閾値（同じ単位／スケールの SHORT）。入力の大きさがこの値未満の場合、(0,0) を返すために使用します。</param>
-	/// <returns>正規化された Vector2（単位ベクトル）。入力がデッドゾーン内の場合はゼロベクトルを返します。</returns>
+	/// <param name="deadZone">デッドゾーンの閾値（同じ単位／スケールの SHORT）。入力の大きさがこの値未満の場合、(0,0)
+	/// を返すために使用します。</param> <returns>正規化された
+	/// Vector2（単位ベクトル）。入力がデッドゾーン内の場合はゼロベクトルを返します。</returns>
 	static Vector2 NormalizeStick(SHORT x, SHORT y, SHORT deadZone);
 
 	/// <summary>
@@ -110,7 +117,7 @@ private:
 	/// <returns>正規化されたトリガー値（0～1の範囲）。</returns>
 	static float NormalizeTrigger(BYTE value);
 
-private:
+  private:
 	XINPUT_STATE current_{};  // 今フレームのボタン・スティック・トリガー状態
 	XINPUT_STATE previous_{}; // 前フレームの状態
 	DWORD userIndex_ = 0;     // XInputが識別する0～3のユーザー番号

@@ -9,8 +9,10 @@ MouseInput::~MouseInput() {
 	Finalize();
 }
 
-void MouseInput::Initialize(IDirectInput8* directInput, HWND hwnd) {
-	if (initialized_ || device_ || hwnd_ != nullptr) { throw std::logic_error("MouseInput is already initialized."); }
+void MouseInput::Initialize(IDirectInput8 *directInput, HWND hwnd) {
+	if (initialized_ || device_ || hwnd_ != nullptr) {
+		throw std::logic_error("MouseInput is already initialized.");
+	}
 	if (directInput == nullptr || hwnd == nullptr) {
 		throw std::invalid_argument("MouseInput requires DirectInput and a window handle.");
 	}
@@ -34,25 +36,35 @@ void MouseInput::Initialize(IDirectInput8* directInput, HWND hwnd) {
 }
 
 void MouseInput::Update() {
-	if (!initialized_ || !device_) { throw std::logic_error("MouseInput is not initialized."); }
+	if (!initialized_ || !device_) {
+		throw std::logic_error("MouseInput is not initialized.");
+	}
 	// ボタンのトリガー／リリース判定用に前回状態を保存する
 	previous_ = current_;
 	HRESULT result = device_->GetDeviceState(sizeof(current_), &current_);
 	if (result == DIERR_INPUTLOST || result == DIERR_NOTACQUIRED) {
 		// フォーカス復帰時はデバイスを再取得して入力を読み直す
 		result = device_->Acquire();
-		if (SUCCEEDED(result)) { result = device_->GetDeviceState(sizeof(current_), &current_); }
+		if (SUCCEEDED(result)) {
+			result = device_->GetDeviceState(sizeof(current_), &current_);
+		}
 	}
 	// 入力権がない間は古いボタン状態や移動量を残さない
-	if (FAILED(result)) { current_ = {}; }
+	if (FAILED(result)) {
+		current_ = {};
+	}
 
 	// GetCursorPosは画面全体の座標なので、描画と同じクライアント座標へ変換する
 	POINT cursor{};
-	if (GetCursorPos(&cursor) && ScreenToClient(hwnd_, &cursor)) { position_ = cursor; }
+	if (GetCursorPos(&cursor) && ScreenToClient(hwnd_, &cursor)) {
+		position_ = cursor;
+	}
 }
 
 void MouseInput::Finalize() noexcept {
-	if (device_) { device_->Unacquire(); }
+	if (device_) {
+		device_->Unacquire();
+	}
 	device_.Reset();
 	current_ = {};
 	previous_ = {};
@@ -62,26 +74,38 @@ void MouseInput::Finalize() noexcept {
 }
 
 LONG MouseInput::GetDeltaX() const {
-	if (!initialized_) { throw std::logic_error("MouseInput is not initialized."); }
+	if (!initialized_) {
+		throw std::logic_error("MouseInput is not initialized.");
+	}
 	return current_.lX;
 }
 LONG MouseInput::GetDeltaY() const {
-	if (!initialized_) { throw std::logic_error("MouseInput is not initialized."); }
+	if (!initialized_) {
+		throw std::logic_error("MouseInput is not initialized.");
+	}
 	return current_.lY;
 }
 LONG MouseInput::GetWheelDelta() const {
-	if (!initialized_) { throw std::logic_error("MouseInput is not initialized."); }
+	if (!initialized_) {
+		throw std::logic_error("MouseInput is not initialized.");
+	}
 	return current_.lZ;
 }
 POINT MouseInput::GetPosition() const {
-	if (!initialized_) { throw std::logic_error("MouseInput is not initialized."); }
+	if (!initialized_) {
+		throw std::logic_error("MouseInput is not initialized.");
+	}
 	return position_;
 }
 
 void MouseInput::ValidateButton(uint32_t button) const {
 	// DIMOUSESTATE2が保持する8ボタンの範囲外アクセスを防ぐ
-	if (!initialized_) { throw std::logic_error("MouseInput is not initialized."); }
-	if (button >= std::size(current_.rgbButtons)) { throw std::out_of_range("Invalid mouse button index."); }
+	if (!initialized_) {
+		throw std::logic_error("MouseInput is not initialized.");
+	}
+	if (button >= std::size(current_.rgbButtons)) {
+		throw std::out_of_range("Invalid mouse button index.");
+	}
 }
 bool MouseInput::PushButton(uint32_t button) const {
 	ValidateButton(button);

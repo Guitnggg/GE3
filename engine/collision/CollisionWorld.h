@@ -15,11 +15,17 @@ using CollisionLayer = uint32_t;
 /// </summary>
 struct ColliderHandle {
 	uint64_t value = 0;
-	explicit operator bool() const noexcept { return value != 0; }
-	bool operator==(const ColliderHandle&) const noexcept = default;
+	explicit operator bool() const noexcept {
+		return value != 0;
+	}
+	bool operator==(const ColliderHandle &) const noexcept = default;
 };
 
-enum class CollisionEventType { Enter, Stay, Exit };
+enum class CollisionEventType {
+	Enter,
+	Stay,
+	Exit
+};
 
 /// <summary>
 /// Collider自身から見た衝突イベント。
@@ -32,7 +38,7 @@ struct CollisionEvent {
 	uint64_t otherUserData = 0;
 };
 
-using CollisionCallback = std::function<void(const CollisionEvent&)>;
+using CollisionCallback = std::function<void(const CollisionEvent &)>;
 
 /// <summary>
 /// Sphere Colliderの登録情報。
@@ -71,14 +77,14 @@ struct RaycastHit {
 /// Updateは全Colliderの位置更新後、破棄処理前に1回呼び出す。
 /// </summary>
 class CollisionWorld final {
-public:
-	ColliderHandle RegisterSphere(const SphereColliderDesc& desc);
-	ColliderHandle RegisterAabb(const AabbColliderDesc& desc);
+  public:
+	ColliderHandle RegisterSphere(const SphereColliderDesc &desc);
+	ColliderHandle RegisterAabb(const AabbColliderDesc &desc);
 	void Unregister(ColliderHandle handle);
 	void Clear();
 
-	void SetSphere(ColliderHandle handle, const SphereCollider& sphere);
-	void SetAabb(ColliderHandle handle, const AabbCollider& aabb);
+	void SetSphere(ColliderHandle handle, const SphereCollider &sphere);
+	void SetAabb(ColliderHandle handle, const AabbCollider &aabb);
 	void SetEnabled(ColliderHandle handle, bool enabled);
 	bool IsRegistered(ColliderHandle handle) const;
 
@@ -90,13 +96,21 @@ public:
 	/// <summary>
 	/// 指定レイヤーに属するColliderのうち、最も近い命中を返す。
 	/// </summary>
-	bool Raycast(const Vector3& origin, const Vector3& direction, float maxDistance,
-		CollisionLayer layerMask, RaycastHit& hit) const;
+	bool Raycast(const Vector3 &origin,
+	             const Vector3 &direction,
+	             float maxDistance,
+	             CollisionLayer layerMask,
+	             RaycastHit &hit) const;
 
-	uint32_t GetColliderCount() const { return static_cast<uint32_t>(colliders_.size()); }
+	uint32_t GetColliderCount() const {
+		return static_cast<uint32_t>(colliders_.size());
+	}
 
-private:
-	enum class ShapeType { Sphere, Aabb };
+  private:
+	enum class ShapeType {
+		Sphere,
+		Aabb
+	};
 	struct Collider {
 		ShapeType type = ShapeType::Sphere;
 		SphereCollider sphere{};
@@ -112,16 +126,16 @@ private:
 	struct Pair {
 		uint64_t first = 0;
 		uint64_t second = 0;
-		bool operator==(const Pair&) const noexcept = default;
+		bool operator==(const Pair &) const noexcept = default;
 	};
 	struct PairHash {
-		size_t operator()(const Pair& pair) const noexcept;
+		size_t operator()(const Pair &pair) const noexcept;
 	};
 
 	static Pair MakePair(uint64_t first, uint64_t second);
-	bool Intersects(const Collider& first, const Collider& second) const;
-	void Dispatch(const Pair& pair, CollisionEventType type);
-	Collider& Require(ColliderHandle handle);
+	bool Intersects(const Collider &first, const Collider &second) const;
+	void Dispatch(const Pair &pair, CollisionEventType type);
+	Collider &Require(ColliderHandle handle);
 
 	std::unordered_map<uint64_t, Collider> colliders_;
 	std::unordered_set<Pair, PairHash> activePairs_;

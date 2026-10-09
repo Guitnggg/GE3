@@ -18,19 +18,26 @@ class TextureManager;
 /// 演出差分は継承ではなくPresetとEmitDataで与える。
 /// </summary>
 class GPUParticleSystem final {
-public:
-	void Initialize(DirectXCommon* dxCommon, GPUParticlePipeline* pipeline, TextureManager* textureManager,
-		uint32_t textureHandle, uint32_t maxParticles = 4096);
-	void SetPreset(const GPUParticlePreset& preset);
-	void Emit(const GPUParticleEmitData& emitData);
+  public:
+	void Initialize(DirectXCommon *dxCommon,
+	                GPUParticlePipeline *pipeline,
+	                TextureManager *textureManager,
+	                uint32_t textureHandle,
+	                uint32_t maxParticles = 4096);
+	void SetPreset(const GPUParticlePreset &preset);
+	void Emit(const GPUParticleEmitData &emitData);
 	void Update(float deltaTime);
-	void Draw(const Camera& camera);
+	void Draw(const Camera &camera);
 	void Reset();
 
-	uint32_t GetMaxParticles() const { return maxParticles_; }
-	const GPUParticlePreset& GetPreset() const { return preset_; }
+	uint32_t GetMaxParticles() const {
+		return maxParticles_;
+	}
+	const GPUParticlePreset &GetPreset() const {
+		return preset_;
+	}
 
-private:
+  private:
 	static constexpr uint32_t kThreadGroupSize = 256;
 	static constexpr uint32_t kMaxEmitCommandsPerFrame = 64;
 
@@ -82,9 +89,9 @@ private:
 	void DispatchEmitCommands();
 	void DispatchUpdate();
 
-	DirectXCommon* dxCommon_ = nullptr;
-	GPUParticlePipeline* pipeline_ = nullptr;
-	TextureManager* textureManager_ = nullptr;
+	DirectXCommon *dxCommon_ = nullptr;
+	GPUParticlePipeline *pipeline_ = nullptr;
+	TextureManager *textureManager_ = nullptr;
 	uint32_t textureHandle_ = 0;
 	uint32_t maxParticles_ = 0;
 	float deltaTime_ = 0.0f;
@@ -100,8 +107,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> simulationConstantResource_;
 	Microsoft::WRL::ComPtr<ID3D12Resource> emitConstantResource_;
 	Microsoft::WRL::ComPtr<ID3D12Resource> drawConstantResource_;
-	SimulationConstants* simulationConstants_ = nullptr;
-	EmitConstants* emitConstants_ = nullptr;
-	DrawConstants* drawConstants_ = nullptr;
-
+	SimulationConstants *simulationConstants_ = nullptr;
+	EmitConstants *emitConstants_ = nullptr;
+	DrawConstants *drawConstants_ = nullptr;
 };

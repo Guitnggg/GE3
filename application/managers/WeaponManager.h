@@ -20,34 +20,45 @@ class TextureManager;
 /// 通常弾、ロックオン、追尾ミサイルの状態と更新を管理する。
 /// </summary>
 class WeaponManager final {
-public:
+  public:
 	~WeaponManager();
-	void Initialize(CollisionWorld* collisionWorld, Object3dCommon* object3dCommon, TextureManager* textureManager, Input* input,
-		const std::shared_ptr<Model>& bulletModel, const std::shared_ptr<Model>& missileModel,
-		InputActionId lockOnAction);
-	void Reset(EnemyManager& enemies);
-	void Shoot(const Vector3& origin, const Vector3& direction);
-	void UpdateLockOn(float deltaTime, bool acceptMouseInput, const Vector3& direction,
-		const Vector3& missileOrigin, EnemyManager& enemies);
-	void UpdateProjectiles(const Camera& camera, float deltaTime, EnemyManager& enemies);
+	void Initialize(CollisionWorld *collisionWorld,
+	                Object3dCommon *object3dCommon,
+	                TextureManager *textureManager,
+	                Input *input,
+	                const std::shared_ptr<Model> &bulletModel,
+	                const std::shared_ptr<Model> &missileModel,
+	                InputActionId lockOnAction);
+	void Reset(EnemyManager &enemies);
+	void Shoot(const Vector3 &origin, const Vector3 &direction);
+	void UpdateLockOn(float deltaTime,
+	                  bool acceptMouseInput,
+	                  const Vector3 &direction,
+	                  const Vector3 &missileOrigin,
+	                  EnemyManager &enemies);
+	void UpdateProjectiles(const Camera &camera, float deltaTime, EnemyManager &enemies);
 	/// <summary>命中を解決し、このフレームに撃破した敵のワールド座標を返す。</summary>
-	std::vector<Vector3> ResolveProjectileHits(EnemyManager& enemies);
+	std::vector<Vector3> ResolveProjectileHits(EnemyManager &enemies);
 	void OnEnemyRemoved(uint64_t id);
-	void ClearLockOn(EnemyManager& enemies);
+	void ClearLockOn(EnemyManager &enemies);
 	void Draw() const;
 	std::vector<Vector3> GetMissilePositions() const;
-	bool HasLock() const { return !lockedEnemyIds_.empty(); }
-	size_t GetLockCount() const { return lockedEnemyIds_.size(); }
+	bool HasLock() const {
+		return !lockedEnemyIds_.empty();
+	}
+	size_t GetLockCount() const {
+		return lockedEnemyIds_.size();
+	}
 
-private:
-	void LaunchMissiles(const Vector3& origin, const Vector3& direction, const EnemyManager& enemies);
-	void UpdateBullets(const Camera& camera, float deltaTime);
-	void UpdateMissiles(const Camera& camera, float deltaTime, EnemyManager& enemies);
+  private:
+	void LaunchMissiles(const Vector3 &origin, const Vector3 &direction, const EnemyManager &enemies);
+	void UpdateBullets(const Camera &camera, float deltaTime);
+	void UpdateMissiles(const Camera &camera, float deltaTime, EnemyManager &enemies);
 
-	CollisionWorld* collisionWorld_ = nullptr;
-	Object3dCommon* object3dCommon_ = nullptr;
-	TextureManager* textureManager_ = nullptr;
-	Input* input_ = nullptr;
+	CollisionWorld *collisionWorld_ = nullptr;
+	Object3dCommon *object3dCommon_ = nullptr;
+	TextureManager *textureManager_ = nullptr;
+	Input *input_ = nullptr;
 	InputActionId lockOnAction_ = kInvalidInputActionId;
 	std::shared_ptr<Model> bulletModel_;
 	std::shared_ptr<Model> missileModel_;

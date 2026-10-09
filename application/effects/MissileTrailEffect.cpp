@@ -6,9 +6,13 @@
 #include <cmath>
 #include <stdexcept>
 
-void MissileTrailEffect::Initialize(DirectXCommon* dxCommon, GPUParticlePipeline* pipeline, TextureManager* textureManager,
-	uint32_t textureHandle) {
-	if (initialized_) { throw std::logic_error("MissileTrailEffect is already initialized."); }
+void MissileTrailEffect::Initialize(DirectXCommon *dxCommon,
+                                    GPUParticlePipeline *pipeline,
+                                    TextureManager *textureManager,
+                                    uint32_t textureHandle) {
+	if (initialized_) {
+		throw std::logic_error("MissileTrailEffect is already initialized.");
+	}
 	particleSystem_.Initialize(dxCommon, pipeline, textureManager, textureHandle, 8192);
 	GPUParticlePreset preset{};
 	preset.acceleration = {0.0f, 1.2f, 0.0f};
@@ -24,14 +28,20 @@ void MissileTrailEffect::Initialize(DirectXCommon* dxCommon, GPUParticlePipeline
 	initialized_ = true;
 }
 
-void MissileTrailEffect::EmitTrails(const std::vector<Vector3>& missilePositions, float deltaTime) {
-	if (!initialized_) { throw std::logic_error("MissileTrailEffect is not initialized."); }
-	if (missilePositions.empty() || !std::isfinite(deltaTime) || deltaTime <= 0.0f) { return; }
+void MissileTrailEffect::EmitTrails(const std::vector<Vector3> &missilePositions, float deltaTime) {
+	if (!initialized_) {
+		throw std::logic_error("MissileTrailEffect is not initialized.");
+	}
+	if (missilePositions.empty() || !std::isfinite(deltaTime) || deltaTime <= 0.0f) {
+		return;
+	}
 	emissionAccumulator_ += kParticlesPerSecondPerMissile * deltaTime;
 	const uint32_t count = std::min(static_cast<uint32_t>(emissionAccumulator_), 64u);
-	if (count == 0) { return; }
+	if (count == 0) {
+		return;
+	}
 	emissionAccumulator_ -= static_cast<float>(count);
-	for (const Vector3& position : missilePositions) {
+	for (const Vector3 &position : missilePositions) {
 		GPUParticleEmitData emit{};
 		emit.position = position;
 		emit.count = count;
@@ -44,15 +54,21 @@ void MissileTrailEffect::EmitTrails(const std::vector<Vector3>& missilePositions
 }
 
 void MissileTrailEffect::Update(float deltaTime) {
-	if (initialized_) { particleSystem_.Update(deltaTime); }
+	if (initialized_) {
+		particleSystem_.Update(deltaTime);
+	}
 }
 
-void MissileTrailEffect::Draw(const Camera& camera) {
-	if (initialized_) { particleSystem_.Draw(camera); }
+void MissileTrailEffect::Draw(const Camera &camera) {
+	if (initialized_) {
+		particleSystem_.Draw(camera);
+	}
 }
 
 void MissileTrailEffect::Reset() {
-	if (!initialized_) { return; }
+	if (!initialized_) {
+		return;
+	}
 	emissionAccumulator_ = 0.0f;
 	emissionSequence_ = 0;
 	particleSystem_.Reset();

@@ -4,9 +4,13 @@
 
 #include <stdexcept>
 
-void EnemyDeathEffect::Initialize(DirectXCommon* dxCommon, GPUParticlePipeline* pipeline, TextureManager* textureManager,
-	uint32_t textureHandle) {
-	if (initialized_) { throw std::logic_error("EnemyDeathEffect is already initialized."); }
+void EnemyDeathEffect::Initialize(DirectXCommon *dxCommon,
+                                  GPUParticlePipeline *pipeline,
+                                  TextureManager *textureManager,
+                                  uint32_t textureHandle) {
+	if (initialized_) {
+		throw std::logic_error("EnemyDeathEffect is already initialized.");
+	}
 	flashSystem_.Initialize(dxCommon, pipeline, textureManager, textureHandle, 512);
 	sparkSystem_.Initialize(dxCommon, pipeline, textureManager, textureHandle, 4096);
 	smokeSystem_.Initialize(dxCommon, pipeline, textureManager, textureHandle, 2048);
@@ -48,8 +52,10 @@ void EnemyDeathEffect::Initialize(DirectXCommon* dxCommon, GPUParticlePipeline* 
 	initialized_ = true;
 }
 
-void EnemyDeathEffect::Emit(const Vector3& position) {
-	if (!initialized_) { throw std::logic_error("EnemyDeathEffect is not initialized."); }
+void EnemyDeathEffect::Emit(const Vector3 &position) {
+	if (!initialized_) {
+		throw std::logic_error("EnemyDeathEffect is not initialized.");
+	}
 	const uint32_t seed = 0x424f4f4du + emissionSequence_++ * 0x9e3779b9u;
 	GPUParticleEmitData flash{};
 	flash.position = position;
@@ -80,14 +86,18 @@ void EnemyDeathEffect::Emit(const Vector3& position) {
 }
 
 void EnemyDeathEffect::Update(float deltaTime) {
-	if (!initialized_) { return; }
+	if (!initialized_) {
+		return;
+	}
 	flashSystem_.Update(deltaTime);
 	sparkSystem_.Update(deltaTime);
 	smokeSystem_.Update(deltaTime);
 }
 
-void EnemyDeathEffect::Draw(const Camera& camera) {
-	if (!initialized_) { return; }
+void EnemyDeathEffect::Draw(const Camera &camera) {
+	if (!initialized_) {
+		return;
+	}
 	// 半透明の煙を先に描き、白熱コアと火花を加算して明るさを重ねる。
 	smokeSystem_.Draw(camera);
 	flashSystem_.Draw(camera);
@@ -95,7 +105,9 @@ void EnemyDeathEffect::Draw(const Camera& camera) {
 }
 
 void EnemyDeathEffect::Reset() {
-	if (!initialized_) { return; }
+	if (!initialized_) {
+		return;
+	}
 	emissionSequence_ = 0;
 	flashSystem_.Reset();
 	sparkSystem_.Reset();

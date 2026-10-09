@@ -4,9 +4,11 @@
 
 #include <stdexcept>
 
-SceneManager::~SceneManager() { Finalize(); }
+SceneManager::~SceneManager() {
+	Finalize();
+}
 
-void SceneManager::Initialize(const SceneContext& context, std::unique_ptr<IScene> initialScene) {
+void SceneManager::Initialize(const SceneContext &context, std::unique_ptr<IScene> initialScene) {
 	// 多重初期化と空の初期シーンを拒否する
 	if (initialized_ || !initialScene) {
 		throw std::logic_error("SceneManager initialization state or initial scene is invalid.");
@@ -21,29 +23,41 @@ void SceneManager::Initialize(const SceneContext& context, std::unique_ptr<IScen
 void SceneManager::Update() {
 	// 更新中のシーン破棄を避けるため、予約された切り替えをフレーム先頭で適用する
 	ApplyPendingScene();
-	if (currentScene_) { currentScene_->Update(); }
+	if (currentScene_) {
+		currentScene_->Update();
+	}
 }
 
 void SceneManager::FixedUpdate() {
-	if (currentScene_) { currentScene_->FixedUpdate(); }
+	if (currentScene_) {
+		currentScene_->FixedUpdate();
+	}
 }
 
 void SceneManager::Draw() {
-	if (currentScene_) { currentScene_->Draw(); }
+	if (currentScene_) {
+		currentScene_->Draw();
+	}
 }
 
 void SceneManager::ChangeScene(std::unique_ptr<IScene> nextScene) {
 	// nullptrでは現在のシーンを意図せず失わないようにする
-	if (!nextScene) { throw std::invalid_argument("Next scene must not be null."); }
+	if (!nextScene) {
+		throw std::invalid_argument("Next scene must not be null.");
+	}
 	// 実際の切り替えは次のUpdate開始時まで遅延する
 	pendingScene_ = std::move(nextScene);
 }
 
 void SceneManager::ApplyPendingScene() {
-	if (!pendingScene_) { return; }
+	if (!pendingScene_) {
+		return;
+	}
 
 	// 現在のシーンを終了してから、同じ共通機能で次のシーンを開始する
-	if (currentScene_) { currentScene_->Finalize(); }
+	if (currentScene_) {
+		currentScene_->Finalize();
+	}
 	currentScene_ = std::move(pendingScene_);
 	currentScene_->Initialize(context_);
 }
@@ -51,7 +65,9 @@ void SceneManager::ApplyPendingScene() {
 void SceneManager::Finalize() {
 	// 未開始の予約シーンを破棄し、実行中のシーンだけ終了処理を呼ぶ
 	pendingScene_.reset();
-	if (currentScene_) { currentScene_->Finalize(); }
+	if (currentScene_) {
+		currentScene_->Finalize();
+	}
 	currentScene_.reset();
 	context_ = {};
 	initialized_ = false;

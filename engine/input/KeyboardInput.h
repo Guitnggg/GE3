@@ -15,16 +15,16 @@
 /// DirectInputキーボードの状態とフレーム間変化を管理する。
 /// </summary>
 class KeyboardInput final {
-public:
+  public:
 	KeyboardInput() = default;
 	~KeyboardInput();
-	KeyboardInput(const KeyboardInput&) = delete;
-	KeyboardInput& operator=(const KeyboardInput&) = delete;
+	KeyboardInput(const KeyboardInput &) = delete;
+	KeyboardInput &operator=(const KeyboardInput &) = delete;
 
 	/// <summary>
 	/// 共有DirectInputからキーボードデバイスを生成する。
 	/// </summary>
-	void Initialize(IDirectInput8* directInput, HWND hwnd);
+	void Initialize(IDirectInput8 *directInput, HWND hwnd);
 
 	/// <summary>
 	/// 現在状態を前回状態へ退避してから最新の256キー状態を取得する。
@@ -36,7 +36,7 @@ public:
 	/// </summary>
 	void Finalize() noexcept;
 
-public:
+  public:
 	/// <summary>
 	/// 指定キーが現在押されているか判定する。
 	/// </summary>
@@ -55,11 +55,13 @@ public:
 	/// <summary>
 	/// キーボード入力が初期化済みか判定する。
 	/// </summary>
-	bool IsInitialized() const { return initialized_; }
+	bool IsInitialized() const {
+		return initialized_;
+	}
 
-private:
+  private:
 	Microsoft::WRL::ComPtr<IDirectInputDevice8> device_; // DirectInputキーボードデバイス
-	BYTE current_[256]{};                               // 今フレームの全キー状態
-	BYTE previous_[256]{};                              // 前フレームの全キー状態
+	BYTE current_[256]{};                                // 今フレームの全キー状態
+	BYTE previous_[256]{};                               // 前フレームの全キー状態
 	bool initialized_ = false;
 };

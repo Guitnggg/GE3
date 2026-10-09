@@ -10,11 +10,11 @@ class SceneManager;
 /// エンジン共通処理とゲームシーンを接続するアプリケーションクラス。
 /// </summary>
 class MyGame : public Framework {
-public:
+  public:
 	MyGame();
 	~MyGame() override;
-	MyGame(const MyGame&) = delete;
-	MyGame& operator=(const MyGame&) = delete;
+	MyGame(const MyGame &) = delete;
+	MyGame &operator=(const MyGame &) = delete;
 
 	/// <summary>
 	/// エンジン共通機能と最初のゲームシーンを初期化する。
@@ -41,7 +41,7 @@ public:
 	/// </summary>
 	void Finalize() override;
 
-private:
+  private:
 	std::unique_ptr<SceneManager> sceneManager_;
 	bool initialized_ = false;
 };

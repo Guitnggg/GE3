@@ -25,64 +25,62 @@ Framework::~Framework() {
 }
 
 void Framework::Initialize() {
-	if (initialized_ || winApp_ || input_ || audio_ || collisionWorld_ || dxCommon_ || srvManager_ ||
-		textureManager_ || modelManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_
-		|| gpuParticlePipeline_
-		|| shaderCompiler_
+	if (initialized_ || winApp_ || input_ || audio_ || collisionWorld_ || dxCommon_ || srvManager_ || textureManager_ ||
+	    modelManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_ || gpuParticlePipeline_ ||
+	    shaderCompiler_
 #ifdef _DEBUG
-		|| imguiManager_
+	    || imguiManager_
 #endif
 	) {
 		throw std::logic_error("Framework is already initialized or partially initialized.");
 	}
 
 	try {
-	// ゲーム時間の計測を初期化する
-	time_ = std::make_unique<Time>();
-	time_->Initialize();
-	frameRateController_ = std::make_unique<FrameRateController>();
-	frameRateController_->Initialize();
+		// ゲーム時間の計測を初期化する
+		time_ = std::make_unique<Time>();
+		time_->Initialize();
+		frameRateController_ = std::make_unique<FrameRateController>();
+		frameRateController_->Initialize();
 
-	// Windowsアプリケーションと入力の初期化
-	winApp_ = std::make_unique<WinApp>();
-	winApp_->Initialize();
-	input_ = std::make_unique<Input>();
-	input_->Initialize(winApp_.get());
+		// Windowsアプリケーションと入力の初期化
+		winApp_ = std::make_unique<WinApp>();
+		winApp_->Initialize();
+		input_ = std::make_unique<Input>();
+		input_->Initialize(winApp_.get());
 
-	// ゲーム内で共有する音声システムの初期化
-	audio_ = std::make_unique<Audio>();
-	audio_->Initialize("resource/audio");
-	collisionWorld_ = std::make_unique<CollisionWorld>();
+		// ゲーム内で共有する音声システムの初期化
+		audio_ = std::make_unique<Audio>();
+		audio_->Initialize("resource/audio");
+		collisionWorld_ = std::make_unique<CollisionWorld>();
 
-	// DirectXとGPUディスクリプタ管理の初期化
-	dxCommon_ = std::make_unique<DirectXCommon>();
-	dxCommon_->Initialize(winApp_.get());
-	shaderCompiler_ = std::make_unique<ShaderCompiler>();
-	shaderCompiler_->Initialize();
-	srvManager_ = std::make_unique<SrvManager>();
-	srvManager_->Initialize(dxCommon_.get());
-	textureManager_ = std::make_unique<TextureManager>();
-	textureManager_->Initialize(dxCommon_.get(), srvManager_.get());
-	modelManager_ = std::make_unique<ModelManager>();
-	modelManager_->Initialize(dxCommon_.get(), textureManager_.get());
+		// DirectXとGPUディスクリプタ管理の初期化
+		dxCommon_ = std::make_unique<DirectXCommon>();
+		dxCommon_->Initialize(winApp_.get());
+		shaderCompiler_ = std::make_unique<ShaderCompiler>();
+		shaderCompiler_->Initialize();
+		srvManager_ = std::make_unique<SrvManager>();
+		srvManager_->Initialize(dxCommon_.get());
+		textureManager_ = std::make_unique<TextureManager>();
+		textureManager_->Initialize(dxCommon_.get(), srvManager_.get());
+		modelManager_ = std::make_unique<ModelManager>();
+		modelManager_->Initialize(dxCommon_.get(), textureManager_.get());
 
-	// 2D・3D描画で共通使用するパイプラインの初期化
-	spriteCommon_ = std::make_unique<SpriteCommon>();
-	spriteCommon_->Initialize(dxCommon_.get(), shaderCompiler_.get());
-	object3dCommon_ = std::make_unique<Object3dCommon>();
-	object3dCommon_->Initialize(dxCommon_.get(), shaderCompiler_.get());
-	gpuParticlePipeline_ = std::make_unique<GPUParticlePipeline>();
-	gpuParticlePipeline_->Initialize(dxCommon_.get(), shaderCompiler_.get());
+		// 2D・3D描画で共通使用するパイプラインの初期化
+		spriteCommon_ = std::make_unique<SpriteCommon>();
+		spriteCommon_->Initialize(dxCommon_.get(), shaderCompiler_.get());
+		object3dCommon_ = std::make_unique<Object3dCommon>();
+		object3dCommon_->Initialize(dxCommon_.get(), shaderCompiler_.get());
+		gpuParticlePipeline_ = std::make_unique<GPUParticlePipeline>();
+		gpuParticlePipeline_->Initialize(dxCommon_.get(), shaderCompiler_.get());
 
 #ifdef _DEBUG
-	// デバッグビルド時のみImGuiを使用する
-	imguiManager_ = std::make_unique<ImGuiManager>();
-	imguiManager_->Initialize(winApp_.get(), dxCommon_.get());
+		// デバッグビルド時のみImGuiを使用する
+		imguiManager_ = std::make_unique<ImGuiManager>();
+		imguiManager_->Initialize(winApp_.get(), dxCommon_.get());
 #endif
 
-	initialized_ = true;
-	}
-	catch (...) {
+		initialized_ = true;
+	} catch (...) {
 		Framework::Finalize();
 		throw;
 	}

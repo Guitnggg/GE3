@@ -18,18 +18,18 @@ class Time;
 /// 所有権はFrameworkが持ち、シーンはこれらを解放しない。
 /// </summary>
 struct SceneContext {
-	Audio* audio = nullptr;
-	CollisionWorld* collisionWorld = nullptr;
-	DirectXCommon* directXCommon = nullptr;
-	Input* input = nullptr;
-	TextureManager* textureManager = nullptr;
-	ModelManager* modelManager = nullptr;
-	SpriteCommon* spriteCommon = nullptr;
-	Object3dCommon* object3dCommon = nullptr;
-	Time* time = nullptr;
-	FrameRateController* frameRateController = nullptr;
-	GPUParticlePipeline* gpuParticlePipeline = nullptr;
+	Audio *audio = nullptr;
+	CollisionWorld *collisionWorld = nullptr;
+	DirectXCommon *directXCommon = nullptr;
+	Input *input = nullptr;
+	TextureManager *textureManager = nullptr;
+	ModelManager *modelManager = nullptr;
+	SpriteCommon *spriteCommon = nullptr;
+	Object3dCommon *object3dCommon = nullptr;
+	Time *time = nullptr;
+	FrameRateController *frameRateController = nullptr;
+	GPUParticlePipeline *gpuParticlePipeline = nullptr;
 #ifdef _DEBUG
-	ImGuiManager* imguiManager = nullptr;
+	ImGuiManager *imguiManager = nullptr;
 #endif
 };

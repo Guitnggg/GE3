@@ -11,12 +11,15 @@ constexpr uint32_t kSegmentCount = 7;
 constexpr float kScale = 2.0f;
 constexpr float kSegmentLength = 22.0f;
 constexpr float kStartZ = -5.0f;
+} // namespace
+
+StageEnvironment::~StageEnvironment() {
+	Finalize();
 }
 
-StageEnvironment::~StageEnvironment() { Finalize(); }
-
-void StageEnvironment::Initialize(Object3dCommon* object3dCommon, TextureManager* textureManager,
-	const std::shared_ptr<Model>& mapModel) {
+void StageEnvironment::Initialize(Object3dCommon *object3dCommon,
+                                  TextureManager *textureManager,
+                                  const std::shared_ptr<Model> &mapModel) {
 	if (!object3dCommon || !textureManager || !mapModel || !segments_.empty()) {
 		throw std::invalid_argument("StageEnvironment requires services, a model, and an empty state.");
 	}
@@ -39,9 +42,9 @@ void StageEnvironment::Reset() {
 	}
 }
 
-void StageEnvironment::Update(const Camera& camera, float cameraZ) {
+void StageEnvironment::Update(const Camera &camera, float cameraZ) {
 	const float loopLength = kSegmentLength * static_cast<float>(segments_.size());
-	for (auto& segment : segments_) {
+	for (auto &segment : segments_) {
 		if (segment->GetTransform().translate.z < cameraZ - kSegmentLength) {
 			segment->GetTransform().translate.z += loopLength;
 		}
@@ -50,7 +53,9 @@ void StageEnvironment::Update(const Camera& camera, float cameraZ) {
 }
 
 void StageEnvironment::Draw() const {
-	for (const auto& segment : segments_) { segment->Draw(); }
+	for (const auto &segment : segments_) {
+		segment->Draw();
+	}
 }
 
 void StageEnvironment::Finalize() {

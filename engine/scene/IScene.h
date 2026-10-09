@@ -6,13 +6,13 @@
 /// すべてのゲームシーンが実装する共通インターフェース。
 /// </summary>
 class IScene {
-public:
+  public:
 	virtual ~IScene() = default;
 
 	/// <summary>
 	/// シーンが利用するエンジン共通機能を受け取り、初期状態を構築する。
 	/// </summary>
-	virtual void Initialize(const SceneContext& context) = 0;
+	virtual void Initialize(const SceneContext &context) = 0;
 
 	/// <summary>
 	/// 入力や時間に応じて、シーンの状態を毎フレーム更新する。

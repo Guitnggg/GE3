@@ -7,9 +7,11 @@
 #include "engine/graphics/shader/ShaderCompiler.h"
 
 // 3D描画共通処理を初期化する
-void Object3dCommon::Initialize(DirectXCommon* directXCommon, ShaderCompiler* shaderCompiler) {
+void Object3dCommon::Initialize(DirectXCommon *directXCommon, ShaderCompiler *shaderCompiler) {
 	// GPUデバイスとコマンドリストを提供する共通処理を検証して保持する
-	if (directXCommon == nullptr || shaderCompiler == nullptr) { throw std::invalid_argument("Object3dCommon requires rendering services."); }
+	if (directXCommon == nullptr || shaderCompiler == nullptr) {
+		throw std::invalid_argument("Object3dCommon requires rendering services.");
+	}
 	dxCommon_ = directXCommon;
 	shaderCompiler_ = shaderCompiler;
 	CreateGraphicsPipeline();
@@ -18,7 +20,7 @@ void Object3dCommon::Initialize(DirectXCommon* directXCommon, ShaderCompiler* sh
 // 3D描画で共通して使うパイプライン設定をコマンドリストへ設定する
 void Object3dCommon::CommonDrawSetting() {
 	// 後続のObject3dが共有するルートシグネチャ、PSO、プリミティブ形式を設定する
-	auto* commandList = dxCommon_->GetCommandList();
+	auto *commandList = dxCommon_->GetCommandList();
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	commandList->SetPipelineState(graphicsPipelineState_.Get());
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -77,16 +79,17 @@ void Object3dCommon::CreateRootSignature() {
 	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob;
 	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
 	hr = D3D12SerializeRootSignature(
-		&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+	    &descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
 	if (FAILED(hr)) {
-		const char* message = errorBlob ? reinterpret_cast<char*>(errorBlob->GetBufferPointer()) : "Unknown root signature error.";
+		const char *message =
+		    errorBlob ? reinterpret_cast<char *>(errorBlob->GetBufferPointer()) : "Unknown root signature error.";
 		Logger::Log(std::string(message) + "\n");
 		HResult::ThrowIfFailed(hr, "Serializing the 3D root signature");
 	}
 
 	// シリアライズ済みデータからGPUルートシグネチャを生成する
 	hr = dxCommon_->GetDevice()->CreateRootSignature(
-		0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
+	    0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
 	HResult::ThrowIfFailed(hr, "Creating the 3D root signature");
 }
 
@@ -126,19 +129,23 @@ void Object3dCommon::CreateGraphicsPipeline() {
 
 	// 3D描画で使用する頂点・ピクセルシェーダーをコンパイルする
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob =
-		shaderCompiler_->Compile(L"resource/shaders/Object3d.VS.hlsl", L"vs_6_0");
-	if (vertexShaderBlob == nullptr) { throw std::runtime_error("3D vertex shader compilation returned no output."); }
+	    shaderCompiler_->Compile(L"resource/shaders/Object3d.VS.hlsl", L"vs_6_0");
+	if (vertexShaderBlob == nullptr) {
+		throw std::runtime_error("3D vertex shader compilation returned no output.");
+	}
 
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob =
-		shaderCompiler_->Compile(L"resource/shaders/Object3d.PS.hlsl", L"ps_6_0");
-	if (pixelShaderBlob == nullptr) { throw std::runtime_error("3D pixel shader compilation returned no output."); }
+	    shaderCompiler_->Compile(L"resource/shaders/Object3d.PS.hlsl", L"ps_6_0");
+	if (pixelShaderBlob == nullptr) {
+		throw std::runtime_error("3D pixel shader compilation returned no output.");
+	}
 
 	// これまでの設定を1つのグラフィックスPSO記述へまとめる
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 	graphicsPipelineStateDesc.pRootSignature = rootSignature_.Get();
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
-	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize() };
-	graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
+	graphicsPipelineStateDesc.VS = {vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize()};
+	graphicsPipelineStateDesc.PS = {pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize()};
 	graphicsPipelineStateDesc.BlendState = blendDesc;
 	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
 	graphicsPipelineStateDesc.NumRenderTargets = 1;
@@ -156,7 +163,7 @@ void Object3dCommon::CreateGraphicsPipeline() {
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	// 完成した記述から再利用可能なパイプラインステートを生成する
-	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(
-		&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState_));
+	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
+	                                                                 IID_PPV_ARGS(&graphicsPipelineState_));
 	HResult::ThrowIfFailed(hr, "Creating the 3D graphics pipeline");
 }

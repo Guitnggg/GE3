@@ -5,9 +5,14 @@
 #include <algorithm>
 #include <stdexcept>
 
-void PlayerEngineEffect::Initialize(DirectXCommon* dxCommon, GPUParticlePipeline* pipeline, TextureManager* textureManager,
-	uint32_t textureHandle, const PlayerEngineEffectSettings& settings) {
-	if (initialized_) { throw std::logic_error("PlayerEngineEffect is already initialized."); }
+void PlayerEngineEffect::Initialize(DirectXCommon *dxCommon,
+                                    GPUParticlePipeline *pipeline,
+                                    TextureManager *textureManager,
+                                    uint32_t textureHandle,
+                                    const PlayerEngineEffectSettings &settings) {
+	if (initialized_) {
+		throw std::logic_error("PlayerEngineEffect is already initialized.");
+	}
 	particleSystem_.Initialize(dxCommon, pipeline, textureManager, textureHandle, 4096);
 	GPUParticleEmitData emit{};
 	emit.seed = 0x454e474eu;
@@ -16,27 +21,36 @@ void PlayerEngineEffect::Initialize(DirectXCommon* dxCommon, GPUParticlePipeline
 	ApplySettings(settings);
 }
 
-void PlayerEngineEffect::Reset(const PlayerEngineEffectSettings& settings) {
-	if (!initialized_) { return; }
+void PlayerEngineEffect::Reset(const PlayerEngineEffectSettings &settings) {
+	if (!initialized_) {
+		return;
+	}
 	particleSystem_.Reset();
 	emitter_.Reset();
 	ApplySettings(settings);
 }
 
-void PlayerEngineEffect::Update(float deltaTime, const Vector3& playerPosition,
-	const PlayerEngineEffectSettings& settings) {
-	if (!initialized_) { throw std::logic_error("PlayerEngineEffect is not initialized."); }
+void PlayerEngineEffect::Update(float deltaTime,
+                                const Vector3 &playerPosition,
+                                const PlayerEngineEffectSettings &settings) {
+	if (!initialized_) {
+		throw std::logic_error("PlayerEngineEffect is not initialized.");
+	}
 	ApplySettings(settings);
-	emitter_.Update(deltaTime, {playerPosition.x + settings.nozzleOffset.x,
-		playerPosition.y + settings.nozzleOffset.y, playerPosition.z + settings.nozzleOffset.z});
+	emitter_.Update(deltaTime,
+	                {playerPosition.x + settings.nozzleOffset.x,
+	                 playerPosition.y + settings.nozzleOffset.y,
+	                 playerPosition.z + settings.nozzleOffset.z});
 	particleSystem_.Update(deltaTime);
 }
 
-void PlayerEngineEffect::Draw(const Camera& camera) {
-	if (initialized_) { particleSystem_.Draw(camera); }
+void PlayerEngineEffect::Draw(const Camera &camera) {
+	if (initialized_) {
+		particleSystem_.Draw(camera);
+	}
 }
 
-void PlayerEngineEffect::ApplySettings(const PlayerEngineEffectSettings& settings) {
+void PlayerEngineEffect::ApplySettings(const PlayerEngineEffectSettings &settings) {
 	const float minLifetime = std::min(settings.minLifetime, settings.maxLifetime);
 	const float maxLifetime = std::max(settings.minLifetime, settings.maxLifetime);
 	const float minSpeed = std::min(settings.minSpeed, settings.maxSpeed);

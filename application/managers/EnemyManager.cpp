@@ -8,9 +8,12 @@
 
 EnemyManager::~EnemyManager() = default;
 
-void EnemyManager::Initialize(CollisionWorld* collisionWorld, SpriteCommon* spriteCommon,
-	Object3dCommon* object3dCommon, TextureManager* textureManager,
-	const std::shared_ptr<Model>& model, uint32_t lockOnTexture) {
+void EnemyManager::Initialize(CollisionWorld *collisionWorld,
+                              SpriteCommon *spriteCommon,
+                              Object3dCommon *object3dCommon,
+                              TextureManager *textureManager,
+                              const std::shared_ptr<Model> &model,
+                              uint32_t lockOnTexture) {
 	if (!collisionWorld || !spriteCommon || !object3dCommon || !textureManager || !model) {
 		throw std::invalid_argument("EnemyManager requires initialized rendering services and a model.");
 	}
@@ -30,57 +33,76 @@ void EnemyManager::Reset() {
 	spawnTimer_ = 0.2f;
 }
 
-void EnemyManager::Spawn(float cameraZ, const GameParameters& parameters) {
+void EnemyManager::Spawn(float cameraZ, const GameParameters &parameters) {
 	constexpr float xPositions[] = {-4.2f, -2.1f, 0.0f, 2.1f, 4.2f};
 	constexpr float yPositions[] = {-1.6f, 0.0f, 1.7f, -0.7f};
 	const uint32_t xIndex = (spawnSequence_ * 3u + spawnSequence_ / 2u) % 5u;
 	const uint32_t yIndex = (spawnSequence_ * 5u + 1u) % 4u;
-	const float radius = parameters.enemyBaseRadius +
-		static_cast<float>(spawnSequence_ % 3u) * parameters.enemyRadiusStep;
+	const float radius =
+	    parameters.enemyBaseRadius + static_cast<float>(spawnSequence_ % 3u) * parameters.enemyRadiusStep;
 	auto enemy = std::make_unique<Enemy>();
-	enemy->Initialize(collisionWorld_, spriteCommon_, object3dCommon_, textureManager_, model_, lockOnTexture_,
-		{xPositions[xIndex], yPositions[yIndex], cameraZ + parameters.enemySpawnDistance},
-		radius, nextEnemyId_++);
+	enemy->Initialize(collisionWorld_,
+	                  spriteCommon_,
+	                  object3dCommon_,
+	                  textureManager_,
+	                  model_,
+	                  lockOnTexture_,
+	                  {xPositions[xIndex], yPositions[yIndex], cameraZ + parameters.enemySpawnDistance},
+	                  radius,
+	                  nextEnemyId_++);
 	enemies_.push_back(std::move(enemy));
 	++spawnSequence_;
 }
 
-void EnemyManager::UpdateSpawning(float deltaTime, float cameraZ,
-	const GameParameters& parameters, uint32_t score) {
+void EnemyManager::UpdateSpawning(float deltaTime, float cameraZ, const GameParameters &parameters, uint32_t score) {
 	spawnTimer_ -= deltaTime;
-	if (spawnTimer_ > 0.0f) { return; }
+	if (spawnTimer_ > 0.0f) {
+		return;
+	}
 	Spawn(cameraZ, parameters);
-	spawnTimer_ = std::max(parameters.minimumSpawnInterval,
-		parameters.enemySpawnInterval - static_cast<float>(score) * parameters.spawnAccelerationPerScore);
+	spawnTimer_ =
+	    std::max(parameters.minimumSpawnInterval,
+	             parameters.enemySpawnInterval - static_cast<float>(score) * parameters.spawnAccelerationPerScore);
 }
 
-void EnemyManager::Update(const Camera& camera, float deltaTime, float rotationSpeed) {
-	for (auto& enemy : enemies_) { enemy->Update(camera, deltaTime, rotationSpeed); }
+void EnemyManager::Update(const Camera &camera, float deltaTime, float rotationSpeed) {
+	for (auto &enemy : enemies_) {
+		enemy->Update(camera, deltaTime, rotationSpeed);
+	}
 }
 
 void EnemyManager::Draw() const {
-	for (const auto& enemy : enemies_) { enemy->Draw(); }
+	for (const auto &enemy : enemies_) {
+		enemy->Draw();
+	}
 }
 
 void EnemyManager::DrawLockOnMarkers() const {
-	for (const auto& enemy : enemies_) { enemy->DrawLockOnMarker(); }
+	for (const auto &enemy : enemies_) {
+		enemy->DrawLockOnMarker();
+	}
 }
 
-Enemy* EnemyManager::Find(uint64_t id) const {
-	if (id == 0) { return nullptr; }
-	for (const auto& enemy : enemies_) {
-		if (enemy->GetId() == id) { return enemy.get(); }
+Enemy *EnemyManager::Find(uint64_t id) const {
+	if (id == 0) {
+		return nullptr;
+	}
+	for (const auto &enemy : enemies_) {
+		if (enemy->GetId() == id) {
+			return enemy.get();
+		}
 	}
 	return nullptr;
 }
 
-Enemy* EnemyManager::FindNearestLockTarget(const Vector3& origin,
-	const std::vector<uint64_t>& excludedIds) const {
-	Enemy* nearest = nullptr;
+Enemy *EnemyManager::FindNearestLockTarget(const Vector3 &origin, const std::vector<uint64_t> &excludedIds) const {
+	Enemy *nearest = nullptr;
 	float nearestDistanceSquared = std::numeric_limits<float>::max();
-	for (const auto& enemy : enemies_) {
-		if (std::find(excludedIds.begin(), excludedIds.end(), enemy->GetId()) != excludedIds.end()) { continue; }
-		const Vector3& position = enemy->GetPosition();
+	for (const auto &enemy : enemies_) {
+		if (std::find(excludedIds.begin(), excludedIds.end(), enemy->GetId()) != excludedIds.end()) {
+			continue;
+		}
+		const Vector3 &position = enemy->GetPosition();
 		const float x = position.x - origin.x;
 		const float y = position.y - origin.y;
 		const float z = position.z - origin.z;
@@ -93,16 +115,17 @@ Enemy* EnemyManager::FindNearestLockTarget(const Vector3& origin,
 	return nearest;
 }
 
-void EnemyManager::SetLockedEnemies(const std::vector<uint64_t>& ids) {
-	for (auto& enemy : enemies_) {
+void EnemyManager::SetLockedEnemies(const std::vector<uint64_t> &ids) {
+	for (auto &enemy : enemies_) {
 		enemy->SetLockedOn(std::find(ids.begin(), ids.end(), enemy->GetId()) != ids.end());
 	}
 }
 
 bool EnemyManager::Remove(uint64_t id) {
 	const auto oldSize = enemies_.size();
-	enemies_.erase(std::remove_if(enemies_.begin(), enemies_.end(),
-		[id](const auto& enemy) { return enemy->GetId() == id; }), enemies_.end());
+	enemies_.erase(
+	    std::remove_if(enemies_.begin(), enemies_.end(), [id](const auto &enemy) { return enemy->GetId() == id; }),
+	    enemies_.end());
 	return enemies_.size() != oldSize;
 }
 

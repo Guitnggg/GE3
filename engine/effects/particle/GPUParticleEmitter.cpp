@@ -6,8 +6,9 @@
 #include <cmath>
 #include <stdexcept>
 
-void GPUParticleEmitter::Initialize(GPUParticleSystem* system,
-	const GPUParticleEmitData& emitTemplate, float intervalSeconds) {
+void GPUParticleEmitter::Initialize(GPUParticleSystem *system,
+                                    const GPUParticleEmitData &emitTemplate,
+                                    float intervalSeconds) {
 	if (!system || !std::isfinite(intervalSeconds) || intervalSeconds <= 0.0f) {
 		throw std::invalid_argument("GPUParticleEmitter requires a system and a positive interval.");
 	}
@@ -17,8 +18,10 @@ void GPUParticleEmitter::Initialize(GPUParticleSystem* system,
 	Reset();
 }
 
-void GPUParticleEmitter::Update(float deltaTime, const Vector3& position) {
-	if (!isActive_ || !std::isfinite(deltaTime) || deltaTime <= 0.0f) { return; }
+void GPUParticleEmitter::Update(float deltaTime, const Vector3 &position) {
+	if (!isActive_ || !std::isfinite(deltaTime) || deltaTime <= 0.0f) {
+		return;
+	}
 	elapsed_ += deltaTime;
 	while (elapsed_ >= interval_) {
 		elapsed_ -= interval_;
@@ -26,8 +29,10 @@ void GPUParticleEmitter::Update(float deltaTime, const Vector3& position) {
 	}
 }
 
-void GPUParticleEmitter::EmitOnce(const Vector3& position) {
-	if (!system_) { throw std::logic_error("GPUParticleEmitter is not initialized."); }
+void GPUParticleEmitter::EmitOnce(const Vector3 &position) {
+	if (!system_) {
+		throw std::logic_error("GPUParticleEmitter is not initialized.");
+	}
 	auto request = emitTemplate_;
 	request.position = position;
 	request.seed += emissionSequence_++ * 0x9e3779b9u;

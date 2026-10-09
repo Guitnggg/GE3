@@ -6,4 +6,3 @@
 #include "engine/math/MathUtility.h"
 #include "engine/math/MatrixMath.h"
 #include "engine/math/RenderingTypes.h"
-

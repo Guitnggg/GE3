@@ -10,16 +10,16 @@ class IScene;
 /// 現在のシーンのライフサイクルと安全な切り替えを管理するクラス。
 /// </summary>
 class SceneManager {
-public:
+  public:
 	SceneManager() = default;
 	~SceneManager();
-	SceneManager(const SceneManager&) = delete;
-	SceneManager& operator=(const SceneManager&) = delete;
+	SceneManager(const SceneManager &) = delete;
+	SceneManager &operator=(const SceneManager &) = delete;
 
 	/// <summary>
 	/// シーン共通機能を保持し、最初のシーンを初期化する。
 	/// </summary>
-	void Initialize(const SceneContext& context, std::unique_ptr<IScene> initialScene);
+	void Initialize(const SceneContext &context, std::unique_ptr<IScene> initialScene);
 
 	/// <summary>
 	/// 予約されたシーン切り替えを適用し、現在のシーンを更新する。
@@ -46,7 +46,7 @@ public:
 	/// </summary>
 	void ChangeScene(std::unique_ptr<IScene> nextScene);
 
-private:
+  private:
 	/// <summary>
 	/// 切り替え待ちのシーンがあれば、現在のシーンと入れ替える。
 	/// </summary>

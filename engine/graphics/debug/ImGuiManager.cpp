@@ -11,13 +11,13 @@ ImGuiManager::~ImGuiManager() {
 	Finalize();
 }
 
-void ImGuiManager::Initialize(WinApp* winApp, DirectXCommon* dxCommon) {
+void ImGuiManager::Initialize(WinApp *winApp, DirectXCommon *dxCommon) {
 	// 二重初期化や、必要なDirectXリソースが揃っていない状態を防ぐ
 	if (isInitialized_) {
 		throw std::logic_error("ImGuiManager is already initialized.");
 	}
 	if (winApp == nullptr || dxCommon == nullptr || dxCommon->GetDevice() == nullptr ||
-		dxCommon->GetSRVDescriptorHeap() == nullptr) {
+	    dxCommon->GetSRVDescriptorHeap() == nullptr) {
 		throw std::invalid_argument("ImGuiManager requires initialized WinApp and DirectXCommon instances.");
 	}
 
@@ -33,13 +33,12 @@ void ImGuiManager::Initialize(WinApp* winApp, DirectXCommon* dxCommon) {
 	}
 
 	// SRVヒープの0番をImGuiのフォントテクスチャ用に使用する
-	const bool dx12Initialized = ImGui_ImplDX12_Init(
-		dxCommon->GetDevice().Get(),
-		dxCommon->GetSwapChainBufferCount(),
-		dxCommon->GetRenderTargetFormat(),
-		dxCommon->GetSRVDescriptorHeap(),
-		dxCommon->GetCPUDescriptorHandleSRV(0),
-		dxCommon->GetGPUDescriptorHandleSRV(0));
+	const bool dx12Initialized = ImGui_ImplDX12_Init(dxCommon->GetDevice().Get(),
+	                                                 dxCommon->GetSwapChainBufferCount(),
+	                                                 dxCommon->GetRenderTargetFormat(),
+	                                                 dxCommon->GetSRVDescriptorHeap(),
+	                                                 dxCommon->GetCPUDescriptorHandleSRV(0),
+	                                                 dxCommon->GetGPUDescriptorHandleSRV(0));
 	if (!dx12Initialized) {
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
@@ -66,7 +65,7 @@ void ImGuiManager::EndFrame() {
 	ImGui::Render();
 }
 
-void ImGuiManager::Draw(ID3D12GraphicsCommandList* commandList) {
+void ImGuiManager::Draw(ID3D12GraphicsCommandList *commandList) {
 	if (!isInitialized_) {
 		throw std::logic_error("ImGuiManager is not initialized.");
 	}

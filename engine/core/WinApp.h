@@ -10,7 +10,7 @@
 /// Windowsアプリケーションのウィンドウ生成とメッセージ処理を管理するクラス
 /// </summary>
 class WinApp {
-public:
+  public:
 	~WinApp();
 
 	// ===== 静的メンバ関数 =====
@@ -20,7 +20,7 @@ public:
 	/// </summary>
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-public:
+  public:
 	// ===== メンバ関数 =====
 
 	/// <summary>
@@ -36,29 +36,33 @@ public:
 	/// <summary>
 	/// ウィンドウハンドルを取得する
 	/// </summary>
-	HWND GetHwnd() const { return hwnd; }
+	HWND GetHwnd() const {
+		return hwnd;
+	}
 
 	/// <summary>
 	/// アプリケーションインスタンスを取得する
 	/// </summary>
-	HINSTANCE GetHInstance() const { return wc.hInstance; }
+	HINSTANCE GetHInstance() const {
+		return wc.hInstance;
+	}
 
 	/// <summary>
 	/// Windowsメッセージを処理し、終了要求の有無を返す
 	/// </summary>
 	bool ProcessMessage();
 
-public:
+  public:
 	// ===== 定数 =====
 
-	static const int32_t kClientWidth = 1280;   // クライアント領域の横幅
-	static const int32_t kClientHeight = 720;   // クライアント領域の縦幅
+	static const int32_t kClientWidth = 1280; // クライアント領域の横幅
+	static const int32_t kClientHeight = 720; // クライアント領域の縦幅
 
-private:
+  private:
 	// ===== メンバ変数 =====
 
-	HWND hwnd = nullptr;  // ウィンドウハンドル
-	WNDCLASS wc{};        // ウィンドウクラス設定
+	HWND hwnd = nullptr; // ウィンドウハンドル
+	WNDCLASS wc{};       // ウィンドウクラス設定
 	bool comInitialized_ = false;
 	bool classRegistered_ = false;
 	bool initialized_ = false;
