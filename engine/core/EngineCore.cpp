@@ -1,4 +1,4 @@
-#include "engine/core/Engine.h"
+#include "engine/core/EngineCore.h"
 
 #include "engine/2d/SpriteCommon.h"
 #include "engine/3D/object/Object3dCommon.h"
@@ -25,13 +25,13 @@
 
 #include <stdexcept>
 
-Engine::Engine() = default;
+EngineCore::EngineCore() = default;
 
-Engine::~Engine() {
+EngineCore::~EngineCore() {
 	Finalize();
 }
 
-void Engine::Run() {
+void EngineCore::Run() {
 	Initialize();
 	bool applicationInitialized = false;
 
@@ -67,7 +67,7 @@ void Engine::Run() {
 	}
 }
 
-void Engine::Initialize() {
+void EngineCore::Initialize() {
 	if (initialized_ || winApp_ || input_ || audio_ || collisionWorld_ || dxCommon_ || srvManager_ || textureManager_ ||
 	    modelManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_ || gpuParticlePipeline_ ||
 	    shaderCompiler_ || assetManager_ || engineSettings_ || sceneManager_
@@ -134,12 +134,12 @@ void Engine::Initialize() {
 
 		initialized_ = true;
 	} catch (...) {
-		Engine::Finalize();
+		EngineCore::Finalize();
 		throw;
 	}
 }
 
-void Engine::BeginFrame() {
+void EngineCore::BeginFrame() {
 #ifdef _DEBUG
 	Profiler::Get().BeginFrame();
 	PROFILE_SCOPE("Engine BeginFrame");
@@ -171,17 +171,17 @@ void Engine::BeginFrame() {
 	}
 }
 
-void Engine::OnInitialize() {}
+void EngineCore::OnInitialize() {}
 
-void Engine::OnUpdate() {}
+void EngineCore::OnUpdate() {}
 
-void Engine::OnFixedUpdate() {}
+void EngineCore::OnFixedUpdate() {}
 
-void Engine::OnDraw() {}
+void EngineCore::OnDraw() {}
 
-void Engine::OnFinalize() {}
+void EngineCore::OnFinalize() {}
 
-void Engine::SetInitialScene(std::unique_ptr<IScene> initialScene) {
+void EngineCore::SetInitialScene(std::unique_ptr<IScene> initialScene) {
 	if (!initialized_ || sceneInitialized_) {
 		throw std::logic_error("Initial scene can only be set once after engine initialization.");
 	}
@@ -205,23 +205,23 @@ void Engine::SetInitialScene(std::unique_ptr<IScene> initialScene) {
 	sceneInitialized_ = true;
 }
 
-SceneManager &Engine::GetSceneManager() {
+SceneManager &EngineCore::GetSceneManager() {
 	if (!sceneInitialized_) {
 		throw std::logic_error("SceneManager is not initialized.");
 	}
 	return *sceneManager_;
 }
 
-bool Engine::IsEndRequest() {
+bool EngineCore::IsEndRequest() {
 	return winApp_->ProcessMessage();
 }
 
-void Engine::BeginDraw() {
+void EngineCore::BeginDraw() {
 	// バックバッファを描画可能な状態にし、描画に必要な状態を設定する
 	dxCommon_->PreDraw();
 }
 
-void Engine::EndDraw() {
+void EngineCore::EndDraw() {
 #ifdef _DEBUG
 	debugOverlay_->Draw();
 	Profiler::Get().EndFrame();
@@ -236,7 +236,7 @@ void Engine::EndDraw() {
 	frameRateController_->EndFrame();
 }
 
-void Engine::Finalize() {
+void EngineCore::Finalize() {
 	initialized_ = false;
 	if (sceneManager_) {
 		sceneManager_->Finalize();

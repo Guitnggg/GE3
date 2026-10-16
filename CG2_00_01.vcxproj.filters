@@ -128,7 +128,7 @@
 	<ClCompile Include="engine\object\TransformNode.cpp">
 	  <Filter>engine\object</Filter>
 	</ClCompile>
-    <ClCompile Include="engine\core\Engine.cpp">
+    <ClCompile Include="engine\core\EngineCore.cpp">
       <Filter>engine\core</Filter>
     </ClCompile>
     <ClCompile Include="application\core\MyGame.cpp">
@@ -291,7 +291,7 @@
 	<ClInclude Include="engine\object\TransformNode.h">
 	  <Filter>engine\object</Filter>
 	</ClInclude>
-    <ClInclude Include="engine\core\Engine.h">
+    <ClInclude Include="engine\core\EngineCore.h">
       <Filter>engine\core</Filter>
     </ClInclude>
     <ClInclude Include="application\core\MyGame.h">

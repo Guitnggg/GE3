@@ -1,11 +1,11 @@
 #pragma once
 
-#include "engine/core/Engine.h"
+#include "engine/core/EngineCore.h"
 
 /// <summary>
-/// Engineのライフサイクルへ接続する、最小構成のアプリケーション実装。
+/// EngineCoreのライフサイクルへ接続する、最小構成のアプリケーション実装。
 /// </summary>
-class MyGame : public Engine {
+class MyGame : public EngineCore {
   public:
 	MyGame();
 	~MyGame() override = default;

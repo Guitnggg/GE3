@@ -26,15 +26,15 @@ struct EngineSettings;
 /// <summary>
 /// すべてのゲームで共通して使用するエンジン機能を管理する基底クラス。
 /// </summary>
-class Engine {
+class EngineCore {
   public:
-	Engine();
+	EngineCore();
 
-	virtual ~Engine();
+	virtual ~EngineCore();
 
-	Engine(const Engine &) = delete;
+	EngineCore(const EngineCore &) = delete;
 
-	Engine &operator=(const Engine &) = delete;
+	EngineCore &operator=(const EngineCore &) = delete;
 
 	/// <summary>
 	/// 初期化から終了までのメインループを実行する。
