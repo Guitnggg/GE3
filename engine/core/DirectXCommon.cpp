@@ -174,6 +174,24 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 	return vertexResource;
 }
 
+DirectXCommon::DynamicBufferAllocation DirectXCommon::AllocateDynamicBuffer(size_t sizeInBytes, size_t alignment) {
+	if (!frameInProgress_) {
+		throw std::logic_error("Dynamic buffers can only be allocated between PreDraw and PostDraw.");
+	}
+	if (sizeInBytes == 0 || alignment == 0 || (alignment & (alignment - 1)) != 0) {
+		throw std::invalid_argument("Dynamic buffer size and power-of-two alignment are required.");
+	}
+	FrameContext &frame = frameContexts_[currentFrameIndex_];
+	const size_t alignedOffset = (frame.dynamicUploadOffset + alignment - 1) & ~(alignment - 1);
+	if (alignedOffset > kDynamicUploadBufferSize || sizeInBytes > kDynamicUploadBufferSize - alignedOffset) {
+		throw std::runtime_error("The current frame dynamic upload buffer is full.");
+	}
+	frame.dynamicUploadOffset = alignedOffset + sizeInBytes;
+	return {frame.dynamicUploadMapped + alignedOffset,
+	        frame.dynamicUploadBuffer->GetGPUVirtualAddress() + alignedOffset,
+	        sizeInBytes};
+}
+
 // 読み込んだ画像情報をもとにテクスチャリソースを作成する
 Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device,
                                                                             const DirectX::TexMetadata &metadata) {
@@ -285,6 +303,8 @@ void DirectXCommon::PreDraw() {
 	currentFrameIndex_ = swapChain->GetCurrentBackBufferIndex();
 	FrameContext &frame = frameContexts_[currentFrameIndex_];
 	WaitForFenceValue(frame.fenceValue);
+	// このコンテキストのGPU利用完了を確認したため、動的領域を先頭から安全に再利用できる。
+	frame.dynamicUploadOffset = 0;
 
 	HRESULT hr = frame.commandAllocator->Reset();
 	HResult::ThrowIfFailed(hr, "Resetting the frame command allocator");
@@ -521,6 +541,10 @@ void DirectXCommon::CreateCommand() {
 	for (FrameContext &frame : frameContexts_) {
 		hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&frame.commandAllocator));
 		HResult::ThrowIfFailed(hr, "Creating a frame command allocator");
+		frame.dynamicUploadBuffer = CreateBufferResource(kDynamicUploadBufferSize);
+		HResult::ThrowIfFailed(frame.dynamicUploadBuffer->Map(
+		                           0, nullptr, reinterpret_cast<void **>(&frame.dynamicUploadMapped)),
+		                       "Mapping a frame dynamic upload buffer");
 	}
 
 #pragma endregion

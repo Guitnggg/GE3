@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <array>
 #include <d3d12.h>
 #include <wrl.h>
 
@@ -78,9 +79,11 @@ class Sprite {
 		textureHandle_ = textureHandle;
 	}
 
-	/// <summary>テクスチャへ乗算する表示色を設定する。</summary>
+	/// <summary>
+	/// テクスチャへ乗算する表示色を設定する。
+	/// </summary>
 	void SetColor(const Vector4 &color) {
-		materialData_->color = color;
+		materialData_.color = color;
 	}
 
   private:
@@ -94,16 +97,12 @@ class Sprite {
 	TextureManager *textureManager_ = nullptr; // テクスチャSRV管理の参照
 	TextureHandle textureHandle_{};            // 現在描画する世代付きテクスチャ参照
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;               // 矩形の頂点バッファ
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_;                // 矩形のインデックスバッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_;             // 色とUV変換の定数バッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource_; // 画面座標行列の定数バッファ
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};                         // 頂点バッファの描画情報
 	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};                           // インデックスバッファの描画情報
 
-	VertexData *vertexData_ = nullptr;                         // マップ済み頂点データ書き込み先
-	Material *materialData_ = nullptr;                         // マップ済みマテリアル書き込み先
-	TransformationMatrix *transformationMatrixData_ = nullptr; // マップ済み行列書き込み先
+	std::array<VertexData, 4> vertexData_{};                  // Draw時にフレーム専用領域へコピーする頂点
+	Material materialData_{};                                // CPU側で保持する最新マテリアル
+	TransformationMatrix transformationMatrixData_{};        // CPU側で保持する最新行列
 	Transform transform_{{1.0f, 1.0f, 1.0f}, {}, {}};          // 画面上の拡縮・回転・位置
 	Transform uvTransform_{{1.0f, 1.0f, 1.0f}, {}, {}};        // テクスチャのUV変換
 	Vector2 size_{640.0f, 360.0f};                             // ピクセル単位の表示サイズ

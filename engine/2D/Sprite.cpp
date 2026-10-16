@@ -1,6 +1,7 @@
 #include "Sprite.h"
 
 #include <cmath>
+#include <cstring>
 #include <stdexcept>
 
 #include "SpriteCommon.h"
@@ -17,13 +18,7 @@ void Sprite::Initialize(SpriteCommon *spriteCommon, TextureManager *textureManag
 	textureHandle_ = textureHandle;
 	DirectXCommon *dxCommon = spriteCommon_->GetDXCommon();
 
-	// CPUから毎フレーム書き換えられる矩形頂点バッファを生成する
-	vertexResource_ = dxCommon->CreateBufferResource(sizeof(VertexData) * 4);
-	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
-	vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
-	vertexBufferView_.StrideInBytes = sizeof(VertexData);
-	HResult::ThrowIfFailed(vertexResource_->Map(0, nullptr, reinterpret_cast<void **>(&vertexData_)),
-	                       "Mapping the sprite vertex buffer");
+	// 毎フレーム変化する頂点はCPU側に保持し、Draw時にFrameContext専用領域へ転送する。
 	UpdateVertexData();
 
 	// 矩形を2枚の三角形として描画するインデックスバッファを生成する
@@ -41,26 +36,16 @@ void Sprite::Initialize(SpriteCommon *spriteCommon, TextureManager *textureManag
 	indexData[4] = 3;
 	indexData[5] = 2;
 
-	// 画面座標変換用の定数バッファを生成し、単位行列で初期化する
-	transformationMatrixResource_ = dxCommon->CreateBufferResource(sizeof(TransformationMatrix));
-	HResult::ThrowIfFailed(
-	    transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void **>(&transformationMatrixData_)),
-	    "Mapping the sprite transformation buffer");
-	transformationMatrixData_->World = MakeIdentity4x4();
-	transformationMatrixData_->WVP = MakeIdentity4x4();
-
-	// スプライト色とUV変換をシェーダーへ渡す定数バッファを生成する
-	materialResource_ = dxCommon->CreateBufferResource(sizeof(Material));
-	HResult::ThrowIfFailed(materialResource_->Map(0, nullptr, reinterpret_cast<void **>(&materialData_)),
-	                       "Mapping the sprite material buffer");
-	materialData_->color = {1.0f, 1.0f, 1.0f, 1.0f};
-	materialData_->enableLighting = false;
-	materialData_->uvTransform = MakeIdentity4x4();
+	transformationMatrixData_.World = MakeIdentity4x4();
+	transformationMatrixData_.WVP = MakeIdentity4x4();
+	materialData_.color = {1.0f, 1.0f, 1.0f, 1.0f};
+	materialData_.enableLighting = false;
+	materialData_.uvTransform = MakeIdentity4x4();
 }
 
 void Sprite::Update(float viewportWidth, float viewportHeight) {
 	// 正しい正射影行列を作れない画面サイズや未初期化状態を拒否する
-	if (transformationMatrixData_ == nullptr || materialData_ == nullptr) {
+	if (spriteCommon_ == nullptr || textureManager_ == nullptr) {
 		throw std::logic_error("Sprite is not initialized.");
 	}
 	if (!std::isfinite(viewportWidth) || !std::isfinite(viewportHeight) || viewportWidth <= 0.0f ||
@@ -73,30 +58,38 @@ void Sprite::Update(float viewportWidth, float viewportHeight) {
 	// 左上を原点とする画面座標へ、スプライト自身のTransformを適用する
 	const Matrix4x4 worldMatrix = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
 	const Matrix4x4 projectionMatrix = MakeOrthographicMatrix(0.0f, 0.0f, viewportWidth, viewportHeight, 0.0f, 100.0f);
-	transformationMatrixData_->World = worldMatrix;
-	transformationMatrixData_->WVP = Multiply(worldMatrix, projectionMatrix);
+	transformationMatrixData_.World = worldMatrix;
+	transformationMatrixData_.WVP = Multiply(worldMatrix, projectionMatrix);
 
 	// 拡縮、Z回転、移動の順にUV変換行列を合成する
 	Matrix4x4 uvMatrix = MakeScaleMatrix(uvTransform_.scale);
 	uvMatrix = Multiply(uvMatrix, MakeRotateZMatrix(uvTransform_.rotate.z));
 	uvMatrix = Multiply(uvMatrix, MakeTranslateMatrix(uvTransform_.translate));
-	materialData_->uvTransform = uvMatrix;
+	materialData_.uvTransform = uvMatrix;
 }
 
 void Sprite::Draw() const {
 	// 描画に必要な管理クラスとGPUリソースが揃っているか確認する
-	if (spriteCommon_ == nullptr || textureManager_ == nullptr || materialResource_ == nullptr ||
-	    transformationMatrixResource_ == nullptr) {
+	if (spriteCommon_ == nullptr || textureManager_ == nullptr || indexResource_ == nullptr) {
 		throw std::logic_error("Sprite is not initialized.");
 	}
 
 	// スプライト用パイプラインを設定し、各バッファとテクスチャをバインドする
 	spriteCommon_->CommonDrawSetting();
-	auto *commandList = spriteCommon_->GetDXCommon()->GetCommandList();
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
+	DirectXCommon *dxCommon = spriteCommon_->GetDXCommon();
+	auto *commandList = dxCommon->GetCommandList();
+	const auto vertices = dxCommon->AllocateDynamicBuffer(sizeof(vertexData_), alignof(VertexData));
+	const auto material = dxCommon->AllocateDynamicBuffer(sizeof(materialData_));
+	const auto transform = dxCommon->AllocateDynamicBuffer(sizeof(transformationMatrixData_));
+	std::memcpy(vertices.cpuAddress, vertexData_.data(), sizeof(vertexData_));
+	std::memcpy(material.cpuAddress, &materialData_, sizeof(materialData_));
+	std::memcpy(transform.cpuAddress, &transformationMatrixData_, sizeof(transformationMatrixData_));
+	const D3D12_VERTEX_BUFFER_VIEW vertexBufferView{
+	    vertices.gpuAddress, static_cast<UINT>(vertices.size), sizeof(VertexData)};
+	commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 	commandList->IASetIndexBuffer(&indexBufferView_);
-	commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource_->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(0, material.gpuAddress);
+	commandList->SetGraphicsRootConstantBufferView(1, transform.gpuAddress);
 	commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetSrvHandleGPU(textureHandle_));
 	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }
@@ -109,9 +102,6 @@ void Sprite::SetSize(const Vector2 &size) {
 }
 
 void Sprite::UpdateVertexData() {
-	if (vertexData_ == nullptr) {
-		throw std::logic_error("Sprite vertex buffer is not mapped.");
-	}
 	const float left = -anchorPoint_.x * size_.x;
 	const float right = left + size_.x;
 	const float top = -anchorPoint_.y * size_.y;

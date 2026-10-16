@@ -165,10 +165,6 @@ class GPUParticleSystem final {
 	Microsoft::WRL::ComPtr<ID3D12Resource> particleResource_;           // 全粒子データを保持するGPUバッファ
 	Microsoft::WRL::ComPtr<ID3D12Resource> freeListResource_;           // 未使用粒子番号を保持するGPUバッファ
 	Microsoft::WRL::ComPtr<ID3D12Resource> freeListIndexResource_;      // 未使用リスト末尾位置を保持するGPUバッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> simulationConstantResource_; // 更新定数を保持するアップロードバッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> emitConstantResource_;       // 生成定数を保持するアップロードバッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> drawConstantResource_;       // 描画定数を保持するアップロードバッファ
-	SimulationConstants *simulationConstants_ = nullptr;                // 更新定数のマップ済み領域
-	EmitConstants *emitConstants_ = nullptr;                            // 生成定数のマップ済み領域
-	DrawConstants *drawConstants_ = nullptr;                            // 描画定数のマップ済み領域
+	SimulationConstants simulationConstants_{};                         // Draw時に転送するCPU側更新定数
+	DrawConstants drawConstants_{};                                     // Draw時に転送するCPU側描画定数
 };

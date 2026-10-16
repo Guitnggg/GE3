@@ -82,6 +82,7 @@ class TextureManager {
 		Microsoft::WRL::ComPtr<ID3D12Resource> resource; // GPU上のテクスチャリソース
 		SrvHandle srvHandle{};                           // SrvManagerから割り当てられた世代付き参照
 		std::string path;                                // キャッシュ表から削除する正規化済みパス
+		uint32_t referenceCount = 1;                     // 同じパスをLoadした利用者の数
 	};
 	struct TextureSlot {
 		uint32_t generation = 1;

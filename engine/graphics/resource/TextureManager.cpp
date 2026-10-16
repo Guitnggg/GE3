@@ -22,6 +22,7 @@ TextureHandle TextureManager::Load(const std::string &filePath) {
 
 	// 同じパスが有効な間はGPUリソースとハンドルを共有する。
 	if (const auto found = textureHandleMap_.find(filePath); found != textureHandleMap_.end()) {
+		++textureSlots_[found->second.index].data->referenceCount;
 		return found->second;
 	}
 
@@ -44,8 +45,14 @@ TextureHandle TextureManager::Load(const std::string &filePath) {
 }
 
 void TextureManager::Unload(TextureHandle handle) {
-	TextureData texture = Require(handle);
+	(void)Require(handle);
 	TextureSlot &slot = textureSlots_[handle.index];
+	if (slot.data->referenceCount > 1) {
+		// 同じパスをLoadした別の利用者が残っている間は、共有ハンドルと実体を維持する。
+		--slot.data->referenceCount;
+		return;
+	}
+	TextureData texture = std::move(*slot.data);
 	textureHandleMap_.erase(texture.path);
 
 	// ハンドルは即時無効化するが、GPUが参照し終えるまで実体とSRVスロットは保持する。

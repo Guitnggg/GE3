@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <stdexcept>
 
 using Microsoft::WRL::ComPtr;
@@ -109,15 +110,17 @@ void GPUParticleSystem::Draw(const Camera &camera) {
 	TransitionParticleBuffer(D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	particleBufferIsSrv_ = true;
 
-	drawConstants_->viewProjection = camera.GetViewProjectionMatrix();
+	drawConstants_.viewProjection = camera.GetViewProjectionMatrix();
 	const Matrix4x4 &cameraWorld = camera.GetWorldMatrix();
-	drawConstants_->cameraRight = {cameraWorld.m[0][0], cameraWorld.m[0][1], cameraWorld.m[0][2]};
-	drawConstants_->cameraUp = {cameraWorld.m[1][0], cameraWorld.m[1][1], cameraWorld.m[1][2]};
+	drawConstants_.cameraRight = {cameraWorld.m[0][0], cameraWorld.m[0][1], cameraWorld.m[0][2]};
+	drawConstants_.cameraUp = {cameraWorld.m[1][0], cameraWorld.m[1][1], cameraWorld.m[1][2]};
+	const auto drawConstants = dxCommon_->AllocateDynamicBuffer(sizeof(drawConstants_));
+	std::memcpy(drawConstants.cpuAddress, &drawConstants_, sizeof(drawConstants_));
 
 	commandList->SetGraphicsRootSignature(pipeline_->GetGraphicsRootSignature());
 	commandList->SetPipelineState(pipeline_->GetGraphicsPipeline(preset_.blendMode));
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	commandList->SetGraphicsRootConstantBufferView(0, drawConstantResource_->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(0, drawConstants.gpuAddress);
 	commandList->SetGraphicsRootShaderResourceView(1, particleResource_->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetSrvHandleGPU(textureHandle_));
 	commandList->DrawInstanced(6, maxParticles_, 0, 0);
@@ -133,16 +136,6 @@ void GPUParticleSystem::CreateResources() {
 	particleResource_ = CreateUavBuffer(device.Get(), sizeof(Particle) * maxParticles_);
 	freeListResource_ = CreateUavBuffer(device.Get(), sizeof(uint32_t) * maxParticles_);
 	freeListIndexResource_ = CreateUavBuffer(device.Get(), sizeof(int32_t));
-	simulationConstantResource_ = dxCommon_->CreateBufferResource(sizeof(SimulationConstants));
-	emitConstantResource_ = dxCommon_->CreateBufferResource(sizeof(EmitConstants) * kMaxEmitCommandsPerFrame);
-	drawConstantResource_ = dxCommon_->CreateBufferResource(sizeof(DrawConstants));
-	HResult::ThrowIfFailed(
-	    simulationConstantResource_->Map(0, nullptr, reinterpret_cast<void **>(&simulationConstants_)),
-	    "Mapping particle simulation constants");
-	HResult::ThrowIfFailed(emitConstantResource_->Map(0, nullptr, reinterpret_cast<void **>(&emitConstants_)),
-	                       "Mapping particle emit constants");
-	HResult::ThrowIfFailed(drawConstantResource_->Map(0, nullptr, reinterpret_cast<void **>(&drawConstants_)),
-	                       "Mapping particle draw constants");
 }
 
 void GPUParticleSystem::TransitionParticleBuffer(D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
@@ -157,9 +150,11 @@ void GPUParticleSystem::TransitionParticleBuffer(D3D12_RESOURCE_STATES before, D
 
 void GPUParticleSystem::DispatchInitialize() {
 	auto *commandList = dxCommon_->GetCommandList();
-	simulationConstants_->maxParticles = maxParticles_;
+	simulationConstants_.maxParticles = maxParticles_;
+	const auto constants = dxCommon_->AllocateDynamicBuffer(sizeof(simulationConstants_));
+	std::memcpy(constants.cpuAddress, &simulationConstants_, sizeof(simulationConstants_));
 	commandList->SetPipelineState(pipeline_->GetInitializePipeline());
-	commandList->SetComputeRootConstantBufferView(0, simulationConstantResource_->GetGPUVirtualAddress());
+	commandList->SetComputeRootConstantBufferView(0, constants.gpuAddress);
 	commandList->SetComputeRootUnorderedAccessView(1, particleResource_->GetGPUVirtualAddress());
 	commandList->SetComputeRootUnorderedAccessView(2, freeListResource_->GetGPUVirtualAddress());
 	commandList->SetComputeRootUnorderedAccessView(3, freeListIndexResource_->GetGPUVirtualAddress());
@@ -177,7 +172,7 @@ void GPUParticleSystem::DispatchEmitCommands() {
 	commandList->SetPipelineState(pipeline_->GetEmitPipeline());
 	for (size_t i = 0; i < pendingEmits_.size(); ++i) {
 		const auto &source = pendingEmits_[i];
-		auto &target = emitConstants_[i];
+		EmitConstants target{};
 		target.position = source.position;
 		target.count = std::min(source.count, maxParticles_);
 		target.minVelocity = source.minVelocity;
@@ -190,8 +185,9 @@ void GPUParticleSystem::DispatchEmitCommands() {
 		target.endColor = preset_.endColor;
 		target.startSize = preset_.startSize;
 		target.endSize = preset_.endSize;
-		commandList->SetComputeRootConstantBufferView(
-		    0, emitConstantResource_->GetGPUVirtualAddress() + sizeof(EmitConstants) * i);
+		const auto constants = dxCommon_->AllocateDynamicBuffer(sizeof(target));
+		std::memcpy(constants.cpuAddress, &target, sizeof(target));
+		commandList->SetComputeRootConstantBufferView(0, constants.gpuAddress);
 		commandList->SetComputeRootUnorderedAccessView(1, particleResource_->GetGPUVirtualAddress());
 		commandList->SetComputeRootUnorderedAccessView(2, freeListResource_->GetGPUVirtualAddress());
 		commandList->SetComputeRootUnorderedAccessView(3, freeListIndexResource_->GetGPUVirtualAddress());
@@ -206,12 +202,14 @@ void GPUParticleSystem::DispatchEmitCommands() {
 
 void GPUParticleSystem::DispatchUpdate() {
 	auto *commandList = dxCommon_->GetCommandList();
-	simulationConstants_->deltaTime = deltaTime_;
-	simulationConstants_->maxParticles = maxParticles_;
-	simulationConstants_->acceleration = preset_.acceleration;
-	simulationConstants_->drag = preset_.drag;
+	simulationConstants_.deltaTime = deltaTime_;
+	simulationConstants_.maxParticles = maxParticles_;
+	simulationConstants_.acceleration = preset_.acceleration;
+	simulationConstants_.drag = preset_.drag;
+	const auto constants = dxCommon_->AllocateDynamicBuffer(sizeof(simulationConstants_));
+	std::memcpy(constants.cpuAddress, &simulationConstants_, sizeof(simulationConstants_));
 	commandList->SetPipelineState(pipeline_->GetUpdatePipeline());
-	commandList->SetComputeRootConstantBufferView(0, simulationConstantResource_->GetGPUVirtualAddress());
+	commandList->SetComputeRootConstantBufferView(0, constants.gpuAddress);
 	commandList->SetComputeRootUnorderedAccessView(1, particleResource_->GetGPUVirtualAddress());
 	commandList->SetComputeRootUnorderedAccessView(2, freeListResource_->GetGPUVirtualAddress());
 	commandList->SetComputeRootUnorderedAccessView(3, freeListIndexResource_->GetGPUVirtualAddress());

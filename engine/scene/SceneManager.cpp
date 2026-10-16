@@ -96,11 +96,12 @@ void SceneManager::ApplyPendingOperations() {
 }
 
 void SceneManager::ApplyReplace(std::unique_ptr<IScene> scene) {
+	// 新シーンの構築成功を先に確認し、失敗時は現在のスタックをそのまま実行可能に保つ。
+	scene->Initialize(context_);
 	for (auto it = stack_.rbegin(); it != stack_.rend(); ++it) {
 		it->scene->Finalize();
 	}
 	stack_.clear();
-	scene->Initialize(context_);
 	stack_.push_back({std::move(scene), {false, false}});
 }
 

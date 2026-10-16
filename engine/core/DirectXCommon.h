@@ -5,6 +5,7 @@
 #include <wrl.h>
 
 #include <array>
+#include <cstddef>
 #include <mutex>
 
 #include "WinApp.h"
@@ -20,6 +21,13 @@
 /// </summary>
 class DirectXCommon {
   public:
+	/// <summary>現在フレーム専用Upload領域から払い出された一時GPUバッファ。</summary>
+	struct DynamicBufferAllocation {
+		void *cpuAddress = nullptr;               // CPUが今回のデータを書き込むアドレス
+		D3D12_GPU_VIRTUAL_ADDRESS gpuAddress = 0; // CBVや頂点バッファへ設定するGPUアドレス
+		size_t size = 0;                          // 呼び出し元が要求したバイト数
+	};
+
 	/// <summary>
 	/// CPUが先行して記録できるフレーム数。スワップチェーンのバッファ数と一致させる。
 	/// </summary>
@@ -111,6 +119,12 @@ class DirectXCommon {
 	/// CPUから書き込めるアップロード用バッファリソースを生成する
 	/// </summary>
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
+
+	/// <summary>
+	/// 現在のFrameContextから動的データ用領域を払い出す。
+	/// GPUが同じFrameContextを使い終えた後にだけ領域全体が再利用される。
+	/// </summary>
+	[[nodiscard]] DynamicBufferAllocation AllocateDynamicBuffer(size_t sizeInBytes, size_t alignment = 256);
 
 	/// <summary>
 	/// GPUが高速に参照できるDefault Heapへ、COPY_DEST状態のテクスチャを生成する。
@@ -257,8 +271,13 @@ class DirectXCommon {
 	/// </summary>
 	struct FrameContext {
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
+		Microsoft::WRL::ComPtr<ID3D12Resource> dynamicUploadBuffer;
+		std::byte *dynamicUploadMapped = nullptr;
+		size_t dynamicUploadOffset = 0;
 		uint64_t fenceValue = 0;
 	};
+
+	static constexpr size_t kDynamicUploadBufferSize = 4 * 1024 * 1024; // 各フレーム4 MiB
 
   private:
 	// ===== アプリケーション関連 =====

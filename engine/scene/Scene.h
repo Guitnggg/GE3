@@ -52,8 +52,8 @@ class Scene : public IScene {
 	GameObject &CreateGameObject(std::string name = "GameObject");
 
 	/// <summary>
-	/// GameObjectをフレーム終端での破棄対象にする。
-	/// 更新中のコンテナ変更を避けるため、実際の破棄はUpdate終了時に行う。
+	/// GameObjectを現在処理の終端での破棄対象にする。
+	/// 要求直後からコールバックを止め、コンテナからの削除だけを安全な境界まで遅らせる。
 	/// </summary>
 	void DestroyGameObject(GameObject &gameObject);
 

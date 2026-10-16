@@ -200,6 +200,8 @@ class GameObject final {
 	}
 
   private:
+	friend class Scene;
+
 	/// <summary>
 	/// 有効なComponentへ指定された処理を登録順に実行する。
 	/// GameObjectが無効な場合は何も実行しない。
@@ -207,12 +209,15 @@ class GameObject final {
 	/// <typeparam name="Callback">Componentを受け取る呼び出し可能オブジェクトの型</typeparam>
 	/// <param name="callback">各Componentに対して実行する処理</param>
 	template <typename Callback> void Dispatch(Callback &&callback) {
-		if (!active_) {
+		if (!active_ || pendingDestroy_) {
 			return;
 		}
 		dispatching_ = true;
 		try {
 			for (const auto &component : components_) {
+				if (pendingDestroy_) {
+					break;
+				}
 				if (component->enabled_) {
 					callback(*component);
 				}
@@ -235,4 +240,5 @@ class GameObject final {
 	std::vector<std::unique_ptr<Component>> components_; // このGameObjectが単独所有するComponent一覧
 	bool active_ = true;                                 // Componentの更新と描画を実行するか
 	bool dispatching_ = false;                           // Componentのコールバックを実行中か
+	bool pendingDestroy_ = false;                        // Sceneから破棄要求を受け、以後の処理を止めるか
 };

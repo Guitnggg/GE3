@@ -95,6 +95,7 @@
     <ClCompile Include="tests\CollisionTests.cpp" />
     <ClCompile Include="tests\SettingsTests.cpp" />
     <ClCompile Include="engine\scene\SceneManager.cpp" />
+    <ClCompile Include="engine\scene\Scene.cpp" />
     <ClCompile Include="engine\object\Component.cpp" />
     <ClCompile Include="engine\object\GameObject.cpp" />
     <ClCompile Include="engine\object\TransformNode.cpp" />

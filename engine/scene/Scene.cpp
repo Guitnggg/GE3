@@ -39,6 +39,8 @@ void Scene::FixedUpdate() {
 	for (const auto &gameObject : gameObjects_) {
 		gameObject->FixedUpdate();
 	}
+	// 固定更新が複数回走る場合も、次のステップへ破棄予定オブジェクトを残さない。
+	FlushDestroyedObjects();
 }
 
 void Scene::Draw() {
@@ -49,6 +51,7 @@ void Scene::Draw() {
 	for (const auto &gameObject : gameObjects_) {
 		gameObject->Draw();
 	}
+	FlushDestroyedObjects();
 }
 
 void Scene::Finalize() {
@@ -80,6 +83,8 @@ void Scene::DestroyGameObject(GameObject &gameObject) {
 		throw std::invalid_argument("GameObject is not owned by this scene.");
 	}
 	if (std::find(pendingDestroy_.begin(), pendingDestroy_.end(), &gameObject) == pendingDestroy_.end()) {
+		// 実体の削除までは遅延するが、要求後のUpdate・FixedUpdate・Drawは即座に停止する。
+		gameObject.pendingDestroy_ = true;
 		pendingDestroy_.push_back(&gameObject);
 	}
 }

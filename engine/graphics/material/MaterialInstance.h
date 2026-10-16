@@ -68,12 +68,12 @@ class MaterialInstance final {
 	/// GPU用マテリアル領域が作成済みかを返す。
 	/// </summary>
 	[[nodiscard]] bool IsInitialized() const {
-		return data_ != nullptr;
+		return dxCommon_ != nullptr;
 	}
 
   private:
-	Microsoft::WRL::ComPtr<ID3D12Resource> resource_; // マテリアル定数を格納するGPUバッファ
-	Material *data_ = nullptr;                        // CPUから更新するマップ済み領域
+	DirectXCommon *dxCommon_ = nullptr;                // フレーム専用定数領域を確保する非所有参照
+	Material data_{};                                  // GPUと競合しないCPU側の最新マテリアル
 	TextureHandle textureHandle_{};                   // 描画に使用する世代付きテクスチャ参照
 	BlendMode blendMode_ = BlendMode::Opaque;         // 描画時に使用するブレンド方式
 };

@@ -59,8 +59,8 @@ class Object3d {
 	/// CPUから更新可能な平行光源情報を取得する。
 	/// </summary>
 	/// <returns>GPU定数バッファへマップされた平行光源データ</returns>
-	DirectionalLight *GetDirectionalLightData() const {
-		return directionalLightData_;
+	DirectionalLight *GetDirectionalLightData() {
+		return &directionalLightData_;
 	}
 
 	/// <summary>
@@ -95,8 +95,6 @@ class Object3d {
 	std::shared_ptr<Model> model_;                                        // 複数オブジェクト間で共有するモデル資産
 	std::shared_ptr<MaterialInstance> material_;                          // 共有可能な描画マテリアル
 	Transform transform_{{1.0f, 1.0f, 1.0f}, {}, {}};                     // シーン上の拡縮・回転・位置
-	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource_; // 行列定数バッファ
-	TransformationMatrix *transformationMatrixData_ = nullptr;            // マップ済み行列書き込み先
-	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource_;     // 平行光源定数バッファ
-	DirectionalLight *directionalLightData_ = nullptr;                    // マップ済みライト書き込み先
+	TransformationMatrix transformationMatrixData_{};                     // Draw時に転送するCPU側行列
+	DirectionalLight directionalLightData_{};                             // Draw時に転送するCPU側ライト
 };
