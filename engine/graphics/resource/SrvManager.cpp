@@ -10,24 +10,51 @@ void SrvManager::Initialize(DirectXCommon *dxCommon) {
 		throw std::invalid_argument("SrvManager requires an initialized DirectXCommon instance.");
 	}
 	dxCommon_ = dxCommon;
+	freeIndices_.clear();
+	freeIndices_.reserve(kMaxSRVCount - 1);
+	// 0番はImGuiが所有するため、ゲーム用アロケータから除外する。
+	for (uint32_t index = kMaxSRVCount; index-- > 1;) {
+		freeIndices_.push_back(index);
+	}
 }
 
-uint32_t SrvManager::Allocate() {
-	// ヒープの上限を超えない範囲で番号を順番に払い出す
-	if (useIndex_ >= kMaxSRVCount) {
+SrvHandle SrvManager::Allocate() {
+	if (dxCommon_ == nullptr) {
+		throw std::logic_error("SrvManager is not initialized.");
+	}
+	if (freeIndices_.empty()) {
 		throw std::runtime_error("The SRV descriptor heap is full.");
 	}
-	uint32_t index = useIndex_;
-	++useIndex_;
-	return index;
+	const uint32_t index = freeIndices_.back();
+	freeIndices_.pop_back();
+	Slot &slot = slots_[index];
+	slot.allocated = true;
+	return {index, slot.generation};
 }
 
-void SrvManager::CreateSRVforTexture2D(uint32_t srvIndex,
+void SrvManager::Release(SrvHandle handle) {
+	(void)Require(handle);
+	Slot &slot = slots_[handle.index];
+	slot.allocated = false;
+	// 0は無効世代として予約しているため、オーバーフロー時は1へ戻す。
+	if (++slot.generation == 0) {
+		slot.generation = 1;
+	}
+	freeIndices_.push_back(handle.index);
+}
+
+bool SrvManager::IsValid(SrvHandle handle) const noexcept {
+	return handle.IsValid() && handle.index < kMaxSRVCount && slots_[handle.index].allocated &&
+	       slots_[handle.index].generation == handle.generation;
+}
+
+void SrvManager::CreateSRVforTexture2D(SrvHandle handle,
                                        ID3D12Resource *resource,
                                        const DirectX::TexMetadata &metadata) {
-	if (dxCommon_ == nullptr || resource == nullptr || srvIndex >= kMaxSRVCount) {
+	if (dxCommon_ == nullptr || resource == nullptr) {
 		throw std::invalid_argument("Invalid texture SRV creation request.");
 	}
+	(void)Require(handle);
 
 	// 元画像の形式とミップ数を使って2Dテクスチャ用の設定を作る
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -37,19 +64,25 @@ void SrvManager::CreateSRVforTexture2D(uint32_t srvIndex,
 	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
 
 	// 指定されたディスクリプタ位置へSRVを書き込む
-	dxCommon_->GetDevice()->CreateShaderResourceView(resource, &srvDesc, GetCPUDescriptorHandle(srvIndex));
+	dxCommon_->GetDevice()->CreateShaderResourceView(resource, &srvDesc, GetCPUDescriptorHandle(handle));
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE SrvManager::GetCPUDescriptorHandle(uint32_t index) const {
-	if (dxCommon_ == nullptr || index >= kMaxSRVCount) {
-		throw std::out_of_range("Invalid SRV descriptor index.");
-	}
-	return dxCommon_->GetCPUDescriptorHandleSRV(index);
+D3D12_CPU_DESCRIPTOR_HANDLE SrvManager::GetCPUDescriptorHandle(SrvHandle handle) const {
+	(void)Require(handle);
+	return dxCommon_->GetCPUDescriptorHandleSRV(handle.index);
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE SrvManager::GetGPUDescriptorHandle(uint32_t index) const {
-	if (dxCommon_ == nullptr || index >= kMaxSRVCount) {
-		throw std::out_of_range("Invalid SRV descriptor index.");
+D3D12_GPU_DESCRIPTOR_HANDLE SrvManager::GetGPUDescriptorHandle(SrvHandle handle) const {
+	(void)Require(handle);
+	return dxCommon_->GetGPUDescriptorHandleSRV(handle.index);
+}
+
+const SrvManager::Slot &SrvManager::Require(SrvHandle handle) const {
+	if (dxCommon_ == nullptr) {
+		throw std::logic_error("SrvManager is not initialized.");
 	}
-	return dxCommon_->GetGPUDescriptorHandleSRV(index);
+	if (!IsValid(handle)) {
+		throw std::invalid_argument("SRV handle is stale or not allocated.");
+	}
+	return slots_[handle.index];
 }

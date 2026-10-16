@@ -6,9 +6,9 @@
 
 #include "engine/math/MatrixMath.h"
 #include "engine/math/RenderingTypes.h"
+#include "engine/graphics/resource/TextureManager.h"
 
 class SpriteCommon;
-class TextureManager;
 
 /// <summary>
 /// 1枚の2D画像に必要な頂点、座標変換、UV、テクスチャ参照を管理する。
@@ -21,8 +21,8 @@ class Sprite {
 	/// </summary>
 	/// <param name="spriteCommon">スプライト描画パイプラインを管理する共通処理</param>
 	/// <param name="textureManager">描画テクスチャのSRVを管理するクラス</param>
-	/// <param name="textureIndex">TextureManagerが発行した初期テクスチャ番号</param>
-	void Initialize(SpriteCommon *spriteCommon, TextureManager *textureManager, uint32_t textureIndex);
+	/// <param name="textureHandle">TextureManagerが発行した初期テクスチャハンドル</param>
+	void Initialize(SpriteCommon *spriteCommon, TextureManager *textureManager, TextureHandle textureHandle);
 
 	/// <summary>
 	/// 現在の表示設定から頂点、画面座標行列、UV行列を更新する。
@@ -73,9 +73,9 @@ class Sprite {
 	/// <summary>
 	/// 描画に使用するテクスチャを変更する。
 	/// </summary>
-	/// <param name="textureIndex">TextureManagerが発行したテクスチャ番号</param>
-	void SetTextureIndex(uint32_t textureIndex) {
-		textureIndex_ = textureIndex;
+	/// <param name="textureHandle">TextureManagerが発行した世代付きハンドル</param>
+	void SetTextureHandle(TextureHandle textureHandle) {
+		textureHandle_ = textureHandle;
 	}
 
 	/// <summary>テクスチャへ乗算する表示色を設定する。</summary>
@@ -92,7 +92,7 @@ class Sprite {
   private:
 	SpriteCommon *spriteCommon_ = nullptr;     // スプライト描画パイプラインの参照
 	TextureManager *textureManager_ = nullptr; // テクスチャSRV管理の参照
-	uint32_t textureIndex_ = 0;                // 現在描画するテクスチャ番号
+	TextureHandle textureHandle_{};            // 現在描画する世代付きテクスチャ参照
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;               // 矩形の頂点バッファ
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_;                // 矩形のインデックスバッファ

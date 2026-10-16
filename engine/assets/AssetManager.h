@@ -1,15 +1,13 @@
 #pragma once
 
 #include "engine/audio/Audio.h"
+#include "engine/graphics/resource/TextureManager.h"
 
-#include <cstdint>
 #include <filesystem>
-#include <limits>
 #include <memory>
 
 class Model;
 class ModelManager;
-class TextureManager;
 
 /// <summary>
 /// テクスチャ、モデル、音声をresource基準の統一パスで読み込む窓口。
@@ -20,17 +18,7 @@ class AssetManager final {
 	/// <summary>
 	/// TextureManager内のテクスチャを型安全に参照する軽量ハンドル。
 	/// </summary>
-	struct TextureHandle {
-		static constexpr uint32_t kInvalidIndex = std::numeric_limits<uint32_t>::max(); // 無効状態を表す予約番号
-		uint32_t index = kInvalidIndex; // TextureManager内のテクスチャ番号
-
-		/// <summary>
-		/// 利用可能なテクスチャ番号を保持しているか判定する。
-		/// </summary>
-		[[nodiscard]] bool IsValid() const {
-			return index != kInvalidIndex;
-		}
-	};
+	using TextureHandle = ::TextureHandle;
 
 	/// <summary>
 	/// アセット管理先を持たない未初期化状態で生成する。
@@ -81,9 +69,9 @@ class AssetManager final {
 	[[nodiscard]] Audio::SoundHandle LoadSound(const std::filesystem::path &relativePath);
 
 	/// <summary>
-	/// 描画クラスへ渡すTextureManager内部の番号を取得する。
+	/// テクスチャをアンロードし、渡されていた同世代のハンドルを無効化する。
 	/// </summary>
-	[[nodiscard]] uint32_t GetTextureIndex(TextureHandle handle) const;
+	void UnloadTexture(TextureHandle handle);
 
   private:
 	/// <summary>

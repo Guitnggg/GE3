@@ -39,7 +39,7 @@ ComPtr<ID3D12Resource> CreateUavBuffer(ID3D12Device *device, uint64_t size) {
 void GPUParticleSystem::Initialize(DirectXCommon *dxCommon,
                                    GPUParticlePipeline *pipeline,
                                    TextureManager *textureManager,
-                                   uint32_t textureHandle,
+                                   TextureHandle textureHandle,
                                    uint32_t maxParticles) {
 	if (!dxCommon || !pipeline || !textureManager || maxParticles == 0) {
 		throw std::invalid_argument("GPUParticleSystem requires services and at least one particle.");

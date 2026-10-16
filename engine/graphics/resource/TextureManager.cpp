@@ -1,8 +1,8 @@
 #include "TextureManager.h"
 
+#include <algorithm>
 #include <stdexcept>
 
-#include "engine/graphics/resource/SrvManager.h"
 #include "engine/core/DirectXCommon.h"
 
 void TextureManager::Initialize(DirectXCommon *dxCommon, SrvManager *srvManager) {
@@ -14,14 +14,15 @@ void TextureManager::Initialize(DirectXCommon *dxCommon, SrvManager *srvManager)
 	srvManager_ = srvManager;
 }
 
-uint32_t TextureManager::Load(const std::string &filePath) {
+TextureHandle TextureManager::Load(const std::string &filePath) {
 	if (dxCommon_ == nullptr || srvManager_ == nullptr) {
 		throw std::logic_error("TextureManager is not initialized.");
 	}
+	CollectGarbage();
 
-	// 読み込み済みなら新しいGPUリソースを作らず、既存の番号を返す
-	if (textureIndexMap_.contains(filePath)) {
-		return textureIndexMap_[filePath];
+	// 同じパスが有効な間はGPUリソースとハンドルを共有する。
+	if (const auto found = textureHandleMap_.find(filePath); found != textureHandleMap_.end()) {
+		return found->second;
 	}
 
 	// 画像を読み込み、ミップマップを含むテクスチャリソースをGPUへ転送する
@@ -30,26 +31,79 @@ uint32_t TextureManager::Load(const std::string &filePath) {
 
 	TextureData textureData{};
 	textureData.metadata = metadata;
+	textureData.path = filePath;
 	textureData.resource = dxCommon_->CreateTextureResource(dxCommon_->GetDevice(), metadata);
 	dxCommon_->UploadTextureData(textureData.resource, mipImages);
-	// 空いているディスクリプタを確保し、シェーダーから参照できるSRVを作る
-	textureData.srvIndex = srvManager_->Allocate();
-	srvManager_->CreateSRVforTexture2D(textureData.srvIndex, textureData.resource.Get(), textureData.metadata);
+	textureData.srvHandle = srvManager_->Allocate();
+	try {
+		srvManager_->CreateSRVforTexture2D(textureData.srvHandle, textureData.resource.Get(), textureData.metadata);
+	} catch (...) {
+		// SRV作成前に失敗しても、確保済みスロットを失わないよう割り当てを戻す。
+		srvManager_->Release(textureData.srvHandle);
+		throw;
+	}
 
-	// 次回以降に同じファイルを再利用できるよう、配列と検索表へ登録する
-	uint32_t textureIndex = static_cast<uint32_t>(textures_.size());
-	textures_.push_back(textureData);
-	textureIndexMap_[filePath] = textureIndex;
-	return textureIndex;
+	uint32_t index = 0;
+	if (freeTextureIndices_.empty()) {
+		index = static_cast<uint32_t>(textureSlots_.size());
+		textureSlots_.push_back({});
+	} else {
+		index = freeTextureIndices_.back();
+		freeTextureIndices_.pop_back();
+	}
+	TextureSlot &slot = textureSlots_[index];
+	slot.data = std::move(textureData);
+	const TextureHandle handle{index, slot.generation};
+	textureHandleMap_.emplace(filePath, handle);
+	return handle;
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(uint32_t textureIndex) const {
-	// 無効なテクスチャ番号からGPUハンドルを取得しないよう検証する
-	if (srvManager_ == nullptr) {
+void TextureManager::Unload(TextureHandle handle) {
+	TextureData texture = Require(handle);
+	TextureSlot &slot = textureSlots_[handle.index];
+	textureHandleMap_.erase(texture.path);
+
+	// ハンドルは即時無効化するが、GPUが参照し終えるまで実体とSRVスロットは保持する。
+	pendingReleases_.push_back(
+	    {std::move(texture.resource), texture.srvHandle, dxCommon_->GetSafeReleaseFenceValue()});
+	slot.data.reset();
+	if (++slot.generation == 0) {
+		slot.generation = 1;
+	}
+	freeTextureIndices_.push_back(handle.index);
+	CollectGarbage();
+}
+
+void TextureManager::CollectGarbage() {
+	if (dxCommon_ == nullptr || srvManager_ == nullptr) {
+		return;
+	}
+	const uint64_t completedFence = dxCommon_->GetCompletedFenceValue();
+	std::erase_if(pendingReleases_, [this, completedFence](PendingRelease &release) {
+		if (release.fenceValue > completedFence) {
+			return false;
+		}
+		// リソースを捨てる直前にSRVを返し、同じスロットが早期に上書きされることを防ぐ。
+		srvManager_->Release(release.srvHandle);
+		return true;
+	});
+}
+
+bool TextureManager::IsValid(TextureHandle handle) const noexcept {
+	return handle.IsValid() && handle.index < textureSlots_.size() &&
+	       textureSlots_[handle.index].generation == handle.generation && textureSlots_[handle.index].data.has_value();
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(TextureHandle handle) const {
+	return srvManager_->GetGPUDescriptorHandle(Require(handle).srvHandle);
+}
+
+const TextureManager::TextureData &TextureManager::Require(TextureHandle handle) const {
+	if (dxCommon_ == nullptr || srvManager_ == nullptr) {
 		throw std::logic_error("TextureManager is not initialized.");
 	}
-	if (textureIndex >= textures_.size()) {
-		throw std::out_of_range("Invalid texture index.");
+	if (!IsValid(handle)) {
+		throw std::invalid_argument("Texture handle is stale or unloaded.");
 	}
-	return srvManager_->GetGPUDescriptorHandle(textures_[textureIndex].srvIndex);
+	return *textureSlots_[handle.index].data;
 }

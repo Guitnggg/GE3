@@ -7,7 +7,7 @@
 
 #include <stdexcept>
 
-void MaterialInstance::Initialize(DirectXCommon *dxCommon, uint32_t textureIndex) {
+void MaterialInstance::Initialize(DirectXCommon *dxCommon, TextureHandle textureHandle) {
 	if (dxCommon == nullptr || dxCommon->GetDevice() == nullptr) {
 		throw std::invalid_argument("MaterialInstance requires initialized DirectXCommon.");
 	}
@@ -21,7 +21,7 @@ void MaterialInstance::Initialize(DirectXCommon *dxCommon, uint32_t textureIndex
 	data_->color = {1.0f, 1.0f, 1.0f, 1.0f};
 	data_->enableLighting = true;
 	data_->uvTransform = MakeIdentity4x4();
-	textureIndex_ = textureIndex;
+	textureHandle_ = textureHandle;
 	blendMode_ = BlendMode::Opaque;
 }
 
@@ -30,7 +30,7 @@ void MaterialInstance::Bind(ID3D12GraphicsCommandList *commandList, const Textur
 		throw std::logic_error("MaterialInstance cannot bind before initialization.");
 	}
 	commandList->SetGraphicsRootConstantBufferView(0, resource_->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootDescriptorTable(2, textureManager.GetSrvHandleGPU(textureIndex_));
+	commandList->SetGraphicsRootDescriptorTable(2, textureManager.GetSrvHandleGPU(textureHandle_));
 }
 
 Material &MaterialInstance::GetData() {

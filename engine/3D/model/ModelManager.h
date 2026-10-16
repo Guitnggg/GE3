@@ -7,10 +7,10 @@
 #include <vector>
 
 #include "engine/math/RenderingTypes.h"
+#include "engine/graphics/resource/TextureManager.h"
 
 class DirectXCommon;
 class Model;
-class TextureManager;
 
 /// <summary>
 /// OBJモデルをパス単位でキャッシュし、複数の描画オブジェクトへ共有する。
@@ -35,9 +35,9 @@ class ModelManager {
 	/// 手続き生成した頂点列から、キャッシュしないモデルを生成する。
 	/// </summary>
 	/// <param name="vertices">三角形リスト形式の頂点データ</param>
-	/// <param name="textureIndex">TextureManagerが発行したテクスチャ番号</param>
+	/// <param name="textureHandle">TextureManagerが発行した世代付きハンドル</param>
 	/// <returns>生成したモデル</returns>
-	std::shared_ptr<Model> Create(const std::vector<VertexData> &vertices, uint32_t textureIndex) const;
+	std::shared_ptr<Model> Create(const std::vector<VertexData> &vertices, TextureHandle textureHandle) const;
 
 	/// <summary>
 	/// 管理中のOBJモデルキャッシュを解放する。

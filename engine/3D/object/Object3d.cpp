@@ -25,7 +25,7 @@ void Object3d::Initialize(Object3dCommon *object3dCommon,
 
 	auto *dxCommon = object3dCommon_->GetDxCommon();
 	material_ = std::make_shared<MaterialInstance>();
-	material_->Initialize(dxCommon, model_->GetDefaultTextureIndex());
+	material_->Initialize(dxCommon, model_->GetDefaultTextureHandle());
 
 	// ワールド行列とWVP行列を毎フレーム更新する定数バッファを生成する
 	transformationMatrixResource_ = dxCommon->CreateBufferResource(sizeof(TransformationMatrix));

@@ -149,6 +149,8 @@ void Engine::BeginFrame() {
 	time_->Update();
 	input_->Update();
 	audio_->Update();
+	// 前フレーム以前にGPU利用が終わったテクスチャとSRVを再利用可能にする。
+	textureManager_->CollectGarbage();
 	if (!sceneInitialized_) {
 		throw std::logic_error("SetInitialScene must be called from OnInitialize.");
 	}
@@ -170,9 +172,13 @@ void Engine::BeginFrame() {
 }
 
 void Engine::OnInitialize() {}
+
 void Engine::OnUpdate() {}
+
 void Engine::OnFixedUpdate() {}
+
 void Engine::OnDraw() {}
+
 void Engine::OnFinalize() {}
 
 void Engine::SetInitialScene(std::unique_ptr<IScene> initialScene) {
@@ -236,6 +242,10 @@ void Engine::Finalize() {
 		sceneManager_->Finalize();
 	}
 	sceneInitialized_ = false;
+	if (dxCommon_) {
+		// 複数フレームを並行実行しているため、GPUリソースを所有する各Managerの破棄前に一度だけ同期する。
+		dxCommon_->WaitForGPUIdle();
+	}
 
 #ifdef _DEBUG
 	if (debugOverlay_) {

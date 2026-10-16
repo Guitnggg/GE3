@@ -32,13 +32,13 @@ std::shared_ptr<Model> ModelManager::Load(const std::string &directoryPath, cons
 	return model;
 }
 
-std::shared_ptr<Model> ModelManager::Create(const std::vector<VertexData> &vertices, uint32_t textureIndex) const {
+std::shared_ptr<Model> ModelManager::Create(const std::vector<VertexData> &vertices, TextureHandle textureHandle) const {
 	// 手続き生成モデルはファイルパスを持たないため、キャッシュへ登録せず呼び出し元へ返す
 	if (dxCommon_ == nullptr) {
 		throw std::logic_error("ModelManager is not initialized.");
 	}
 	auto model = std::make_shared<Model>();
-	model->InitializeFromVertices(dxCommon_, vertices, textureIndex);
+	model->InitializeFromVertices(dxCommon_, vertices, textureHandle);
 	return model;
 }
 

@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "Mesh.h"
+#include "engine/graphics/resource/TextureManager.h"
 
 class DirectXCommon;
-class TextureManager;
 
 /// <summary>
 /// 共有可能なメッシュと既定テクスチャをまとめる3Dモデル資産。
@@ -31,10 +31,10 @@ class Model {
 	/// </summary>
 	/// <param name="dxCommon">GPUリソースの生成に使用するDirectX共通処理</param>
 	/// <param name="vertices">三角形リスト形式の頂点データ</param>
-	/// <param name="textureIndex">TextureManagerが発行したテクスチャ番号</param>
+	/// <param name="textureHandle">TextureManagerが発行した世代付きハンドル</param>
 	void InitializeFromVertices(DirectXCommon *dxCommon,
 	                            const std::vector<VertexData> &vertices,
-	                            uint32_t textureIndex);
+	                            TextureHandle textureHandle);
 
 	/// <summary>
 	/// モデルが所有するメッシュを描画する。
@@ -46,11 +46,11 @@ class Model {
 	/// モデルに設定された既定テクスチャ番号を取得する。
 	/// </summary>
 	/// <returns>TextureManager内のテクスチャ番号</returns>
-	uint32_t GetDefaultTextureIndex() const {
-		return defaultTextureIndex_;
+	TextureHandle GetDefaultTextureHandle() const {
+		return defaultTextureHandle_;
 	}
 
   private:
 	Mesh mesh_;                        // 複数のObject3dから共有されるGPU頂点データ
-	uint32_t defaultTextureIndex_ = 0; // MTLまたは生成時に指定された既定テクスチャ
+	TextureHandle defaultTextureHandle_{}; // MTLまたは生成時に指定された既定テクスチャ
 };

@@ -171,6 +171,14 @@ class DirectXCommon {
 	}
 
 	/// <summary>
+	/// 現在までに記録されたGPU参照がすべて完了するフェンス値を返す。
+	/// 描画記録中は、そのコマンドが次に送信されるフェンス値を返す。
+	/// </summary>
+	[[nodiscard]] uint64_t GetSafeReleaseFenceValue() const {
+		return nextFenceValue_ + (frameInProgress_ ? 1u : 0u);
+	}
+
+	/// <summary>
 	/// 送信済みの全GPU処理が終わるまで待機する。
 	/// 終了処理や、GPUが参照中の可能性がある共有リソースを即時破棄するときだけ使用する。
 	/// </summary>
@@ -179,16 +187,55 @@ class DirectXCommon {
   private:
 	// ===== 初期化用メンバ関数 =====
 
-	void CreateDevice();           // デバイスとDXGIファクトリを生成する
-	void CreateCommand();          // コマンドキュー、アロケータ、リストを生成する
-	void CreateSwapChain();        // スワップチェーンを生成する
-	void CreateDepthBuffer();      // 深度バッファを生成する
-	void CreateDescriptorHeaps();  // 各種ディスクリプタヒープを生成する
-	void CreateRenderTargetView(); // レンダーターゲットビューを生成する
-	void CreateDepthStencilView(); // 深度ステンシルビューを生成する
-	void CreateFence();            // GPU同期用フェンスを生成する
-	void CreateViewport();         // ビューポートを設定する
-	void CreateScissorRect();      // シザー矩形を設定する
+	/// <summary>
+	/// デバイスとDXGIファクトリを生成する
+	/// </summary>
+	void CreateDevice();
+
+	/// <summary>
+	/// 子マントキュー、アロケータ、リストを生成する
+	/// </summary>
+	void CreateCommand();
+
+	/// <summary>
+	/// スワップチェーンを生成する
+	/// </summary>
+	void CreateSwapChain();
+
+	/// <summary>
+	/// 深度バッファを生成する
+	/// </summary>
+	void CreateDepthBuffer();
+
+	/// <summary>
+	/// 各種ディスクリプタヒープを生成する
+	/// </summary>
+	void CreateDescriptorHeaps();
+
+	/// <summary>
+	/// レンダーターゲットビューを生成する
+	/// </summary>
+	void CreateRenderTargetView();
+
+	/// <summary>
+	/// 深度ステンシルビューを生成する
+	/// </summary>
+	void CreateDepthStencilView();
+
+	/// <summary>
+	/// GPU同期用フェンスを生成する
+	/// </summary>
+	void CreateFence();
+
+	/// <summary>
+	/// ビューポートを設定する
+	/// </summary>
+	void CreateViewport();
+
+	/// <summary>
+	/// シザー矩形を設定する
+	/// </summary>
+	void CreateScissorRect();
 
 	/// <summary>
 	/// 指定したフェンス値までGPUが進んでいない場合だけ待機する。

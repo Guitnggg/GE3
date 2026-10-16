@@ -34,44 +34,58 @@ class Object3d {
 	/// <param name="camera">更新済みのビュー・プロジェクション行列を持つカメラ</param>
 	void Update(const Camera &camera);
 
-	/// <summary>オブジェクト固有データを設定し、共有モデルを描画する。</summary>
+	/// <summary>
+	/// オブジェクト固有データを設定し、共有モデルを描画する。
+	/// </summary>
 	void Draw() const;
 
-	/// <summary>位置・回転・拡縮を変更するためのTransformを取得する。</summary>
+	/// <summary>
+	/// 位置・回転・拡縮を変更するためのTransformを取得する。
+	/// </summary>
 	/// <returns>このオブジェクトが所有するTransform</returns>
 	Transform &GetTransform() {
 		return transform_;
 	}
 
-	/// <summary>位置・回転・拡縮を読み取るためのTransformを取得する。</summary>
+	/// <summary>
+	/// 位置・回転・拡縮を読み取るためのTransformを取得する。
+	/// </summary>
 	/// <returns>このオブジェクトが所有するTransform</returns>
 	const Transform &GetTransform() const {
 		return transform_;
 	}
 
-	/// <summary>CPUから更新可能な平行光源情報を取得する。</summary>
+	/// <summary>
+	/// CPUから更新可能な平行光源情報を取得する。
+	/// </summary>
 	/// <returns>GPU定数バッファへマップされた平行光源データ</returns>
 	DirectionalLight *GetDirectionalLightData() const {
 		return directionalLightData_;
 	}
 
-	/// <summary>CPUから更新可能なマテリアル情報を取得する。</summary>
+	/// <summary>
+	/// CPUから更新可能なマテリアル情報を取得する。
+	/// </summary>
 	/// <returns>GPU定数バッファへマップされたマテリアルデータ</returns>
 	Material *GetMaterialData() const {
 		return material_ ? &material_->GetData() : nullptr;
 	}
 
-	/// <summary>共有可能なマテリアルへ差し替える。</summary>
+	/// <summary>
+	/// 共有可能なマテリアルへ差し替える。
+	/// </summary>
 	void SetMaterial(const std::shared_ptr<MaterialInstance> &material);
 	[[nodiscard]] const std::shared_ptr<MaterialInstance> &GetMaterial() const {
 		return material_;
 	}
 
-	/// <summary>このオブジェクトの描画に使用するテクスチャを変更する。</summary>
-	/// <param name="textureIndex">TextureManagerが発行したテクスチャ番号</param>
-	void SetTextureIndex(uint32_t textureIndex) {
+	/// <summary>
+	/// このオブジェクトの描画に使用するテクスチャを変更する。
+	/// </summary>
+	/// <param name="textureHandle">TextureManagerが発行した世代付きハンドル</param>
+	void SetTextureHandle(TextureHandle textureHandle) {
 		if (material_) {
-			material_->SetTextureIndex(textureIndex);
+			material_->SetTextureHandle(textureHandle);
 		}
 	}
 

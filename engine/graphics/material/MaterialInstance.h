@@ -1,13 +1,13 @@
 #pragma once
 
 #include "engine/math/RenderingTypes.h"
+#include "engine/graphics/resource/TextureManager.h"
 
 #include <cstdint>
 #include <d3d12.h>
 #include <wrl.h>
 
 class DirectXCommon;
-class TextureManager;
 
 enum class BlendMode : uint8_t {
 	Opaque,   // 不透明として描画する
@@ -16,39 +16,57 @@ enum class BlendMode : uint8_t {
 	Count     // ブレンド方式の総数
 };
 
-/// <summary>3D描画用のマテリアル定数、テクスチャ、ブレンド方式を共有可能な形で所有する。</summary>
+/// <summary>
+/// 3D描画用のマテリアル定数、テクスチャ、ブレンド方式を共有可能な形で所有する。
+/// </summary>
 class MaterialInstance final {
   public:
-	void Initialize(DirectXCommon *dxCommon, uint32_t textureIndex);
+	void Initialize(DirectXCommon *dxCommon, TextureHandle textureHandle);
 
-	/// <summary>マテリアル定数とテクスチャを描画コマンドへ設定する。</summary>
+	/// <summary>
+	/// マテリアル定数とテクスチャを描画コマンドへ設定する。
+	/// </summary>
 	void Bind(ID3D12GraphicsCommandList *commandList, const TextureManager &textureManager) const;
 
-	/// <summary>編集可能なマテリアル定数を返す。</summary>
+	/// <summary>
+	/// 編集可能なマテリアル定数を返す。
+	/// </summary>
 	[[nodiscard]] Material &GetData();
 
-	/// <summary>読み取り専用のマテリアル定数を返す。</summary>
+	/// <summary>
+	/// 読み取り専用のマテリアル定数を返す。
+	/// </summary>
 	[[nodiscard]] const Material &GetData() const;
 
-	/// <summary>描画に使用するテクスチャ番号を設定する。</summary>
-	void SetTextureIndex(uint32_t textureIndex) {
-		textureIndex_ = textureIndex;
+	/// <summary>
+	/// 描画に使用するテクスチャ番号を設定する。
+	/// </summary>
+	void SetTextureHandle(TextureHandle textureHandle) {
+		textureHandle_ = textureHandle;
 	}
 
-	/// <summary>描画に使用するテクスチャ番号を返す。</summary>
-	[[nodiscard]] uint32_t GetTextureIndex() const {
-		return textureIndex_;
+	/// <summary>
+	/// 描画に使用するテクスチャ番号を返す。
+	/// </summary>
+	[[nodiscard]] TextureHandle GetTextureHandle() const {
+		return textureHandle_;
 	}
 
-	/// <summary>描画時のブレンド方式を設定する。</summary>
+	/// <summary>
+	/// 描画時のブレンド方式を設定する。
+	/// </summary>
 	void SetBlendMode(BlendMode blendMode);
 
-	/// <summary>現在のブレンド方式を返す。</summary>
+	/// <summary>
+	/// 現在のブレンド方式を返す。
+	/// </summary>
 	[[nodiscard]] BlendMode GetBlendMode() const {
 		return blendMode_;
 	}
 
-	/// <summary>GPU用マテリアル領域が作成済みかを返す。</summary>
+	/// <summary>
+	/// GPU用マテリアル領域が作成済みかを返す。
+	/// </summary>
 	[[nodiscard]] bool IsInitialized() const {
 		return data_ != nullptr;
 	}
@@ -56,6 +74,6 @@ class MaterialInstance final {
   private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> resource_; // マテリアル定数を格納するGPUバッファ
 	Material *data_ = nullptr;                        // CPUから更新するマップ済み領域
-	uint32_t textureIndex_ = 0;                       // 描画に使用するTextureManager内の番号
+	TextureHandle textureHandle_{};                   // 描画に使用する世代付きテクスチャ参照
 	BlendMode blendMode_ = BlendMode::Opaque;         // 描画時に使用するブレンド方式
 };

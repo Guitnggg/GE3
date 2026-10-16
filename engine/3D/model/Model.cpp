@@ -158,15 +158,15 @@ void Model::InitializeFromObj(DirectXCommon *dxCommon,
 		throw std::runtime_error("The model material does not specify a diffuse texture: " + filename);
 	}
 	// 解析結果をGPUへ転送する。modelDataは関数終了時に解放される
-	defaultTextureIndex_ = textureManager->Load(modelData.material.textureFilePath);
+	defaultTextureHandle_ = textureManager->Load(modelData.material.textureFilePath);
 	mesh_.Initialize(dxCommon, modelData.vertices);
 }
 
 void Model::InitializeFromVertices(DirectXCommon *dxCommon,
                                    const std::vector<VertexData> &vertices,
-                                   uint32_t textureIndex) {
+                                   TextureHandle textureHandle) {
 	// 球体など、ファイルを介さず生成された頂点列をそのままGPUへ転送する
-	defaultTextureIndex_ = textureIndex;
+	defaultTextureHandle_ = textureHandle;
 	mesh_.Initialize(dxCommon, vertices);
 }
 

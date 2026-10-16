@@ -46,7 +46,7 @@ void AssetManager::Finalize() {
 
 AssetManager::TextureHandle AssetManager::LoadTexture(const std::filesystem::path &relativePath) {
 	EnsureInitialized();
-	return TextureHandle{textureManager_->Load(Resolve(relativePath).generic_string())};
+	return textureManager_->Load(Resolve(relativePath).generic_string());
 }
 
 std::shared_ptr<Model> AssetManager::LoadModel(const std::filesystem::path &relativePath) {
@@ -63,12 +63,9 @@ Audio::SoundHandle AssetManager::LoadSound(const std::filesystem::path &relative
 	return audio_->Load(Resolve(relativePath));
 }
 
-uint32_t AssetManager::GetTextureIndex(TextureHandle handle) const {
+void AssetManager::UnloadTexture(TextureHandle handle) {
 	EnsureInitialized();
-	if (!handle.IsValid()) {
-		throw std::invalid_argument("Invalid texture asset handle.");
-	}
-	return handle.index;
+	textureManager_->Unload(handle);
 }
 
 std::filesystem::path AssetManager::Resolve(const std::filesystem::path &path) const {

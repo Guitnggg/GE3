@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -9,9 +11,23 @@
 #include <wrl.h>
 
 #include "externals/DirectXTex/DirectXTex.h"
+#include "engine/graphics/resource/SrvManager.h"
 
 class DirectXCommon;
-class SrvManager;
+
+/// <summary>
+/// TextureManager内のスロットと世代を組み合わせた型安全な参照。
+/// </summary>
+struct TextureHandle {
+	static constexpr uint32_t kInvalidIndex = std::numeric_limits<uint32_t>::max();
+	uint32_t index = kInvalidIndex;
+	uint32_t generation = 0;
+
+	[[nodiscard]] bool IsValid() const noexcept {
+		return index != kInvalidIndex && generation != 0;
+	}
+	bool operator==(const TextureHandle &) const noexcept = default;
+};
 
 /// <summary>
 /// 画像ファイルをGPUへ転送し、パスごとのSRVをキャッシュする。
@@ -24,14 +40,29 @@ class TextureManager {
 	void Initialize(DirectXCommon *dxCommon, SrvManager *srvManager);
 
 	/// <summary>
-	/// 指定ファイルのテクスチャを読み込み、テクスチャ番号を返す。
+	/// 指定ファイルのテクスチャを読み込み、世代付きハンドルを返す。
 	/// </summary>
-	uint32_t Load(const std::string &filePath);
+	[[nodiscard]] TextureHandle Load(const std::string &filePath);
 
 	/// <summary>
-	/// テクスチャ番号に対応するGPU用SRVハンドルを取得する。
+	/// テクスチャを無効化し、GPU完了後にリソースとSRVを再利用可能にする。
 	/// </summary>
-	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(uint32_t textureIndex) const;
+	void Unload(TextureHandle handle);
+
+	/// <summary>
+	/// GPUが使用を終えた保留リソースを解放する。
+	/// </summary>
+	void CollectGarbage();
+
+	/// <summary>
+	/// ハンドルが現在読み込み済みのテクスチャを指しているか返す。
+	/// </summary>
+	[[nodiscard]] bool IsValid(TextureHandle handle) const noexcept;
+
+	/// <summary>
+	/// テクスチャハンドルに対応するGPU用SRVハンドルを取得する。
+	/// </summary>
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(TextureHandle handle) const;
 
   private:
 	/// <summary>
@@ -40,11 +71,25 @@ class TextureManager {
 	struct TextureData {
 		DirectX::TexMetadata metadata{};                 // 幅、高さ、フォーマットなどの画像情報
 		Microsoft::WRL::ComPtr<ID3D12Resource> resource; // GPU上のテクスチャリソース
-		uint32_t srvIndex = 0;                           // SrvManagerから割り当てられた番号
+		SrvHandle srvHandle{};                           // SrvManagerから割り当てられた世代付き参照
+		std::string path;                                // キャッシュ表から削除する正規化済みパス
+	};
+	struct TextureSlot {
+		uint32_t generation = 1;
+		std::optional<TextureData> data;
+	};
+	struct PendingRelease {
+		Microsoft::WRL::ComPtr<ID3D12Resource> resource; // GPU完了まで寿命を延長する本体
+		SrvHandle srvHandle{};                           // 同じ時点まで再利用を禁止するSRV
+		uint64_t fenceValue = 0;                         // この値の完了後に安全に解放できる
 	};
 
-	DirectXCommon *dxCommon_ = nullptr;                         // DirectX共通処理
-	SrvManager *srvManager_ = nullptr;                          // SRVの割り当て管理
-	std::vector<TextureData> textures_;                         // 読み込み済みテクスチャ一覧
-	std::unordered_map<std::string, uint32_t> textureIndexMap_; // ファイルパスからテクスチャ番号を検索する表
+	[[nodiscard]] const TextureData &Require(TextureHandle handle) const;
+
+	DirectXCommon *dxCommon_ = nullptr;                             // DirectX共通処理
+	SrvManager *srvManager_ = nullptr;                              // SRVの割り当て管理
+	std::vector<TextureSlot> textureSlots_;                         // 再利用可能なテクスチャ格納場所
+	std::vector<uint32_t> freeTextureIndices_;                      // 空いているテクスチャ番号
+	std::vector<PendingRelease> pendingReleases_;                   // GPU完了を待っているリソース
+	std::unordered_map<std::string, TextureHandle> textureHandleMap_; // パスから現在のハンドルを引く表
 };

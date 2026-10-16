@@ -7,14 +7,14 @@
 #include "engine/graphics/resource/TextureManager.h"
 #include "engine/core/diagnostics/HResult.h"
 
-void Sprite::Initialize(SpriteCommon *spriteCommon, TextureManager *textureManager, uint32_t textureIndex) {
+void Sprite::Initialize(SpriteCommon *spriteCommon, TextureManager *textureManager, TextureHandle textureHandle) {
 	// 描画パイプラインとテクスチャ管理の両方が利用可能か確認する
 	if (spriteCommon == nullptr || spriteCommon->GetDXCommon() == nullptr || textureManager == nullptr) {
 		throw std::invalid_argument("Sprite requires SpriteCommon and TextureManager.");
 	}
 	spriteCommon_ = spriteCommon;
 	textureManager_ = textureManager;
-	textureIndex_ = textureIndex;
+	textureHandle_ = textureHandle;
 	DirectXCommon *dxCommon = spriteCommon_->GetDXCommon();
 
 	// CPUから毎フレーム書き換えられる矩形頂点バッファを生成する
@@ -97,7 +97,7 @@ void Sprite::Draw() const {
 	commandList->IASetIndexBuffer(&indexBufferView_);
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource_->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetSrvHandleGPU(textureIndex_));
+	commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetSrvHandleGPU(textureHandle_));
 	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }
 

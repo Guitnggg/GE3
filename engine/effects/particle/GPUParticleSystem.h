@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/effects/particle/GPUParticleCommon.h"
+#include "engine/graphics/resource/TextureManager.h"
 
 #include <cstdint>
 #include <vector>
@@ -11,7 +12,6 @@
 class Camera;
 class DirectXCommon;
 class GPUParticlePipeline;
-class TextureManager;
 
 /// <summary>
 /// GPU上で生成・更新・描画を完結する再利用可能なパーティクルプール。
@@ -25,7 +25,7 @@ class GPUParticleSystem final {
 	void Initialize(DirectXCommon *dxCommon,
 	                GPUParticlePipeline *pipeline,
 	                TextureManager *textureManager,
-	                uint32_t textureHandle,
+	                TextureHandle textureHandle,
 	                uint32_t maxParticles = 4096);
 
 	/// <summary>
@@ -153,7 +153,7 @@ class GPUParticleSystem final {
 	DirectXCommon *dxCommon_ = nullptr;             // DirectX基盤への非所有参照
 	GPUParticlePipeline *pipeline_ = nullptr;       // Compute・描画パイプラインへの非所有参照
 	TextureManager *textureManager_ = nullptr;      // 描画テクスチャ管理への非所有参照
-	uint32_t textureHandle_ = 0;                    // 粒子描画に使用するテクスチャ番号
+	TextureHandle textureHandle_{};                 // 粒子描画に使用する世代付きテクスチャ参照
 	uint32_t maxParticles_ = 0;                     // 同時に保持できる粒子数
 	float deltaTime_ = 0.0f;                        // 最新更新で使用する経過時間
 	bool needsInitialize_ = true;                   // GPU側の初期化処理が必要か
