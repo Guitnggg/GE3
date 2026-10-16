@@ -76,7 +76,7 @@ ModelData LoadObj(const std::string &directoryPath, const std::string &filename)
 			// 頂点位置を右手系からエンジンの左手系へ変換する
 			Vector4 position{};
 			stream >> position.x >> position.y >> position.z;
-			position.s = 1.0f;
+			position.w = 1.0f;
 			position.x *= -1.0f;
 			positions.push_back(position);
 		} else if (identifier == "vt") {

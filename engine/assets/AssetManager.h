@@ -17,18 +17,39 @@ class TextureManager;
 /// </summary>
 class AssetManager final {
   public:
+	/// <summary>
+	/// TextureManager内のテクスチャを型安全に参照する軽量ハンドル。
+	/// </summary>
 	struct TextureHandle {
-		static constexpr uint32_t kInvalidIndex = std::numeric_limits<uint32_t>::max();
-		uint32_t index = kInvalidIndex;
+		static constexpr uint32_t kInvalidIndex = std::numeric_limits<uint32_t>::max(); // 無効状態を表す予約番号
+		uint32_t index = kInvalidIndex; // TextureManager内のテクスチャ番号
 
+		/// <summary>
+		/// 利用可能なテクスチャ番号を保持しているか判定する。
+		/// </summary>
 		[[nodiscard]] bool IsValid() const {
 			return index != kInvalidIndex;
 		}
 	};
 
+	/// <summary>
+	/// アセット管理先を持たない未初期化状態で生成する。
+	/// </summary>
 	AssetManager() = default;
+
+	/// <summary>
+	/// 保持している参照と内部状態を破棄する。
+	/// </summary>
 	~AssetManager();
+
+	/// <summary>
+	/// 管理先との関連を一意に保つため、コピーを禁止する。
+	/// </summary>
 	AssetManager(const AssetManager &) = delete;
+
+	/// <summary>
+	/// 管理先との関連を一意に保つため、コピー代入を禁止する。
+	/// </summary>
 	AssetManager &operator=(const AssetManager &) = delete;
 
 	/// <summary>
@@ -65,7 +86,14 @@ class AssetManager final {
 	[[nodiscard]] uint32_t GetTextureIndex(TextureHandle handle) const;
 
   private:
+	/// <summary>
+	/// 相対パスをアセット基準ディレクトリからの完全なパスへ解決する。
+	/// </summary>
 	[[nodiscard]] std::filesystem::path Resolve(const std::filesystem::path &path) const;
+
+	/// <summary>
+	/// 各専用Managerへの参照が設定済みであることを検証する。
+	/// </summary>
 	void EnsureInitialized() const;
 
 	TextureManager *textureManager_ = nullptr; // テクスチャ読み込み先への非所有参照

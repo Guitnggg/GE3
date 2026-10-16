@@ -18,7 +18,9 @@ inline Vector3 Normalize(const Vector3 &v) {
 	return {v.x * inverseLength, v.y * inverseLength, v.z * inverseLength};
 }
 
-/// <summary>割合tに従って2値を線形補間し、範囲外では外挿する。</summary>
+/// <summary>
+/// 割合tに従って2値を線形補間し、範囲外では外挿する。
+/// </summary>
 inline float Lerp(float start, float end, float t) {
 	return start + (end - start) * t;
 }
@@ -32,10 +34,12 @@ inline Vector3 Lerp(const Vector3 &start, const Vector3 &end, float t) {
 }
 
 inline Vector4 Lerp(const Vector4 &start, const Vector4 &end, float t) {
-	return {Lerp(start.x, end.x, t), Lerp(start.y, end.y, t), Lerp(start.z, end.z, t), Lerp(start.s, end.s, t)};
+	return {Lerp(start.x, end.x, t), Lerp(start.y, end.y, t), Lerp(start.z, end.z, t), Lerp(start.w, end.w, t)};
 }
 
-/// <summary>指定値が始点から終点の間にある割合を0から1で返す。</summary>
+/// <summary>
+/// 指定値が始点から終点の間にある割合を0から1で返す。
+/// </summary>
 inline float InverseLerp(float start, float end, float value) {
 	if (std::abs(end - start) <= 1.0e-6f) {
 		return 0.0f;
@@ -43,12 +47,16 @@ inline float InverseLerp(float start, float end, float value) {
 	return std::clamp((value - start) / (end - start), 0.0f, 1.0f);
 }
 
-/// <summary>ある数値範囲の値を別の数値範囲へ線形に写像する。</summary>
+/// <summary>
+/// ある数値範囲の値を別の数値範囲へ線形に写像する。
+/// </summary>
 inline float Remap(float inputStart, float inputEnd, float outputStart, float outputEnd, float value) {
 	return Lerp(outputStart, outputEnd, InverseLerp(inputStart, inputEnd, value));
 }
 
-/// <summary>現在値をtargetへ最大maxDeltaだけ近づける。</summary>
+/// <summary>
+/// 現在値をtargetへ最大maxDeltaだけ近づける。
+/// </summary>
 inline float MoveTowards(float current, float target, float maxDelta) {
 	if (maxDelta < 0.0f) {
 		return current;
@@ -60,7 +68,9 @@ inline float MoveTowards(float current, float target, float maxDelta) {
 	return current + std::copysign(maxDelta, difference);
 }
 
-/// <summary>valueを0以上length未満の周期へ折り返す。</summary>
+/// <summary>
+/// valueを0以上length未満の周期へ折り返す。
+/// </summary>
 inline float Repeat(float value, float length) {
 	if (!std::isfinite(value) || !std::isfinite(length) || length <= 0.0f) {
 		return 0.0f;
@@ -68,13 +78,17 @@ inline float Repeat(float value, float length) {
 	return value - std::floor(value / length) * length;
 }
 
-/// <summary>0からlengthまでを往復する値を返す。</summary>
+/// <summary>
+/// 0からlengthまでを往復する値を返す。
+/// </summary>
 inline float PingPong(float value, float length) {
 	const float repeated = Repeat(value, length * 2.0f);
 	return length - std::abs(repeated - length);
 }
 
-/// <summary>ラジアン角を-pi以上pi以下へ正規化する。</summary>
+/// <summary>
+/// ラジアン角を-pi以上pi以下へ正規化する。
+/// </summary>
 inline float NormalizeAngle(float radians) {
 	constexpr float kPi = 3.14159265358979323846f;
 	constexpr float kTau = kPi * 2.0f;
@@ -82,17 +96,23 @@ inline float NormalizeAngle(float radians) {
 	return normalized == -kPi ? kPi : normalized;
 }
 
-/// <summary>currentからtargetまでの最短角度差をラジアンで返す。</summary>
+/// <summary>
+/// currentからtargetまでの最短角度差をラジアンで返す。
+/// </summary>
 inline float DeltaAngle(float current, float target) {
 	return NormalizeAngle(target - current);
 }
 
-/// <summary>2つのラジアン角を最短方向へ補間する。</summary>
+/// <summary>
+/// 2つのラジアン角を最短方向へ補間する。
+/// </summary>
 inline float LerpAngle(float start, float end, float t) {
 	return start + DeltaAngle(start, end) * std::clamp(t, 0.0f, 1.0f);
 }
 
-/// <summary>現在角をtargetへ最大maxDeltaラジアンだけ最短方向へ近づける。</summary>
+/// <summary>
+/// 現在角をtargetへ最大maxDeltaラジアンだけ最短方向へ近づける。
+/// </summary>
 inline float MoveTowardsAngle(float current, float target, float maxDelta) {
 	const float delta = DeltaAngle(current, target);
 	if (std::abs(delta) <= maxDelta) {

@@ -24,12 +24,24 @@ enum class InputActionType {
 /// </summary>
 class Input final {
   public:
+	/// <summary>
+	/// 入力デバイスを持たない未初期化状態で生成する。
+	/// </summary>
 	Input() = default;
 
+	/// <summary>
+	/// 初期化済みの場合は入力デバイスを安全に終了する。
+	/// </summary>
 	~Input();
 
+	/// <summary>
+	/// 入力デバイスを単独管理するため、コピーを禁止する。
+	/// </summary>
 	Input(const Input &) = delete;
 
+	/// <summary>
+	/// 入力デバイスを単独管理するため、コピー代入を禁止する。
+	/// </summary>
 	Input &operator=(const Input &) = delete;
 
 	/// <summary>
@@ -49,189 +61,286 @@ class Input final {
 	void Finalize() noexcept;
 
   public: // ===== キーボード入力の従来互換API =====
-	/// <summary>指定したキーが押されているかを返す。</summary>
+	/// <summary>
+	/// 指定したキーが押されているかを返す。
+	/// </summary>
 	bool PushKey(BYTE keyNumber) const {
 		return keyboard_.Push(keyNumber);
 	}
 
-	/// <summary>指定したキーがこのフレームで押されたかを返す。</summary>
+	/// <summary>
+	/// 指定したキーがこのフレームで押されたかを返す。
+	/// </summary>
 	bool TriggerKey(BYTE keyNumber) const {
 		return keyboard_.Trigger(keyNumber);
 	}
 
-	/// <summary>指定したキーがこのフレームで離されたかを返す。</summary>
+	/// <summary>
+	/// 指定したキーがこのフレームで離されたかを返す。
+	/// </summary>
 	bool ReleaseKey(BYTE keyNumber) const {
 		return keyboard_.Release(keyNumber);
 	}
 
   public: // ===== マウス入力の従来互換API =====
-	/// <summary>前フレームからのマウス水平移動量を返す。</summary>
+	/// <summary>
+	/// 前フレームからのマウス水平移動量を返す。
+	/// </summary>
 	LONG GetMouseDeltaX() const {
 		return mouse_.GetDeltaX();
 	}
 
-	/// <summary>前フレームからのマウス垂直移動量を返す。</summary>
+	/// <summary>
+	/// 前フレームからのマウス垂直移動量を返す。
+	/// </summary>
 	LONG GetMouseDeltaY() const {
 		return mouse_.GetDeltaY();
 	}
 
-	/// <summary>このフレームのホイール回転量を返す。</summary>
+	/// <summary>
+	/// このフレームのホイール回転量を返す。
+	/// </summary>
 	LONG GetMouseWheelDelta() const {
 		return mouse_.GetWheelDelta();
 	}
 
-	/// <summary>クライアント領域上のマウス座標を返す。</summary>
+	/// <summary>
+	/// クライアント領域上のマウス座標を返す。
+	/// </summary>
 	POINT GetMousePosition() const {
 		return mouse_.GetPosition();
 	}
 
-	/// <summary>指定したマウスボタンが押されているかを返す。</summary>
+	/// <summary>
+	/// 指定したマウスボタンが押されているかを返す。
+	/// </summary>
 	bool PushMouseButton(uint32_t button) const {
 		return mouse_.PushButton(button);
 	}
 
-	/// <summary>指定したマウスボタンがこのフレームで押されたかを返す。</summary>
+	/// <summary>
+	/// 指定したマウスボタンがこのフレームで押されたかを返す。
+	/// </summary>
 	bool TriggerMouseButton(uint32_t button) const {
 		return mouse_.TriggerButton(button);
 	}
 
-	/// <summary>指定したマウスボタンがこのフレームで離されたかを返す。</summary>
+	/// <summary>
+	/// 指定したマウスボタンがこのフレームで離されたかを返す。
+	/// </summary>
 	bool ReleaseMouseButton(uint32_t button) const {
 		return mouse_.ReleaseButton(button);
 	}
 
   public: // ===== ゲームパッド入力の従来互換API =====
-	/// <summary>ゲームパッドが接続されているかを返す。</summary>
+	/// <summary>
+	/// ゲームパッドが接続されているかを返す。
+	/// </summary>
 	bool IsPadConnected() const {
 		return gamepad_.IsConnected();
 	}
 
-	/// <summary>指定したパッドボタンが押されているかを返す。</summary>
+	/// <summary>
+	/// 指定したパッドボタンが押されているかを返す。
+	/// </summary>
 	bool PushPadButton(WORD buttons) const {
 		return gamepad_.PushButton(buttons);
 	}
 
-	/// <summary>指定したパッドボタンがこのフレームで押されたかを返す。</summary>
+	/// <summary>
+	/// 指定したパッドボタンがこのフレームで押されたかを返す。
+	/// </summary>
 	bool TriggerPadButton(WORD buttons) const {
 		return gamepad_.TriggerButton(buttons);
 	}
 
-	/// <summary>指定したパッドボタンがこのフレームで離されたかを返す。</summary>
+	/// <summary>
+	/// 指定したパッドボタンがこのフレームで離されたかを返す。
+	/// </summary>
 	bool ReleasePadButton(WORD buttons) const {
 		return gamepad_.ReleaseButton(buttons);
 	}
 
-	/// <summary>左スティックの入力ベクトルを返す。</summary>
+	/// <summary>
+	/// 左スティックの入力ベクトルを返す。
+	/// </summary>
 	Vector2 GetLeftStick() const {
 		return gamepad_.GetLeftStick();
 	}
 
-	/// <summary>右スティックの入力ベクトルを返す。</summary>
+	/// <summary>
+	/// 右スティックの入力ベクトルを返す。
+	/// </summary>
 	Vector2 GetRightStick() const {
 		return gamepad_.GetRightStick();
 	}
 
-	/// <summary>左トリガーの押し込み量を返す。</summary>
+	/// <summary>
+	/// 左トリガーの押し込み量を返す。
+	/// </summary>
 	float GetLeftTrigger() const {
 		return gamepad_.GetLeftTrigger();
 	}
 
-	/// <summary>右トリガーの押し込み量を返す。</summary>
+	/// <summary>
+	/// 右トリガーの押し込み量を返す。
+	/// </summary>
 	float GetRightTrigger() const {
 		return gamepad_.GetRightTrigger();
 	}
 
   public: // ===== デバイス非依存のアクションAPI =====
-	/// <summary>名前付きのボタンアクションを追加する。</summary>
+	/// <summary>
+	/// 名前付きのボタンアクションを追加する。
+	/// </summary>
 	InputActionId AddButtonAction(const std::string &name);
 
-	/// <summary>名前付きの二次元軸アクションを追加する。</summary>
+	/// <summary>
+	/// 名前付きの二次元軸アクションを追加する。
+	/// </summary>
 	InputActionId AddAxis2DAction(const std::string &name);
 
-	/// <summary>ボタンアクションへキーボードキーを割り当てる。</summary>
+	/// <summary>
+	/// ボタンアクションへキーボードキーを割り当てる。
+	/// </summary>
 	void BindKey(InputActionId action, BYTE key);
 
-	/// <summary>ボタンアクションへマウスボタンを割り当てる。</summary>
+	/// <summary>
+	/// ボタンアクションへマウスボタンを割り当てる。
+	/// </summary>
 	void BindMouseButton(InputActionId action, uint32_t button);
 
-	/// <summary>ボタンアクションへゲームパッドボタンを割り当てる。</summary>
+	/// <summary>
+	/// ボタンアクションへゲームパッドボタンを割り当てる。
+	/// </summary>
 	void BindPadButton(InputActionId action, WORD button);
 
-	/// <summary>二次元軸アクションへ上下左右のキーを割り当てる。</summary>
+	/// <summary>
+	/// 二次元軸アクションへ上下左右のキーを割り当てる。
+	/// </summary>
 	void BindKeyboardAxis2D(InputActionId action, BYTE up, BYTE down, BYTE left, BYTE right);
 
-	/// <summary>二次元軸アクションへ左スティックを割り当てる。</summary>
+	/// <summary>
+	/// 二次元軸アクションへ左スティックを割り当てる。
+	/// </summary>
 	void BindLeftStick(InputActionId action, float deadZone = 0.0f);
 
-	/// <summary>指定したアクションが押されているかを返す。</summary>
+	/// <summary>
+	/// 指定したアクションが押されているかを返す。
+	/// </summary>
 	bool PushAction(InputActionId action) const;
 
-	/// <summary>指定したアクションがこのフレームで押されたかを返す。</summary>
+	/// <summary>
+	/// 指定したアクションがこのフレームで押されたかを返す。
+	/// </summary>
 	bool TriggerAction(InputActionId action) const;
 
-	/// <summary>指定したアクションがこのフレームで離されたかを返す。</summary>
+	/// <summary>
+	/// 指定したアクションがこのフレームで離されたかを返す。
+	/// </summary>
 	bool ReleaseAction(InputActionId action) const;
 
-	/// <summary>指定した二次元軸アクションの入力値を返す。</summary>
+	/// <summary>
+	/// 指定した二次元軸アクションの入力値を返す。
+	/// </summary>
 	Vector2 GetActionAxis2D(InputActionId action) const;
 
-	/// <summary>名前から入力アクション番号を検索する。</summary>
+	/// <summary>
+	/// 名前から入力アクション番号を検索する。
+	/// </summary>
 	InputActionId FindAction(const std::string &name) const;
 
   public: // ===== デバイス固有機能の取得 =====
-	/// <summary>キーボード入力機能を返す。</summary>
+	/// <summary>
+	/// キーボード入力機能を返す。
+	/// </summary>
 	KeyboardInput &GetKeyboard() {
 		return keyboard_;
 	}
 
-	/// <summary>読み取り専用のキーボード入力機能を返す。</summary>
+	/// <summary>
+	/// 読み取り専用のキーボード入力機能を返す。
+	/// </summary>
 	const KeyboardInput &GetKeyboard() const {
 		return keyboard_;
 	}
 
-	/// <summary>マウス入力機能を返す。</summary>
+	/// <summary>
+	/// マウス入力機能を返す。
+	/// </summary>
 	MouseInput &GetMouse() {
 		return mouse_;
 	}
 
-	/// <summary>読み取り専用のマウス入力機能を返す。</summary>
+	/// <summary>
+	/// 読み取り専用のマウス入力機能を返す。
+	/// </summary>
 	const MouseInput &GetMouse() const {
 		return mouse_;
 	}
 
-	/// <summary>ゲームパッド入力機能を返す。</summary>
+	/// <summary>
+	/// ゲームパッド入力機能を返す。
+	/// </summary>
 	GamepadInput &GetGamepad() {
 		return gamepad_;
 	}
 
-	/// <summary>読み取り専用のゲームパッド入力機能を返す。</summary>
+	/// <summary>
+	/// 読み取り専用のゲームパッド入力機能を返す。
+	/// </summary>
 	const GamepadInput &GetGamepad() const {
 		return gamepad_;
 	}
 
-	/// <summary>すべての入力デバイスが初期化済みかを返す。</summary>
+	/// <summary>
+	/// すべての入力デバイスが初期化済みかを返す。
+	/// </summary>
 	bool IsInitialized() const {
 		return initialized_;
 	}
 
   private:
+	/// <summary>
+	/// ボタン割り当てが参照する入力デバイス種別。
+	/// </summary>
 	enum class BindingDevice {
 		Keyboard,
 		Mouse,
 		Gamepad
 	};
+
+	/// <summary>
+	/// 1つのデバイスボタンと入力コードの組。
+	/// </summary>
 	struct ButtonBinding {
 		BindingDevice device = BindingDevice::Keyboard; // 入力元となるデバイス
 		uint32_t code = 0;                              // デバイス固有のボタン番号
+
+		/// <summary>
+		/// 同じデバイスの同じボタンを表しているか比較する。
+		/// </summary>
 		bool operator==(const ButtonBinding &) const = default;
 	};
+
+	/// <summary>
+	/// キーボードの4キーを二次元方向入力へ割り当てる情報。
+	/// </summary>
 	struct KeyboardAxis2DBinding {
 		BYTE up = 0;    // 上方向として扱うキー
 		BYTE down = 0;  // 下方向として扱うキー
 		BYTE left = 0;  // 左方向として扱うキー
 		BYTE right = 0; // 右方向として扱うキー
+
+		/// <summary>
+		/// 上下左右へ同じキーが割り当てられているか比較する。
+		/// </summary>
 		bool operator==(const KeyboardAxis2DBinding &) const = default;
 	};
+
+	/// <summary>
+	/// 名前付き入力アクションの割り当てと現在状態を保持する。
+	/// </summary>
 	struct InputAction {
 		std::string name;                                          // アクションを検索する名前
 		InputActionType type = InputActionType::Button;            // アクションが扱う入力形式
@@ -244,10 +353,29 @@ class Input final {
 		Vector2 axis2D{};                                          // 現在フレームの二次元入力値
 	};
 
+	/// <summary>
+	/// 指定した名前と形式で新しい入力アクションを登録する。
+	/// </summary>
 	InputActionId AddAction(const std::string &name, InputActionType type);
+
+	/// <summary>
+	/// 番号と形式が一致する入力アクションを取得し、無効なら例外を送出する。
+	/// </summary>
 	InputAction &RequireAction(InputActionId id, InputActionType expectedType);
+
+	/// <summary>
+	/// 番号と形式が一致する入力アクションを読み取り専用で取得する。
+	/// </summary>
 	const InputAction &RequireAction(InputActionId id, InputActionType expectedType) const;
+
+	/// <summary>
+	/// 全アクションをデバイス状態から再評価する。
+	/// </summary>
 	void UpdateActions();
+
+	/// <summary>
+	/// 指定したボタン割り当てが現在押されているか判定する。
+	/// </summary>
 	bool IsBindingPressed(const ButtonBinding &binding) const;
 
 	Microsoft::WRL::ComPtr<IDirectInput8> directInput_;        // DirectInputの管理インターフェース

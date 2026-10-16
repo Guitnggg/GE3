@@ -19,34 +19,50 @@ class TextureManager;
 /// </summary>
 class GPUParticleSystem final {
   public:
-	/// <summary>GPUパーティクルに必要なバッファと参照先を初期化する。</summary>
+	/// <summary>
+	/// GPUパーティクルに必要なバッファと参照先を初期化する。
+	/// </summary>
 	void Initialize(DirectXCommon *dxCommon,
 	                GPUParticlePipeline *pipeline,
 	                TextureManager *textureManager,
 	                uint32_t textureHandle,
 	                uint32_t maxParticles = 4096);
 
-	/// <summary>生成とシミュレーションに使用するパラメーター一式を設定する。</summary>
+	/// <summary>
+	/// 生成とシミュレーションに使用するパラメーター一式を設定する。
+	/// </summary>
 	void SetPreset(const GPUParticlePreset &preset);
 
-	/// <summary>パーティクル生成要求を現在フレームの待機列へ追加する。</summary>
+	/// <summary>
+	/// パーティクル生成要求を現在フレームの待機列へ追加する。
+	/// </summary>
 	void Emit(const GPUParticleEmitData &emitData);
 
-	/// <summary>待機中の生成要求を反映し、GPU上の粒子状態を更新する。</summary>
+	/// <summary>
+	/// 待機中の生成要求を反映し、GPU上の粒子状態を更新する。
+	/// </summary>
 	void Update(float deltaTime);
 
-	/// <summary>生存中のパーティクルを指定カメラから描画する。</summary>
+	/// <summary>
+	/// 生存中のパーティクルを指定カメラから描画する。
+	/// </summary>
 	void Draw(const Camera &camera);
 
-	/// <summary>すべての粒子を未使用状態へ戻す。</summary>
+	/// <summary>
+	/// すべての粒子を未使用状態へ戻す。
+	/// </summary>
 	void Reset();
 
-	/// <summary>同時に保持できるパーティクル数を返す。</summary>
+	/// <summary>
+	/// 同時に保持できるパーティクル数を返す。
+	/// </summary>
 	uint32_t GetMaxParticles() const {
 		return maxParticles_;
 	}
 
-	/// <summary>現在使用しているパーティクル設定を返す。</summary>
+	/// <summary>
+	/// 現在使用しているパーティクル設定を返す。
+	/// </summary>
 	const GPUParticlePreset &GetPreset() const {
 		return preset_;
 	}
@@ -55,6 +71,9 @@ class GPUParticleSystem final {
 	static constexpr uint32_t kThreadGroupSize = 256;        // Compute Shaderの1グループ当たりのスレッド数
 	static constexpr uint32_t kMaxEmitCommandsPerFrame = 64; // 1フレームで処理できる生成命令の上限
 
+	/// <summary>
+	/// GPU上で更新する1粒分の状態。HLSL側の構造体配置と一致させる。
+	/// </summary>
 	struct alignas(16) Particle {
 		Vector3 position{};    // ワールド空間上の現在位置
 		float lifetime = 0.0f; // 消滅するまでの生存時間
@@ -66,6 +85,9 @@ class GPUParticleSystem final {
 		Vector2 endSize{};     // 消滅時に近づける表示寸法
 	};
 
+	/// <summary>
+	/// パーティクル更新Compute Shaderへ渡すフレーム共通定数。
+	/// </summary>
 	struct alignas(256) SimulationConstants {
 		float deltaTime = 0.0f;    // 今回のシミュレーション時間
 		uint32_t maxParticles = 0; // バッファに格納できる粒子数
@@ -74,6 +96,9 @@ class GPUParticleSystem final {
 		float drag = 0.0f;         // 速度へ適用する抵抗係数
 	};
 
+	/// <summary>
+	/// パーティクル生成Compute Shaderへ渡す1命令分の定数。
+	/// </summary>
 	struct alignas(256) EmitConstants {
 		Vector3 position{};       // 粒子生成の中心位置
 		uint32_t count = 0;       // 今回生成する粒子数
@@ -89,6 +114,9 @@ class GPUParticleSystem final {
 		Vector2 endSize{};        // 消滅時の粒子寸法
 	};
 
+	/// <summary>
+	/// 粒子をカメラへ正対させて描画するためのカメラ定数。
+	/// </summary>
 	struct alignas(256) DrawConstants {
 		Matrix4x4 viewProjection{}; // カメラのビュー・射影合成行列
 		Vector3 cameraRight{};      // ビルボードの水平方向
@@ -97,19 +125,29 @@ class GPUParticleSystem final {
 		float padding1 = 0.0f;      // GPU定数バッファ配置を揃える余白
 	};
 
-	/// <summary>最大粒子数に合わせてGPUリソースを作成する。</summary>
+	/// <summary>
+	/// 最大粒子数に合わせてGPUリソースを作成する。
+	/// </summary>
 	void CreateResources();
 
-	/// <summary>粒子バッファへ指定したリソース状態遷移を記録する。</summary>
+	/// <summary>
+	/// 粒子バッファへ指定したリソース状態遷移を記録する。
+	/// </summary>
 	void TransitionParticleBuffer(D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
 
-	/// <summary>未使用粒子リストをGPU上で初期化する。</summary>
+	/// <summary>
+	/// 未使用粒子リストをGPU上で初期化する。
+	/// </summary>
 	void DispatchInitialize();
 
-	/// <summary>現在フレームに蓄積した生成要求をGPUへ送る。</summary>
+	/// <summary>
+	/// 現在フレームに蓄積した生成要求をGPUへ送る。
+	/// </summary>
 	void DispatchEmitCommands();
 
-	/// <summary>全パーティクルのシミュレーションをGPUへ指示する。</summary>
+	/// <summary>
+	/// 全パーティクルのシミュレーションをGPUへ指示する。
+	/// </summary>
 	void DispatchUpdate();
 
 	DirectXCommon *dxCommon_ = nullptr;             // DirectX基盤への非所有参照

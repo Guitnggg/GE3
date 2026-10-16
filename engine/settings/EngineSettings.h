@@ -8,6 +8,9 @@
 
 class Time;
 
+/// <summary>
+/// エンジン起動時に読み込み、時間管理と描画同期へ適用する設定値。
+/// </summary>
 struct EngineSettings {
 	FrameRateMode frameRateMode = FrameRateMode::VSync; // 画面更新の同期方式
 	double targetFPS = 60.0;                            // Limitedモードで目標とするFPS

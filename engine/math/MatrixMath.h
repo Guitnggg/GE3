@@ -339,7 +339,9 @@ inline bool TryInverse(const Matrix4x4 &m, Matrix4x4 &result) {
 	return true;
 }
 
-/// <summary>逆行列を返す。逆行列が存在しない場合は例外を送出する。</summary>
+/// <summary>
+/// 逆行列を返す。逆行列が存在しない場合は例外を送出する。
+/// </summary>
 inline Matrix4x4 Inverse(const Matrix4x4 &m) {
 	Matrix4x4 result{};
 	if (!TryInverse(m, result)) {

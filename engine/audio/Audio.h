@@ -19,15 +19,30 @@
 /// </summary>
 class Audio {
   public:
-	using SoundHandle = uint32_t;
-	using VoiceHandle = uint64_t;
+	using SoundHandle = uint32_t; // 読み込み済み音声を識別する番号
+	using VoiceHandle = uint64_t; // 個別の再生ボイスを識別する番号
 
-	static constexpr SoundHandle kInvalidSoundHandle = 0;
-	static constexpr VoiceHandle kInvalidVoiceHandle = 0;
+	static constexpr SoundHandle kInvalidSoundHandle = 0; // 無効な音声ハンドル
+	static constexpr VoiceHandle kInvalidVoiceHandle = 0; // 無効な再生ボイスハンドル
 
+	/// <summary>
+	/// 音声機能を使用していない未初期化状態で生成する。
+	/// </summary>
 	Audio() = default;
+
+	/// <summary>
+	/// 初期化済みの場合は再生と音声基盤を安全に終了する。
+	/// </summary>
 	~Audio();
+
+	/// <summary>
+	/// XAudio2リソースを単独所有するため、コピーを禁止する。
+	/// </summary>
 	Audio(const Audio &) = delete;
+
+	/// <summary>
+	/// XAudio2リソースを単独所有するため、コピー代入を禁止する。
+	/// </summary>
 	Audio &operator=(const Audio &) = delete;
 
 	/// <summary>
@@ -124,12 +139,34 @@ class Audio {
 		bool paused = false;                        // 一時停止中か
 	};
 
-	// 音声ファイルの読み込みと内部状態の補助処理
+	/// <summary>
+	/// 音声ファイルをXAudio2で再生可能なPCMデータへデコードする。
+	/// </summary>
 	std::shared_ptr<SoundData> Decode(const std::filesystem::path &path) const;
+
+	/// <summary>
+	/// 相対ファイル名を音声基準フォルダからの完全なパスへ解決する。
+	/// </summary>
 	std::filesystem::path ResolvePath(const std::filesystem::path &fileName) const;
+
+	/// <summary>
+	/// 再生ハンドルに対応するVoiceを検索する。
+	/// </summary>
 	PlayingVoice *FindVoice(VoiceHandle voiceHandle);
+
+	/// <summary>
+	/// 再生ハンドルに対応するVoiceを読み取り専用で検索する。
+	/// </summary>
 	const PlayingVoice *FindVoice(VoiceHandle voiceHandle) const;
+
+	/// <summary>
+	/// XAudio2 SourceVoiceを停止して破棄する。
+	/// </summary>
 	void DestroyVoice(PlayingVoice &voice);
+
+	/// <summary>
+	/// Audioが初期化済みであることを検証する。
+	/// </summary>
 	void EnsureInitialized() const;
 
 	Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;                           // XAudio2本体

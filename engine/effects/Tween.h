@@ -7,9 +7,9 @@
 #include <stdexcept>
 
 enum class TweenLoopMode {
-	None,
-	Restart,
-	PingPong,
+	None,     // 終点へ到達したら停止する
+	Restart,  // 終点へ到達したら始点から再開する
+	PingPong, // 始点と終点の間を往復する
 };
 
 /// <summary>
@@ -17,6 +17,9 @@ enum class TweenLoopMode {
 /// </summary>
 template <typename T> class Tween {
   public:
+	/// <summary>
+	/// 開始値、終了値、再生時間、補間方式を設定してTweenを開始する。
+	/// </summary>
 	void Start(const T &start,
 	           const T &end,
 	           float duration,
@@ -38,6 +41,10 @@ template <typename T> class Tween {
 		isComplete_ = false;
 	}
 
+	/// <summary>
+	/// 経過時間を進め、現在値とループ状態を更新する。
+	/// </summary>
+	/// <param name="deltaTime">今回進める時間</param>
 	void Update(float deltaTime) {
 		if (!isPlaying_ || !std::isfinite(deltaTime) || deltaTime <= 0.0f) {
 			return;
@@ -67,10 +74,16 @@ template <typename T> class Tween {
 		value_ = EaseLerp(start_, end_, normalizedTime, easing_);
 	}
 
+	/// <summary>
+	/// 現在値を維持したままTweenの再生を停止する。
+	/// </summary>
 	void Stop() {
 		isPlaying_ = false;
 	}
 
+	/// <summary>
+	/// 開始値へ戻し、未再生状態にする。
+	/// </summary>
 	void Reset() {
 		value_ = start_;
 		elapsed_ = 0.0f;
@@ -79,16 +92,30 @@ template <typename T> class Tween {
 		isComplete_ = false;
 	}
 
+	/// <summary>
+	/// 現在補間されている値を取得する。
+	/// </summary>
 	const T &GetValue() const {
 		return value_;
 	}
+
+	/// <summary>
+	/// Tweenが現在進行中か取得する。
+	/// </summary>
 	bool IsPlaying() const {
 		return isPlaying_;
 	}
+
+	/// <summary>
+	/// ループしないTweenが終点へ到達したか取得する。
+	/// </summary>
 	bool IsComplete() const {
 		return isComplete_;
 	}
 
+	/// <summary>
+	/// 現在の進行位置を0から1の範囲で取得する。
+	/// </summary>
 	float GetNormalizedTime() const {
 		if (duration_ <= 0.0f) {
 			return 0.0f;
@@ -98,14 +125,14 @@ template <typename T> class Tween {
 	}
 
   private:
-	T start_{};
-	T end_{};
-	T value_{};
-	float duration_ = 0.0f;
-	float elapsed_ = 0.0f;
-	EasingType easing_ = EasingType::Linear;
-	TweenLoopMode loopMode_ = TweenLoopMode::None;
-	bool forward_ = true;
-	bool isPlaying_ = false;
-	bool isComplete_ = false;
+	T start_{};                                    // 補間を開始する値
+	T end_{};                                      // 補間の終了値
+	T value_{};                                    // 現在の補間結果
+	float duration_ = 0.0f;                        // 始点から終点までにかける秒数
+	float elapsed_ = 0.0f;                         // 現在方向へ進んだ経過秒数
+	EasingType easing_ = EasingType::Linear;       // 補間係数へ適用するイージング方式
+	TweenLoopMode loopMode_ = TweenLoopMode::None; // 終点到達後の繰り返し方式
+	bool forward_ = true;                          // 始点から終点へ進行中か
+	bool isPlaying_ = false;                       // Updateで時間を進める状態か
+	bool isComplete_ = false;                      // ループせず終点へ到達したか
 };
