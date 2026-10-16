@@ -197,6 +197,9 @@
 	<ClCompile Include="engine\scene\SceneManager.cpp">
 	  <Filter>engine\scene</Filter>
 	</ClCompile>
+	<ClCompile Include="engine\scene\Scene.cpp">
+	  <Filter>engine\scene</Filter>
+	</ClCompile>
 	<ClCompile Include="engine\graphics\debug\ImGuiManager.cpp">
 		<Filter>engine\graphics\debug</Filter>
 	</ClCompile>
@@ -394,6 +397,9 @@
 	  <Filter>engine\scene</Filter>
 	</ClInclude>
 	<ClInclude Include="engine\scene\SceneManager.h">
+	  <Filter>engine\scene</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\scene\Scene.h">
 	  <Filter>engine\scene</Filter>
 	</ClInclude>
 	<ClInclude Include="engine\graphics\debug\ImGuiManager.h">

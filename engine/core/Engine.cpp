@@ -17,6 +17,9 @@
 #include "engine/graphics/debug/ImGuiManager.h"
 #include "engine/input/Input.h"
 #include "engine/settings/EngineSettings.h"
+#include "engine/scene/IScene.h"
+#include "engine/scene/SceneContext.h"
+#include "engine/scene/SceneManager.h"
 #include "engine/core/timing/Time.h"
 #include "engine/core/WinApp.h"
 
@@ -39,9 +42,12 @@ void Engine::Run() {
 
 		while (!IsEndRequest()) {
 			BeginFrame();
+			// 通常更新で確定した状態だけを描画へ渡す。
 			OnUpdate();
+			sceneManager_->Update();
 			BeginDraw();
 			OnDraw();
+			sceneManager_->Draw();
 			EndDraw();
 		}
 
@@ -64,7 +70,7 @@ void Engine::Run() {
 void Engine::Initialize() {
 	if (initialized_ || winApp_ || input_ || audio_ || collisionWorld_ || dxCommon_ || srvManager_ || textureManager_ ||
 	    modelManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_ || gpuParticlePipeline_ ||
-	    shaderCompiler_ || assetManager_ || engineSettings_
+	    shaderCompiler_ || assetManager_ || engineSettings_ || sceneManager_
 #ifdef _DEBUG
 	    || imguiManager_ || debugOverlay_
 #endif
@@ -94,6 +100,7 @@ void Engine::Initialize() {
 		audio_ = std::make_unique<Audio>();
 		audio_->Initialize("resource/audio");
 		collisionWorld_ = std::make_unique<CollisionWorld>();
+		sceneManager_ = std::make_unique<SceneManager>();
 
 		// DirectXとGPUディスクリプタ管理の初期化
 		dxCommon_ = std::make_unique<DirectXCommon>();
@@ -142,6 +149,11 @@ void Engine::BeginFrame() {
 	time_->Update();
 	input_->Update();
 	audio_->Update();
+	if (!sceneInitialized_) {
+		throw std::logic_error("SetInitialScene must be called from OnInitialize.");
+	}
+	// シーン切り替えは固定更新・通常更新のどちらも始まっていない境界で適用する。
+	sceneManager_->BeginFrame();
 
 #ifdef _DEBUG
 	// デバッグUIのフレーム管理はゲームシーンの有無に依存させない
@@ -151,6 +163,9 @@ void Engine::BeginFrame() {
 	// 蓄積時間が固定間隔を満たす間、物理・固定ロジックを一定刻みで進める
 	while (time_->ConsumeFixedStep()) {
 		OnFixedUpdate();
+		sceneManager_->FixedUpdate();
+		// 全GameObjectがColliderの位置を同期してから、世界全体を一度だけ判定する。
+		collisionWorld_->Update();
 	}
 }
 
@@ -159,6 +174,37 @@ void Engine::OnUpdate() {}
 void Engine::OnFixedUpdate() {}
 void Engine::OnDraw() {}
 void Engine::OnFinalize() {}
+
+void Engine::SetInitialScene(std::unique_ptr<IScene> initialScene) {
+	if (!initialized_ || sceneInitialized_) {
+		throw std::logic_error("Initial scene can only be set once after engine initialization.");
+	}
+	SceneContext context{};
+	context.audio = audio_.get();
+	context.assets = assetManager_.get();
+	context.collisionWorld = collisionWorld_.get();
+	context.directXCommon = dxCommon_.get();
+	context.input = input_.get();
+	context.textureManager = textureManager_.get();
+	context.modelManager = modelManager_.get();
+	context.spriteCommon = spriteCommon_.get();
+	context.object3dCommon = object3dCommon_.get();
+	context.time = time_.get();
+	context.frameRateController = frameRateController_.get();
+	context.gpuParticlePipeline = gpuParticlePipeline_.get();
+#ifdef _DEBUG
+	context.imguiManager = imguiManager_.get();
+#endif
+	sceneManager_->Initialize(context, std::move(initialScene));
+	sceneInitialized_ = true;
+}
+
+SceneManager &Engine::GetSceneManager() {
+	if (!sceneInitialized_) {
+		throw std::logic_error("SceneManager is not initialized.");
+	}
+	return *sceneManager_;
+}
 
 bool Engine::IsEndRequest() {
 	return winApp_->ProcessMessage();
@@ -186,6 +232,10 @@ void Engine::EndDraw() {
 
 void Engine::Finalize() {
 	initialized_ = false;
+	if (sceneManager_) {
+		sceneManager_->Finalize();
+	}
+	sceneInitialized_ = false;
 
 #ifdef _DEBUG
 	if (debugOverlay_) {
@@ -200,6 +250,7 @@ void Engine::Finalize() {
 
 	// 依存される側が後まで残る順序で共通機能を解放する
 	assetManager_.reset();
+	sceneManager_.reset();
 	engineSettings_.reset();
 	gpuParticlePipeline_.reset();
 	object3dCommon_.reset();

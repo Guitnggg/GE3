@@ -13,6 +13,8 @@ class ModelManager;
 class Object3dCommon;
 class SpriteCommon;
 class SrvManager;
+class SceneManager;
+class IScene;
 class TextureManager;
 class Time;
 class WinApp;
@@ -65,6 +67,16 @@ class Engine {
 	/// </summary>
 	virtual void OnFinalize();
 
+	/// <summary>
+	/// 最初のシーンを登録する。OnInitializeから一度だけ呼び出す。
+	/// </summary>
+	void SetInitialScene(std::unique_ptr<IScene> initialScene);
+
+	/// <summary>
+	/// 実行中のシーン切り替えに使用するSceneManagerを取得する。
+	/// </summary>
+	[[nodiscard]] SceneManager &GetSceneManager();
+
 	// 派生クラスがゲーム処理を組み立てるために利用する共通機能
 	std::unique_ptr<WinApp> winApp_;                           // ウィンドウとWindowsメッセージの管理
 	std::unique_ptr<Input> input_;                             // キーボード・マウス・ゲームパッド入力
@@ -82,6 +94,7 @@ class Engine {
 	std::unique_ptr<FrameRateController> frameRateController_; // FPS計測とフレーム同期
 	std::unique_ptr<AssetManager> assetManager_;               // 各種アセットを読み込む統一窓口
 	std::unique_ptr<EngineSettings> engineSettings_;           // JSONから読み込んだエンジン設定
+	std::unique_ptr<SceneManager> sceneManager_;               // シーンの所有と標準ライフサイクル管理
 
 #ifdef _DEBUG
 	std::unique_ptr<ImGuiManager> imguiManager_; // ImGuiのフレームと描画管理
@@ -89,23 +102,36 @@ class Engine {
 #endif
 
   private:
-	/// <summary>エンジンを構成する各サブシステムを依存順に初期化する。</summary>
+	/// <summary>
+	/// エンジンを構成する各サブシステムを依存順に初期化する。
+	/// </summary>
 	void Initialize();
 
-	/// <summary>時間・入力・デバッグUIのフレーム処理を開始する。</summary>
+	/// <summary>
+	/// 時間・入力・デバッグUIのフレーム処理を開始する。
+	/// </summary>
 	void BeginFrame();
 
-	/// <summary>描画コマンドの記録を開始する。</summary>
+	/// <summary>
+	/// 描画コマンドの記録を開始する。
+	/// </summary>
 	void BeginDraw();
 
-	/// <summary>描画コマンドをGPUへ送信してフレームを完了する。</summary>
+	/// <summary>
+	/// 描画コマンドをGPUへ送信してフレームを完了する。
+	/// </summary>
 	void EndDraw();
 
-	/// <summary>初期化済みのサブシステムを逆順に終了する。</summary>
+	/// <summary>
+	/// 初期化済みのサブシステムを逆順に終了する。
+	/// </summary>
 	void Finalize();
 
-	/// <summary>ウィンドウまたはアプリケーションから終了が要求されたかを返す。</summary>
+	/// <summary>
+	/// ウィンドウまたはアプリケーションから終了が要求されたかを返す。
+	/// </summary>
 	bool IsEndRequest();
 
 	bool initialized_ = false; // 初期化完了後かつ終了処理前であることを示す状態
+	bool sceneInitialized_ = false; // 最初のシーンが登録され、標準ループを実行できる状態
 };

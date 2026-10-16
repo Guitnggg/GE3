@@ -49,7 +49,12 @@ class SceneManager {
 	void Initialize(const SceneContext &context, std::unique_ptr<IScene> initialScene);
 
 	/// <summary>
-	/// 予約されたシーン切り替えを適用し、現在のシーンを更新する。
+	/// フレーム境界で、予約されているシーン操作を適用する。
+	/// </summary>
+	void BeginFrame();
+
+	/// <summary>
+	/// 現在のシーンを更新する。
 	/// </summary>
 	void Update();
 

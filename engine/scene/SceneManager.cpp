@@ -22,11 +22,15 @@ void SceneManager::Initialize(const SceneContext &context, std::unique_ptr<IScen
 
 void SceneManager::Update() {
 	EnsureInitialized();
-	// コールバック中のシーン破棄を避けるため、予約操作はフレーム先頭で適用する
-	ApplyPendingOperations();
 	for (size_t index = FindFirstUpdateScene(); index < stack_.size(); ++index) {
 		stack_[index].scene->Update();
 	}
+}
+
+void SceneManager::BeginFrame() {
+	EnsureInitialized();
+	// UpdateやFixedUpdateの途中でシーンを破棄しないよう、操作はフレーム境界だけで適用する。
+	ApplyPendingOperations();
 }
 
 void SceneManager::FixedUpdate() {

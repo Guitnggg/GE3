@@ -135,6 +135,7 @@
 	<ClCompile Include="engine\input\MouseInput.cpp" />
 	<ClCompile Include="engine\input\GamepadInput.cpp" />
 	<ClCompile Include="engine\scene\SceneManager.cpp" />
+	<ClCompile Include="engine\scene\Scene.cpp" />
 	<ClCompile Include="engine\graphics\debug\ImGuiManager.cpp" />
 	<ClCompile Include="engine\graphics\shader\ShaderCompiler.cpp" />
     <ClCompile Include="engine\core\diagnostics\Logger.cpp" />
@@ -193,6 +194,7 @@
 	<ClInclude Include="engine\scene\IScene.h" />
 	<ClInclude Include="engine\scene\SceneContext.h" />
 	<ClInclude Include="engine\scene\SceneManager.h" />
+	<ClInclude Include="engine\scene\Scene.h" />
 	<ClInclude Include="engine\graphics\debug\ImGuiManager.h" />
 	<ClInclude Include="engine\graphics\shader\ShaderCompiler.h" />
     <ClInclude Include="engine\core\diagnostics\Logger.h" />
