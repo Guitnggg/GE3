@@ -4,6 +4,8 @@
 #include <dxgi1_6.h>
 #include <wrl.h>
 
+#include <array>
+
 #include "WinApp.h"
 #include "externals/DirectXTex/DirectXTex.h"
 #include "externals/DirectXTex/d3dx12.h"
@@ -17,6 +19,11 @@
 /// </summary>
 class DirectXCommon {
   public:
+	/// <summary>
+	/// CPUが先行して記録できるフレーム数。スワップチェーンのバッファ数と一致させる。
+	/// </summary>
+	static constexpr uint32_t kFrameContextCount = 2;
+
 	/// <summary>
 	/// DirectX関連の終了処理を行う
 	/// </summary>
@@ -151,6 +158,24 @@ class DirectXCommon {
 		return tearingSupported_;
 	}
 
+	/// <summary>
+	/// GPUが実行を完了した最新のフェンス値を取得する。
+	/// </summary>
+	[[nodiscard]] uint64_t GetCompletedFenceValue() const;
+
+	/// <summary>
+	/// コマンドキューへ最後に送信したフェンス値を取得する。
+	/// </summary>
+	[[nodiscard]] uint64_t GetLastSubmittedFenceValue() const {
+		return nextFenceValue_;
+	}
+
+	/// <summary>
+	/// 送信済みの全GPU処理が終わるまで待機する。
+	/// 終了処理や、GPUが参照中の可能性がある共有リソースを即時破棄するときだけ使用する。
+	/// </summary>
+	void WaitForGPUIdle();
+
   private:
 	// ===== 初期化用メンバ関数 =====
 
@@ -165,6 +190,19 @@ class DirectXCommon {
 	void CreateViewport();         // ビューポートを設定する
 	void CreateScissorRect();      // シザー矩形を設定する
 
+	/// <summary>
+	/// 指定したフェンス値までGPUが進んでいない場合だけ待機する。
+	/// </summary>
+	void WaitForFenceValue(uint64_t value);
+
+	/// <summary>
+	/// 1フレーム分のコマンド記録領域と、その領域をGPUが使い終える時点を保持する。
+	/// </summary>
+	struct FrameContext {
+		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
+		uint64_t fenceValue = 0;
+	};
+
   private:
 	// ===== アプリケーション関連 =====
 
@@ -172,11 +210,13 @@ class DirectXCommon {
 
 	// ===== DirectX基本オブジェクト =====
 
-	Microsoft::WRL::ComPtr<ID3D12Device> device;                     // Direct3Dデバイス
-	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;               // DXGIファクトリ
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator; // コマンドアロケータ
-	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;         // コマンドキュー
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;   // コマンドリスト
+	Microsoft::WRL::ComPtr<ID3D12Device> device;                   // Direct3Dデバイス
+	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;             // DXGIファクトリ
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;       // GPUへ描画命令を送信するキュー
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList; // 現在のFrameContextへ記録するコマンドリスト
+	std::array<FrameContext, kFrameContextCount> frameContexts_{}; // バックバッファ単位の記録領域と完了点
+	uint32_t currentFrameIndex_ = 0;                               // 現在記録しているFrameContextの番号
+	bool frameInProgress_ = false;                                 // PreDrawとPostDrawの対応を検証する状態
 
 	// ===== スワップチェーン関連 =====
 
@@ -184,7 +224,7 @@ class DirectXCommon {
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};                        // スワップチェーン設定
 	bool vsyncEnabled_ = true;                                    // 垂直同期を使用するか
 	bool tearingSupported_ = false;                               // 可変リフレッシュ表示に対応しているか
-	Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResources[2]; // バックバッファ
+	std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, kFrameContextCount> swapChainResources; // バックバッファ
 	D3D12_RESOURCE_BARRIER barrier{};                             // リソース状態遷移用バリア
 
 	// ===== ディスクリプタ関連 =====
@@ -195,7 +235,7 @@ class DirectXCommon {
 	uint32_t descriptorSizeSRV = 0;                                 // SRVディスクリプタサイズ
 	uint32_t descriptorSizeRTV = 0;                                 // RTVディスクリプタサイズ
 	uint32_t descriptorSizeDSV = 0;                                 // DSVディスクリプタサイズ
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2]{};                    // RTVハンドル
+	std::array<D3D12_CPU_DESCRIPTOR_HANDLE, kFrameContextCount> rtvHandles{}; // RTVハンドル
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};                        // RTV設定
 
 	// ===== 深度バッファ関連 =====
@@ -206,7 +246,7 @@ class DirectXCommon {
 
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence; // GPU同期用フェンス
 	HANDLE fenceEvent = nullptr;               // フェンス完了待ちイベント
-	uint64_t fenceValue = 0;                   // フェンス値
+	uint64_t nextFenceValue_ = 0;              // キューへ送信した最新のフェンス値
 
 	// ===== 描画領域 =====
 

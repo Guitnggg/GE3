@@ -18,6 +18,13 @@ using namespace Microsoft::WRL;
 
 // DirectXとImGuiで確保した終了処理を行う
 DirectXCommon::~DirectXCommon() {
+	// COMリソースを解放する前に、GPU側からの参照がなくなったことを保証する。
+	try {
+		WaitForGPUIdle();
+	} catch (const std::exception &exception) {
+		// デストラクタから例外は送出できないため、デバイス喪失などの同期失敗はログへ残す。
+		Logger::Log(std::format("Failed to wait for GPU shutdown: {}\n", exception.what()));
+	}
 	if (fenceEvent != nullptr) {
 		CloseHandle(fenceEvent);
 		fenceEvent = nullptr;
@@ -228,15 +235,27 @@ DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string &filePath) {
 
 // 描画開始前にバックバッファ、RTV/DSV、描画領域を設定する
 void DirectXCommon::PreDraw() {
-	// 書き込むバックバッファのインデックスの取得
-	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	if (frameInProgress_) {
+		throw std::logic_error("PreDraw cannot be called while another frame is being recorded.");
+	}
 
-	// バリアを張る
+	// 表示が終わって再び選ばれたバックバッファと、対応する記録領域だけを再利用する。
+	currentFrameIndex_ = swapChain->GetCurrentBackBufferIndex();
+	FrameContext &frame = frameContexts_[currentFrameIndex_];
+	WaitForFenceValue(frame.fenceValue);
+
+	HRESULT hr = frame.commandAllocator->Reset();
+	HResult::ThrowIfFailed(hr, "Resetting the frame command allocator");
+	hr = commandList->Reset(frame.commandAllocator.Get(), nullptr);
+	HResult::ThrowIfFailed(hr, "Resetting the frame command list");
+	frameInProgress_ = true;
+
+	// 現在のバックバッファだけを描画可能状態へ遷移する。
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	// Noneにしておく
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 	// バリアを張るリソース。
-	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
+	barrier.Transition.pResource = swapChainResources[currentFrameIndex_].Get();
 	// 遷移前のResourceState
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 	// 遷移後のResourceState
@@ -246,11 +265,11 @@ void DirectXCommon::PreDraw() {
 
 	// 描画先のRTVとDSVを設定する
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
+	commandList->OMSetRenderTargets(1, &rtvHandles[currentFrameIndex_], false, &dsvHandle);
 	// 指定した色で画面全体をクリアする
 	float clearColor[] = {0.1f, 0.25f, 0.5f, 1.0f}; // 青っぽい色。RGBAの順
-	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
-	// 指定した震度で画面全体をクリアする
+	commandList->ClearRenderTargetView(rtvHandles[currentFrameIndex_], clearColor, 0, nullptr);
+	// 指定した深度で画面全体をクリアする
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	// 描画用のDescriptorHeapの設定
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = {srvDescriptorHeap.Get()};
@@ -261,6 +280,9 @@ void DirectXCommon::PreDraw() {
 
 // 描画後に画面表示、GPU同期、次フレーム準備を行う
 void DirectXCommon::PostDraw() {
+	if (!frameInProgress_) {
+		throw std::logic_error("PostDraw requires a frame started by PreDraw.");
+	}
 	HRESULT hr;
 	// 書き込むバックバッファのインデックスの取得
 	// 画面に描画はすべて終わり、画面に移す
@@ -282,26 +304,37 @@ void DirectXCommon::PostDraw() {
 	hr = swapChain->Present(syncInterval, presentFlags);
 	HResult::ThrowIfFailed(hr, "Presenting the swap chain");
 
-	// Fenceの更新
-	fenceValue++;
-	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る
-	hr = commandQueue->Signal(fence.Get(), fenceValue);
+	// このFrameContextの再利用条件だけを記録し、CPUはGPUを待たず次フレームへ進む。
+	FrameContext &frame = frameContexts_[currentFrameIndex_];
+	frame.fenceValue = ++nextFenceValue_;
+	hr = commandQueue->Signal(fence.Get(), frame.fenceValue);
 	HResult::ThrowIfFailed(hr, "Signaling the Direct3D fence");
-	// Fenceの値が指定したSignal値にたどり着いているか確認する
-	// GetCompletedValueの初期値はFence作成時に渡した初期値
-	if (fence->GetCompletedValue() < fenceValue) {
-		// 指定したSignalにたどりつかないので、たどり着くまで待つようにイベントを設定する
-		hr = fence->SetEventOnCompletion(fenceValue, fenceEvent);
-		HResult::ThrowIfFailed(hr, "Setting the Direct3D fence event");
-		// イベントを待つ
-		WaitForSingleObject(fenceEvent, INFINITE);
-	}
+	frameInProgress_ = false;
+}
 
-	// 次のフレーム用のコマンドリストを準備
-	hr = commandAllocator->Reset();
-	HResult::ThrowIfFailed(hr, "Resetting the command allocator");
-	hr = commandList->Reset(commandAllocator.Get(), nullptr);
-	HResult::ThrowIfFailed(hr, "Resetting the command list");
+uint64_t DirectXCommon::GetCompletedFenceValue() const {
+	return fence ? fence->GetCompletedValue() : 0;
+}
+
+void DirectXCommon::WaitForGPUIdle() {
+	if (!fence || nextFenceValue_ == 0) {
+		return;
+	}
+	WaitForFenceValue(nextFenceValue_);
+}
+
+void DirectXCommon::WaitForFenceValue(uint64_t value) {
+	if (value == 0 || !fence || fence->GetCompletedValue() >= value) {
+		return;
+	}
+	if (fenceEvent == nullptr) {
+		throw std::logic_error("A fence event is required before waiting for the GPU.");
+	}
+	const HRESULT hr = fence->SetEventOnCompletion(value, fenceEvent);
+	HResult::ThrowIfFailed(hr, "Setting the Direct3D fence event");
+	if (WaitForSingleObject(fenceEvent, INFINITE) != WAIT_OBJECT_0) {
+		throw std::runtime_error("Waiting for the Direct3D fence failed.");
+	}
 }
 
 //===============
@@ -428,12 +461,11 @@ void DirectXCommon::CreateCommand() {
 
 #pragma region コマンドアロケータ
 
-	// コマンドアロケータ生成
-	commandAllocator = nullptr;
-	hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator));
-
-	// 生成できない場合
-	HResult::ThrowIfFailed(hr, "Creating the Direct3D command allocator");
+	// GPUが別フレームを実行中でもCPUが次を記録できるよう、フレームごとに領域を分離する。
+	for (FrameContext &frame : frameContexts_) {
+		hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&frame.commandAllocator));
+		HResult::ThrowIfFailed(hr, "Creating a frame command allocator");
+	}
 
 #pragma endregion
 
@@ -442,10 +474,13 @@ void DirectXCommon::CreateCommand() {
 	// コマンドリスト生成
 	commandList = nullptr;
 	hr = device->CreateCommandList(
-	    0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList));
+	    0, D3D12_COMMAND_LIST_TYPE_DIRECT, frameContexts_[0].commandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList));
 
 	// 生成できない場合
 	HResult::ThrowIfFailed(hr, "Creating the Direct3D command list");
+	// PreDrawで必ず選択中FrameContextへResetするため、初期状態のリストは一度閉じておく。
+	hr = commandList->Close();
+	HResult::ThrowIfFailed(hr, "Closing the initial Direct3D command list");
 
 #pragma endregion
 }
@@ -460,7 +495,7 @@ void DirectXCommon::CreateSwapChain() {
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.BufferCount = 2;
+	swapChainDesc.BufferCount = kFrameContextCount;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	BOOL allowTearing = FALSE;
 	if (SUCCEEDED(dxgiFactory->CheckFeatureSupport(
@@ -488,7 +523,8 @@ void DirectXCommon::CreateDescriptorHeaps() {
 	// SRV用のディスクリプタヒープの作成
 	srvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 	// RTV用のディスクリプタヒープの生成
-	rtvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
+	rtvDescriptorHeap =
+	    CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, kFrameContextCount, false);
 	// DSV用のディスクリプタヒープの作成
 	dsvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 
@@ -503,25 +539,16 @@ void DirectXCommon::CreateRenderTargetView() {
 	HRESULT hr;
 
 	// SwapchainからResourceを引っ張ってくる
-	hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResources[0]));
-	HResult::ThrowIfFailed(hr, "Getting swap-chain buffer 0");
-
-	hr = swapChain->GetBuffer(1, IID_PPV_ARGS(&swapChainResources[1]));
-	HResult::ThrowIfFailed(hr, "Getting swap-chain buffer 1");
-
 	// RTV
 	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
-	for (uint32_t i = 0; i < 2; ++i) {
-		rtvHandles[0] = rtvStartHandle;
-
-		// 2つ目のディスクリプタハンドルの取得
-		rtvHandles[1].ptr =
-		    rtvHandles[0].ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
+	for (uint32_t i = 0; i < kFrameContextCount; ++i) {
+		hr = swapChain->GetBuffer(i, IID_PPV_ARGS(&swapChainResources[i]));
+		HResult::ThrowIfFailed(hr, "Getting a swap-chain buffer");
+		rtvHandles[i] = GetCPUDescriptorHandle(rtvDescriptorHeap, descriptorSizeRTV, i);
 		device->CreateRenderTargetView(swapChainResources[i].Get(), &rtvDesc, rtvHandles[i]);
 	}
 }
@@ -542,8 +569,8 @@ void DirectXCommon::CreateDepthStencilView() {
 void DirectXCommon::CreateFence() {
 	HRESULT hr;
 
-	fenceValue = 0;
-	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+	nextFenceValue_ = 0;
+	hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 	HResult::ThrowIfFailed(hr, "Creating the Direct3D fence");
 
 	fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
