@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="tests">
+      <UniqueIdentifier>{4F23C693-A151-4A9A-B02F-A55C42F79962}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="engine sources">
+      <UniqueIdentifier>{ED2469B5-58BC-4093-BDE6-294694F13974}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="tests\TestMain.cpp"><Filter>tests</Filter></ClCompile>
+    <ClCompile Include="tests\SceneTests.cpp"><Filter>tests</Filter></ClCompile>
+    <ClCompile Include="tests\TransformTests.cpp"><Filter>tests</Filter></ClCompile>
+    <ClCompile Include="tests\GameObjectTests.cpp"><Filter>tests</Filter></ClCompile>
+    <ClCompile Include="tests\CollisionTests.cpp"><Filter>tests</Filter></ClCompile>
+    <ClCompile Include="tests\SettingsTests.cpp"><Filter>tests</Filter></ClCompile>
+    <ClCompile Include="engine\scene\SceneManager.cpp"><Filter>engine sources</Filter></ClCompile>
+    <ClCompile Include="engine\object\Component.cpp"><Filter>engine sources</Filter></ClCompile>
+    <ClCompile Include="engine\object\GameObject.cpp"><Filter>engine sources</Filter></ClCompile>
+    <ClCompile Include="engine\object\TransformNode.cpp"><Filter>engine sources</Filter></ClCompile>
+    <ClCompile Include="engine\collision\Collision.cpp"><Filter>engine sources</Filter></ClCompile>
+    <ClCompile Include="engine\collision\CollisionWorld.cpp"><Filter>engine sources</Filter></ClCompile>
+    <ClCompile Include="engine\settings\SettingsStore.cpp"><Filter>engine sources</Filter></ClCompile>
+    <ClCompile Include="engine\core\utility\JsonUtility.cpp"><Filter>engine sources</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="tests\TestFramework.h"><Filter>tests</Filter></ClInclude>
+  </ItemGroup>
+</Project>

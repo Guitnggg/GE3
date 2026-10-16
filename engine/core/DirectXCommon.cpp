@@ -4,6 +4,7 @@
 
 #include <format>
 #include <stdexcept>
+#include <vector>
 
 #include "engine/core/diagnostics/HResult.h"
 #include "engine/core/diagnostics/Logger.h"
@@ -21,6 +22,7 @@ DirectXCommon::~DirectXCommon() {
 	// COMリソースを解放する前に、GPU側からの参照がなくなったことを保証する。
 	try {
 		WaitForGPUIdle();
+		WaitForUploadFenceValue(uploadFenceValue_);
 	} catch (const std::exception &exception) {
 		// デストラクタから例外は送出できないため、デバイス喪失などの同期失敗はログへ残す。
 		Logger::Log(std::format("Failed to wait for GPU shutdown: {}\n", exception.what()));
@@ -28,6 +30,10 @@ DirectXCommon::~DirectXCommon() {
 	if (fenceEvent != nullptr) {
 		CloseHandle(fenceEvent);
 		fenceEvent = nullptr;
+	}
+	if (uploadFenceEvent_ != nullptr) {
+		CloseHandle(uploadFenceEvent_);
+		uploadFenceEvent_ = nullptr;
 	}
 }
 
@@ -41,6 +47,7 @@ void DirectXCommon::Initialize(WinApp *winApp) {
 
 	CreateDevice();
 	CreateCommand();
+	CreateUploadCommand();
 	CreateSwapChain();
 	CreateDepthBuffer();
 	CreateDescriptorHeaps();
@@ -179,18 +186,16 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(Micr
 	resourceDesc.SampleDesc.Count = 1;                                     // サンプリングカウント(1固定)
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION(metadata.dimension); // textureの次元数
 
-	// 利用するHeapの設定
+	// 描画時にCPUアクセスを必要としないため、GPUローカルなDefault Heapへ配置する。
 	D3D12_HEAP_PROPERTIES heapProperties{};
-	heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM;
-	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
-	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
 
 	// Resouceの生成
 	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
 	HRESULT hr = device->CreateCommittedResource(&heapProperties,
 	                                             D3D12_HEAP_FLAG_NONE,
 	                                             &resourceDesc,
-	                                             D3D12_RESOURCE_STATE_GENERIC_READ,
+	                                             D3D12_RESOURCE_STATE_COPY_DEST,
 	                                             nullptr,
 	                                             IID_PPV_ARGS(&resource));
 	HResult::ThrowIfFailed(hr, "Creating a texture resource");
@@ -200,19 +205,56 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(Micr
 // ミップマップを含む画像データをテクスチャリソースへ書き込む
 void DirectXCommon::UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture,
                                       const DirectX::ScratchImage &mipImages) {
-	const DirectX::TexMetadata &metadata = mipImages.GetMetadata();
-
-	for (size_t mipLevel = 0; mipLevel < metadata.mipLevels; ++mipLevel) {
-		const DirectX::Image *img = mipImages.GetImage(mipLevel, 0, 0);
-
-		HRESULT hr = texture->WriteToSubresource(UINT(mipLevel),
-		                                         nullptr,              // 全領域へコピー
-		                                         img->pixels,          // 元データアドレス
-		                                         UINT(img->rowPitch),  // 1ラインサイズ
-		                                         UINT(img->slicePitch) // 1枚サイズ
-		);
-		HResult::ThrowIfFailed(hr, "Writing texture data to a subresource");
+	if (!texture || mipImages.GetImageCount() == 0) {
+		throw std::invalid_argument("Texture upload requires a resource and decoded images.");
 	}
+
+	// 1つのアップロードリストを共有するため、将来複数スレッドから要求されても記録を直列化する。
+	const std::scoped_lock lock(uploadMutex_);
+	std::vector<D3D12_SUBRESOURCE_DATA> subresources(mipImages.GetImageCount());
+	const DirectX::Image *images = mipImages.GetImages();
+	for (size_t index = 0; index < mipImages.GetImageCount(); ++index) {
+		subresources[index].pData = images[index].pixels;
+		subresources[index].RowPitch = static_cast<LONG_PTR>(images[index].rowPitch);
+		subresources[index].SlicePitch = static_cast<LONG_PTR>(images[index].slicePitch);
+	}
+
+	const UINT subresourceCount = static_cast<UINT>(subresources.size());
+	const UINT64 uploadSize = GetRequiredIntermediateSize(texture.Get(), 0, subresourceCount);
+	D3D12_HEAP_PROPERTIES uploadHeap{};
+	uploadHeap.Type = D3D12_HEAP_TYPE_UPLOAD;
+	const D3D12_RESOURCE_DESC uploadDesc = CD3DX12_RESOURCE_DESC::Buffer(uploadSize);
+	ComPtr<ID3D12Resource> uploadResource;
+	HResult::ThrowIfFailed(device->CreateCommittedResource(&uploadHeap,
+	                                                       D3D12_HEAP_FLAG_NONE,
+	                                                       &uploadDesc,
+	                                                       D3D12_RESOURCE_STATE_GENERIC_READ,
+	                                                       nullptr,
+	                                                       IID_PPV_ARGS(&uploadResource)),
+	                       "Creating a texture upload buffer");
+
+	HResult::ThrowIfFailed(uploadCommandAllocator_->Reset(), "Resetting the texture upload allocator");
+	HResult::ThrowIfFailed(uploadCommandList_->Reset(uploadCommandAllocator_.Get(), nullptr),
+	                       "Resetting the texture upload command list");
+	UpdateSubresources(uploadCommandList_.Get(),
+	                   texture.Get(),
+	                   uploadResource.Get(),
+	                   0,
+	                   0,
+	                   subresourceCount,
+	                   subresources.data());
+	const D3D12_RESOURCE_BARRIER transition = CD3DX12_RESOURCE_BARRIER::Transition(
+	    texture.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
+	uploadCommandList_->ResourceBarrier(1, &transition);
+	HResult::ThrowIfFailed(uploadCommandList_->Close(), "Closing the texture upload command list");
+
+	ID3D12CommandList *commandLists[] = {uploadCommandList_.Get()};
+	uploadCommandQueue_->ExecuteCommandLists(1, commandLists);
+	const uint64_t submittedValue = ++uploadFenceValue_;
+	HResult::ThrowIfFailed(uploadCommandQueue_->Signal(uploadFence_.Get(), submittedValue),
+	                       "Signaling the texture upload fence");
+	// 同期APIでは、転送元バッファを関数終了時に安全に破棄できる状態まで待つ。
+	WaitForUploadFenceValue(submittedValue);
 }
 
 // テクスチャファイルを読み込み、ミップマップを生成する
@@ -334,6 +376,20 @@ void DirectXCommon::WaitForFenceValue(uint64_t value) {
 	HResult::ThrowIfFailed(hr, "Setting the Direct3D fence event");
 	if (WaitForSingleObject(fenceEvent, INFINITE) != WAIT_OBJECT_0) {
 		throw std::runtime_error("Waiting for the Direct3D fence failed.");
+	}
+}
+
+void DirectXCommon::WaitForUploadFenceValue(uint64_t value) {
+	if (value == 0 || !uploadFence_ || uploadFence_->GetCompletedValue() >= value) {
+		return;
+	}
+	if (uploadFenceEvent_ == nullptr) {
+		throw std::logic_error("An upload fence event is required before waiting for texture transfer.");
+	}
+	const HRESULT hr = uploadFence_->SetEventOnCompletion(value, uploadFenceEvent_);
+	HResult::ThrowIfFailed(hr, "Setting the texture upload fence event");
+	if (WaitForSingleObject(uploadFenceEvent_, INFINITE) != WAIT_OBJECT_0) {
+		throw std::runtime_error("Waiting for the texture upload fence failed.");
 	}
 }
 
@@ -483,6 +539,32 @@ void DirectXCommon::CreateCommand() {
 	HResult::ThrowIfFailed(hr, "Closing the initial Direct3D command list");
 
 #pragma endregion
+}
+
+void DirectXCommon::CreateUploadCommand() {
+	// 専用キューに分け、画像転送時に描画用FrameContextをリセットしない構造にする。
+	D3D12_COMMAND_QUEUE_DESC queueDesc{};
+	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	HResult::ThrowIfFailed(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&uploadCommandQueue_)),
+	                       "Creating the texture upload command queue");
+	HResult::ThrowIfFailed(
+	    device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&uploadCommandAllocator_)),
+	    "Creating the texture upload command allocator");
+	HResult::ThrowIfFailed(device->CreateCommandList(0,
+	                                                D3D12_COMMAND_LIST_TYPE_DIRECT,
+	                                                uploadCommandAllocator_.Get(),
+	                                                nullptr,
+	                                                IID_PPV_ARGS(&uploadCommandList_)),
+	                       "Creating the texture upload command list");
+	HResult::ThrowIfFailed(uploadCommandList_->Close(), "Closing the initial texture upload command list");
+
+	uploadFenceValue_ = 0;
+	HResult::ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&uploadFence_)),
+	                       "Creating the texture upload fence");
+	uploadFenceEvent_ = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+	if (uploadFenceEvent_ == nullptr) {
+		throw std::runtime_error("Failed to create the texture upload fence event.");
+	}
 }
 
 // ウィンドウに表示するためのスワップチェーンを作成する

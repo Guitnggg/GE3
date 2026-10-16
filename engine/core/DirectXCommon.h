@@ -5,6 +5,7 @@
 #include <wrl.h>
 
 #include <array>
+#include <mutex>
 
 #include "WinApp.h"
 #include "externals/DirectXTex/DirectXTex.h"
@@ -112,13 +113,14 @@ class DirectXCommon {
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
 
 	/// <summary>
-	/// テクスチャ用リソースを生成する
+	/// GPUが高速に参照できるDefault Heapへ、COPY_DEST状態のテクスチャを生成する。
 	/// </summary>
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device,
 	                                                             const DirectX::TexMetadata &metadata);
 
 	/// <summary>
-	/// ScratchImageのミップマップデータをテクスチャリソースへ転送する
+	/// 専用アップロードコンテキストでScratchImageをDefault Heapへ転送する。
+	/// 現在は同期完了を待つが、描画コマンドとは独立しており非同期化できる境界とする。
 	/// </summary>
 	void UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage &mipImages);
 
@@ -193,9 +195,14 @@ class DirectXCommon {
 	void CreateDevice();
 
 	/// <summary>
-	/// 子マントキュー、アロケータ、リストを生成する
+	/// 描画用コマンドキュー、アロケータ、リストを生成する
 	/// </summary>
 	void CreateCommand();
+
+	/// <summary>
+	/// テクスチャ転送専用のコマンドキュー、記録領域、同期オブジェクトを生成する。
+	/// </summary>
+	void CreateUploadCommand();
 
 	/// <summary>
 	/// スワップチェーンを生成する
@@ -242,6 +249,9 @@ class DirectXCommon {
 	/// </summary>
 	void WaitForFenceValue(uint64_t value);
 
+	/// <summary>指定したフェンス値までテクスチャ転送キューが進むのを待つ。</summary>
+	void WaitForUploadFenceValue(uint64_t value);
+
 	/// <summary>
 	/// 1フレーム分のコマンド記録領域と、その領域をGPUが使い終える時点を保持する。
 	/// </summary>
@@ -264,6 +274,16 @@ class DirectXCommon {
 	std::array<FrameContext, kFrameContextCount> frameContexts_{}; // バックバッファ単位の記録領域と完了点
 	uint32_t currentFrameIndex_ = 0;                               // 現在記録しているFrameContextの番号
 	bool frameInProgress_ = false;                                 // PreDrawとPostDrawの対応を検証する状態
+
+	// ===== アップロード関連 =====
+
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> uploadCommandQueue_;          // 描画と独立した転送命令キュー
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> uploadCommandAllocator_;  // 同期転送で再利用する記録領域
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> uploadCommandList_;    // テクスチャコピー命令の記録先
+	Microsoft::WRL::ComPtr<ID3D12Fence> uploadFence_;                        // 転送完了を追跡するフェンス
+	HANDLE uploadFenceEvent_ = nullptr;                                      // 転送完了待ちイベント
+	uint64_t uploadFenceValue_ = 0;                                          // 最後に送信した転送フェンス値
+	std::mutex uploadMutex_;                                                 // 将来の並列ロード時に転送記録を直列化する
 
 	// ===== スワップチェーン関連 =====
 

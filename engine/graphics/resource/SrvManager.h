@@ -54,7 +54,7 @@ class SrvManager {
 	[[nodiscard]] bool IsValid(SrvHandle handle) const noexcept;
 
 	/// <summary>
-	/// 2Dテクスチャ用のSRVを指定位置に作成する。
+	/// 2Dテクスチャ用の SRVを指定位置に作成する。
 	/// </summary>
 	void CreateSRVforTexture2D(SrvHandle handle, ID3D12Resource *resource, const DirectX::TexMetadata &metadata);
 

@@ -25,23 +25,8 @@ TextureHandle TextureManager::Load(const std::string &filePath) {
 		return found->second;
 	}
 
-	// 画像を読み込み、ミップマップを含むテクスチャリソースをGPUへ転送する
-	DirectX::ScratchImage mipImages = dxCommon_->LoadTexture(filePath);
-	const DirectX::TexMetadata &metadata = mipImages.GetMetadata();
-
-	TextureData textureData{};
-	textureData.metadata = metadata;
-	textureData.path = filePath;
-	textureData.resource = dxCommon_->CreateTextureResource(dxCommon_->GetDevice(), metadata);
-	dxCommon_->UploadTextureData(textureData.resource, mipImages);
-	textureData.srvHandle = srvManager_->Allocate();
-	try {
-		srvManager_->CreateSRVforTexture2D(textureData.srvHandle, textureData.resource.Get(), textureData.metadata);
-	} catch (...) {
-		// SRV作成前に失敗しても、確保済みスロットを失わないよう割り当てを戻す。
-		srvManager_->Release(textureData.srvHandle);
-		throw;
-	}
+	// CPUデコードとGPU転送を別工程にし、前者だけをワーカースレッドへ移せる境界を保つ。
+	TextureData textureData = Upload(Decode(filePath));
 
 	uint32_t index = 0;
 	if (freeTextureIndices_.empty()) {
@@ -106,4 +91,26 @@ const TextureManager::TextureData &TextureManager::Require(TextureHandle handle)
 		throw std::invalid_argument("Texture handle is stale or unloaded.");
 	}
 	return *textureSlots_[handle.index].data;
+}
+
+TextureManager::DecodedTexture TextureManager::Decode(const std::string &filePath) const {
+	// この工程ではGPU状態へ触れない。将来の非同期ロードではジョブキュー側で実行する。
+	return {dxCommon_->LoadTexture(filePath), filePath};
+}
+
+TextureManager::TextureData TextureManager::Upload(DecodedTexture decodedTexture) {
+	TextureData textureData{};
+	textureData.metadata = decodedTexture.mipImages.GetMetadata();
+	textureData.path = std::move(decodedTexture.path);
+	textureData.resource = dxCommon_->CreateTextureResource(dxCommon_->GetDevice(), textureData.metadata);
+	dxCommon_->UploadTextureData(textureData.resource, decodedTexture.mipImages);
+	textureData.srvHandle = srvManager_->Allocate();
+	try {
+		srvManager_->CreateSRVforTexture2D(textureData.srvHandle, textureData.resource.Get(), textureData.metadata);
+	} catch (...) {
+		// SRV作成前に失敗しても、確保済みスロットを失わないよう割り当てを戻す。
+		srvManager_->Release(textureData.srvHandle);
+		throw;
+	}
+	return textureData;
 }

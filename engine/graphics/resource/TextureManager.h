@@ -66,6 +66,15 @@ class TextureManager {
 
   private:
 	/// <summary>
+	/// CPU側のファイル読込とデコードが完了した中間データ。
+	/// GPUオブジェクトを含まないため、将来はワーカースレッドで生成できる。
+	/// </summary>
+	struct DecodedTexture {
+		DirectX::ScratchImage mipImages;
+		std::string path;
+	};
+
+	/// <summary>
 	/// 読み込み済みテクスチャ1枚分の情報。
 	/// </summary>
 	struct TextureData {
@@ -85,11 +94,13 @@ class TextureManager {
 	};
 
 	[[nodiscard]] const TextureData &Require(TextureHandle handle) const;
+	[[nodiscard]] DecodedTexture Decode(const std::string &filePath) const;
+	[[nodiscard]] TextureData Upload(DecodedTexture decodedTexture);
 
-	DirectXCommon *dxCommon_ = nullptr;                             // DirectX共通処理
-	SrvManager *srvManager_ = nullptr;                              // SRVの割り当て管理
-	std::vector<TextureSlot> textureSlots_;                         // 再利用可能なテクスチャ格納場所
-	std::vector<uint32_t> freeTextureIndices_;                      // 空いているテクスチャ番号
-	std::vector<PendingRelease> pendingReleases_;                   // GPU完了を待っているリソース
+	DirectXCommon *dxCommon_ = nullptr;                               // DirectX共通処理
+	SrvManager *srvManager_ = nullptr;                                // SRVの割り当て管理
+	std::vector<TextureSlot> textureSlots_;                           // 再利用可能なテクスチャ格納場所
+	std::vector<uint32_t> freeTextureIndices_;                        // 空いているテクスチャ番号
+	std::vector<PendingRelease> pendingReleases_;                     // GPU完了を待っているリソース
 	std::unordered_map<std::string, TextureHandle> textureHandleMap_; // パスから現在のハンドルを引く表
 };
