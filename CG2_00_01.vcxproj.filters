@@ -22,6 +22,9 @@
     <Filter Include="application\core">
       <UniqueIdentifier>{84B37D22-1DFC-4C08-AEBE-68997723C73A}</UniqueIdentifier>
     </Filter>
+    <Filter Include="application\gameplay">
+      <UniqueIdentifier>{19B1D4D0-A83D-48D1-9D01-EED711048CF6}</UniqueIdentifier>
+    </Filter>
     <Filter Include="engine">
       <UniqueIdentifier>{0a00b4e5-8996-409a-bcc6-4e0f3b8cbd83}</UniqueIdentifier>
     </Filter>
@@ -105,6 +108,11 @@
 	</Filter>
   </ItemGroup>
   <ItemGroup>
+	<ClCompile Include="application\gameplay\AirCombatScene.cpp"><Filter>application\gameplay</Filter></ClCompile>
+	<ClCompile Include="application\gameplay\CombatCamera.cpp"><Filter>application\gameplay</Filter></ClCompile>
+	<ClCompile Include="application\gameplay\CombatHud.cpp"><Filter>application\gameplay</Filter></ClCompile>
+	<ClCompile Include="application\gameplay\Fighter.cpp"><Filter>application\gameplay</Filter></ClCompile>
+	<ClCompile Include="application\gameplay\MissileSystem.cpp"><Filter>application\gameplay</Filter></ClCompile>
 	<ClCompile Include="engine\assets\AssetManager.cpp">
 	  <Filter>engine\assets</Filter>
 	</ClCompile>
@@ -268,6 +276,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+	<ClInclude Include="application\gameplay\AirCombatMath.h"><Filter>application\gameplay</Filter></ClInclude>
+	<ClInclude Include="application\gameplay\AirCombatScene.h"><Filter>application\gameplay</Filter></ClInclude>
+	<ClInclude Include="application\gameplay\CombatCamera.h"><Filter>application\gameplay</Filter></ClInclude>
+	<ClInclude Include="application\gameplay\CombatHud.h"><Filter>application\gameplay</Filter></ClInclude>
+	<ClInclude Include="application\gameplay\Fighter.h"><Filter>application\gameplay</Filter></ClInclude>
+	<ClInclude Include="application\gameplay\MissileSystem.h"><Filter>application\gameplay</Filter></ClInclude>
 	<ClInclude Include="engine\assets\AssetManager.h">
 	  <Filter>engine\assets</Filter>
 	</ClInclude>

@@ -57,6 +57,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -81,19 +82,25 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxcompiler.dll" "$(TargetDir)dxcompiler.dll" &amp;&amp; copy /Y "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dxil.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+	<ClCompile Include="application\gameplay\AirCombatScene.cpp" />
+	<ClCompile Include="application\gameplay\CombatCamera.cpp" />
+	<ClCompile Include="application\gameplay\CombatHud.cpp" />
+	<ClCompile Include="application\gameplay\Fighter.cpp" />
+	<ClCompile Include="application\gameplay\MissileSystem.cpp" />
 	<ClCompile Include="engine\assets\AssetManager.cpp" />
 	<ClCompile Include="engine\debug\DebugOverlay.cpp" />
 	<ClCompile Include="engine\debug\Profiler.cpp" />
@@ -151,6 +158,12 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+	<ClInclude Include="application\gameplay\AirCombatMath.h" />
+	<ClInclude Include="application\gameplay\AirCombatScene.h" />
+	<ClInclude Include="application\gameplay\CombatCamera.h" />
+	<ClInclude Include="application\gameplay\CombatHud.h" />
+	<ClInclude Include="application\gameplay\Fighter.h" />
+	<ClInclude Include="application\gameplay\MissileSystem.h" />
 	<ClInclude Include="engine\assets\AssetManager.h" />
 	<ClInclude Include="engine\debug\DebugOverlay.h" />
 	<ClInclude Include="engine\debug\Profiler.h" />
