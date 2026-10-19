@@ -1,8 +1,6 @@
 #include "Logger.h"
 
-#include <d3d12.h>
-
-#pragma comment(lib, "d3d12.lib")
+#include <Windows.h>
 
 namespace Logger {
 // Visual Studioの出力ウィンドウへメッセージを出力する

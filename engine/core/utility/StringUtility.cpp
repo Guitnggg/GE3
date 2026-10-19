@@ -1,8 +1,6 @@
 #include "StringUtility.h"
 
-#include <d3d12.h>
-
-#pragma comment(lib, "d3d12.lib")
+#include <Windows.h>
 
 namespace StringUtility {
 // UTF-8文字列をWindows APIで扱いやすいワイド文字列へ変換する

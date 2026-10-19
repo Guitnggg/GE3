@@ -7,7 +7,7 @@
 /// </summary>
 class MyGame : public EngineCore {
   public:
-	MyGame();
+	MyGame() = default;
 	~MyGame() override = default;
 	MyGame(const MyGame &) = delete;
 	MyGame &operator=(const MyGame &) = delete;
@@ -31,9 +31,4 @@ class MyGame : public EngineCore {
 	/// 空のフレームとデバッグUIを描画する。
 	/// </summary>
 	void OnDraw() override;
-
-	/// <summary>
-	/// ゲーム固有の終了処理。
-	/// </summary>
-	void OnFinalize() override;
 };

@@ -263,7 +263,9 @@ class DirectXCommon {
 	/// </summary>
 	void WaitForFenceValue(uint64_t value);
 
-	/// <summary>指定したフェンス値までテクスチャ転送キューが進むのを待つ。</summary>
+	/// <summary>
+	/// 指定したフェンス値までテクスチャ転送キューが進むのを待つ。
+	/// </summary>
 	void WaitForUploadFenceValue(uint64_t value);
 
 	/// <summary>
