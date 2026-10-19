@@ -351,9 +351,6 @@
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="engine\math\Mymath.h">
-      <Filter>engine\math</Filter>
-    </ClInclude>
 	<ClInclude Include="engine\math\MathTypes.h">
 	  <Filter>engine\math</Filter>
 	</ClInclude>

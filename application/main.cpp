@@ -8,11 +8,17 @@
 #include <string>
 
 #include "application/core/MyGame.h"
+#include "engine/core/diagnostics/D3DResourceLeakChecker.h"
 #include "engine/core/diagnostics/Logger.h"
 
 #pragma comment(lib, "dxcompiler.lib")
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+#ifdef _DEBUG
+	// ゲーム本体の破棄後に、解放されず残ったDirectXオブジェクトを報告する。
+	D3DResourceLeakChecker resourceLeakChecker;
+#endif
+
 	try {
 		MyGame game;
 		game.Run();
