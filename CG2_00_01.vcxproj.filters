@@ -22,9 +22,14 @@
     <Filter Include="application\core">
       <UniqueIdentifier>{84B37D22-1DFC-4C08-AEBE-68997723C73A}</UniqueIdentifier>
     </Filter>
-    <Filter Include="application\gameplay">
-      <UniqueIdentifier>{19B1D4D0-A83D-48D1-9D01-EED711048CF6}</UniqueIdentifier>
-    </Filter>
+    <Filter Include="application\actor"><UniqueIdentifier>{19B1D4D0-A83D-48D1-9D01-EED711048CF6}</UniqueIdentifier></Filter>
+    <Filter Include="application\camera"><UniqueIdentifier>{D5B55E91-CA80-4D76-9EEC-4A9365C2DA6D}</UniqueIdentifier></Filter>
+    <Filter Include="application\combat"><UniqueIdentifier>{7143D3B1-5EC4-41B0-B9B7-06D470AB83B8}</UniqueIdentifier></Filter>
+    <Filter Include="application\controller"><UniqueIdentifier>{84142A5E-41E6-466B-A7A8-D0FA7B76EB5D}</UniqueIdentifier></Filter>
+    <Filter Include="application\effect"><UniqueIdentifier>{4182776E-4564-42C9-9285-AB2FA2A83E52}</UniqueIdentifier></Filter>
+    <Filter Include="application\scene"><UniqueIdentifier>{7C1A360E-C8BD-4437-BE72-6CA710C53BF7}</UniqueIdentifier></Filter>
+    <Filter Include="application\ui"><UniqueIdentifier>{8C627FC8-A283-47DD-B4F9-98F737351F3B}</UniqueIdentifier></Filter>
+    <Filter Include="application\weapon"><UniqueIdentifier>{F2FA4C9B-41D8-4301-A383-6E586E8A0908}</UniqueIdentifier></Filter>
     <Filter Include="engine">
       <UniqueIdentifier>{0a00b4e5-8996-409a-bcc6-4e0f3b8cbd83}</UniqueIdentifier>
     </Filter>
@@ -108,11 +113,16 @@
 	</Filter>
   </ItemGroup>
   <ItemGroup>
-	<ClCompile Include="application\gameplay\AirCombatScene.cpp"><Filter>application\gameplay</Filter></ClCompile>
-	<ClCompile Include="application\gameplay\CombatCamera.cpp"><Filter>application\gameplay</Filter></ClCompile>
-	<ClCompile Include="application\gameplay\CombatHud.cpp"><Filter>application\gameplay</Filter></ClCompile>
-	<ClCompile Include="application\gameplay\Fighter.cpp"><Filter>application\gameplay</Filter></ClCompile>
-	<ClCompile Include="application\gameplay\MissileSystem.cpp"><Filter>application\gameplay</Filter></ClCompile>
+	<ClCompile Include="application\scene\AirCombatScene.cpp"><Filter>application\scene</Filter></ClCompile>
+	<ClCompile Include="application\camera\CombatCamera.cpp"><Filter>application\camera</Filter></ClCompile>
+	<ClCompile Include="application\ui\CombatHud.cpp"><Filter>application\ui</Filter></ClCompile>
+	<ClCompile Include="application\actor\Fighter.cpp"><Filter>application\actor</Filter></ClCompile>
+	<ClCompile Include="application\controller\PlayerController.cpp"><Filter>application\controller</Filter></ClCompile>
+	<ClCompile Include="application\controller\EnemyController.cpp"><Filter>application\controller</Filter></ClCompile>
+	<ClCompile Include="application\combat\LockOnSystem.cpp"><Filter>application\combat</Filter></ClCompile>
+	<ClCompile Include="application\effect\CombatEffectSystem.cpp"><Filter>application\effect</Filter></ClCompile>
+	<ClCompile Include="application\weapon\Missile.cpp"><Filter>application\weapon</Filter></ClCompile>
+	<ClCompile Include="application\weapon\MissileSystem.cpp"><Filter>application\weapon</Filter></ClCompile>
 	<ClCompile Include="engine\assets\AssetManager.cpp">
 	  <Filter>engine\assets</Filter>
 	</ClCompile>
@@ -276,12 +286,20 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-	<ClInclude Include="application\gameplay\AirCombatMath.h"><Filter>application\gameplay</Filter></ClInclude>
-	<ClInclude Include="application\gameplay\AirCombatScene.h"><Filter>application\gameplay</Filter></ClInclude>
-	<ClInclude Include="application\gameplay\CombatCamera.h"><Filter>application\gameplay</Filter></ClInclude>
-	<ClInclude Include="application\gameplay\CombatHud.h"><Filter>application\gameplay</Filter></ClInclude>
-	<ClInclude Include="application\gameplay\Fighter.h"><Filter>application\gameplay</Filter></ClInclude>
-	<ClInclude Include="application\gameplay\MissileSystem.h"><Filter>application\gameplay</Filter></ClInclude>
+	<ClInclude Include="application\scene\AirCombatScene.h"><Filter>application\scene</Filter></ClInclude>
+	<ClInclude Include="application\camera\CombatCamera.h"><Filter>application\camera</Filter></ClInclude>
+	<ClInclude Include="application\ui\CombatHud.h"><Filter>application\ui</Filter></ClInclude>
+	<ClInclude Include="application\actor\Fighter.h"><Filter>application\actor</Filter></ClInclude>
+	<ClInclude Include="application\controller\PlayerController.h"><Filter>application\controller</Filter></ClInclude>
+	<ClInclude Include="application\controller\EnemyController.h"><Filter>application\controller</Filter></ClInclude>
+	<ClInclude Include="application\combat\LockOnSystem.h"><Filter>application\combat</Filter></ClInclude>
+	<ClInclude Include="application\combat\Damage.h"><Filter>application\combat</Filter></ClInclude>
+	<ClInclude Include="application\combat\Team.h"><Filter>application\combat</Filter></ClInclude>
+	<ClInclude Include="application\effect\CombatEffectSystem.h"><Filter>application\effect</Filter></ClInclude>
+	<ClInclude Include="application\effect\EffectPreset.h"><Filter>application\effect</Filter></ClInclude>
+	<ClInclude Include="application\weapon\Missile.h"><Filter>application\weapon</Filter></ClInclude>
+	<ClInclude Include="application\weapon\MissileSystem.h"><Filter>application\weapon</Filter></ClInclude>
+	<ClInclude Include="engine\math\SpatialMath.h"><Filter>engine\math</Filter></ClInclude>
 	<ClInclude Include="engine\assets\AssetManager.h">
 	  <Filter>engine\assets</Filter>
 	</ClInclude>

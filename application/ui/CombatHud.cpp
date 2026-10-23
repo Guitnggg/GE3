@@ -1,8 +1,9 @@
-#include "application/gameplay/CombatHud.h"
+#include "application/ui/CombatHud.h"
 
-#include "application/gameplay/AirCombatMath.h"
-#include "application/gameplay/Fighter.h"
+#include "application/actor/Fighter.h"
 #include "engine/assets/AssetManager.h"
+#include "engine/core/WinApp.h"
+#include "engine/math/SpatialMath.h"
 
 #ifdef _DEBUG
 #include "externals/imgui/imgui.h"
@@ -11,8 +12,18 @@
 #include <algorithm>
 #include <cmath>
 
-using namespace AirCombatMath;
+using namespace SpatialMath;
 
+namespace {
+constexpr float kScreenWidth = static_cast<float>(WinApp::kClientWidth);
+constexpr float kScreenHeight = static_cast<float>(WinApp::kClientHeight);
+}
+
+//===============
+// 初期化
+//===============
+
+// 照準とロックマーカーに共通テクスチャを設定する
 void CombatHud::Initialize(AssetManager &assets, SpriteCommon *spriteCommon, TextureManager *textureManager) {
 	const auto texture = assets.LoadTexture("textures/Lockon.png");
 	lockMarker_.Initialize(spriteCommon, textureManager, texture);
@@ -23,30 +34,34 @@ void CombatHud::Initialize(AssetManager &assets, SpriteCommon *spriteCommon, Tex
 	aimMarker_.SetSize({34.0f, 34.0f});
 	aimMarker_.SetAnchorPoint({0.5f, 0.5f});
 	aimMarker_.SetColor({0.35f, 0.9f, 1.0f, 0.65f});
+
+	// 通常照準は常に画面中央へ固定する。
 	aimMarker_.GetTransform().translate = {kScreenWidth * 0.5f, kScreenHeight * 0.5f, 0.0f};
 }
 
-bool CombatHud::UpdateLock(const Fighter &player, const Fighter &enemy, const Camera &camera, double elapsedTime) {
-	if (!enemy.IsAlive()) return false;
-	const Vector3 toEnemy = Subtract(enemy.GetPosition(), player.GetPosition());
-	Vector2 screen{};
-	const bool locked = Length(toEnemy) < 650.0f && Dot(player.GetForward(), Normalize(toEnemy)) > 0.55f &&
-	                    WorldToScreen(enemy.GetPosition(), camera, screen);
-	if (locked) {
-		lockMarker_.GetTransform().translate = {screen.x, screen.y, 0.0f};
+//===============
+// 更新・描画
+//===============
+
+// ロック中だけ敵機の画面座標へマーカーを移動し、拡縮で点滅させる
+void CombatHud::UpdateLockMarker(bool lockedOn, const Vector2 &screenPosition, double elapsedTime) {
+	if (lockedOn) {
+		lockMarker_.GetTransform().translate = {screenPosition.x, screenPosition.y, 0.0f};
 		const float pulse = 0.85f + std::sin(static_cast<float>(elapsedTime) * 8.0f) * 0.12f;
 		lockMarker_.GetTransform().scale = {pulse, pulse, 1.0f};
 	}
-	return locked;
 }
 
+// 照準とロックマーカーを描画し、Debugビルドでは戦闘情報も表示する
 void CombatHud::Draw(const Fighter &player, const Fighter &enemy, bool lockedOn, bool battleEnded) {
 	aimMarker_.Update(kScreenWidth, kScreenHeight);
 	aimMarker_.Draw();
+
 	if (lockedOn && enemy.IsAlive()) {
 		lockMarker_.Update(kScreenWidth, kScreenHeight);
 		lockMarker_.Draw();
 	}
+
 #ifdef _DEBUG
 	ImGui::SetNextWindowPos({18.0f, 18.0f}, ImGuiCond_Once);
 	ImGui::SetNextWindowBgAlpha(0.72f);

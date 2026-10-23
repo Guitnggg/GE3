@@ -96,11 +96,16 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-	<ClCompile Include="application\gameplay\AirCombatScene.cpp" />
-	<ClCompile Include="application\gameplay\CombatCamera.cpp" />
-	<ClCompile Include="application\gameplay\CombatHud.cpp" />
-	<ClCompile Include="application\gameplay\Fighter.cpp" />
-	<ClCompile Include="application\gameplay\MissileSystem.cpp" />
+	<ClCompile Include="application\scene\AirCombatScene.cpp" />
+	<ClCompile Include="application\camera\CombatCamera.cpp" />
+	<ClCompile Include="application\ui\CombatHud.cpp" />
+	<ClCompile Include="application\actor\Fighter.cpp" />
+	<ClCompile Include="application\controller\PlayerController.cpp" />
+	<ClCompile Include="application\controller\EnemyController.cpp" />
+	<ClCompile Include="application\combat\LockOnSystem.cpp" />
+	<ClCompile Include="application\effect\CombatEffectSystem.cpp" />
+	<ClCompile Include="application\weapon\Missile.cpp" />
+	<ClCompile Include="application\weapon\MissileSystem.cpp" />
 	<ClCompile Include="engine\assets\AssetManager.cpp" />
 	<ClCompile Include="engine\debug\DebugOverlay.cpp" />
 	<ClCompile Include="engine\debug\Profiler.cpp" />
@@ -158,12 +163,20 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
-	<ClInclude Include="application\gameplay\AirCombatMath.h" />
-	<ClInclude Include="application\gameplay\AirCombatScene.h" />
-	<ClInclude Include="application\gameplay\CombatCamera.h" />
-	<ClInclude Include="application\gameplay\CombatHud.h" />
-	<ClInclude Include="application\gameplay\Fighter.h" />
-	<ClInclude Include="application\gameplay\MissileSystem.h" />
+	<ClInclude Include="application\scene\AirCombatScene.h" />
+	<ClInclude Include="application\camera\CombatCamera.h" />
+	<ClInclude Include="application\ui\CombatHud.h" />
+	<ClInclude Include="application\actor\Fighter.h" />
+	<ClInclude Include="application\controller\PlayerController.h" />
+	<ClInclude Include="application\controller\EnemyController.h" />
+	<ClInclude Include="application\combat\LockOnSystem.h" />
+	<ClInclude Include="application\combat\Damage.h" />
+	<ClInclude Include="application\combat\Team.h" />
+	<ClInclude Include="application\effect\CombatEffectSystem.h" />
+	<ClInclude Include="application\effect\EffectPreset.h" />
+	<ClInclude Include="application\weapon\Missile.h" />
+	<ClInclude Include="application\weapon\MissileSystem.h" />
+	<ClInclude Include="engine\math\SpatialMath.h" />
 	<ClInclude Include="engine\assets\AssetManager.h" />
 	<ClInclude Include="engine\debug\DebugOverlay.h" />
 	<ClInclude Include="engine\debug\Profiler.h" />
