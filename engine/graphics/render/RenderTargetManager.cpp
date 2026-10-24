@@ -41,7 +41,7 @@ void RenderTargetManager::Initialize(DirectXCommon *directXCommon,
 	// 作成順序には依存関係がある。
 	// Composite用PSOはColor TextureのView形式に合わせて作成するため、Textureを先に準備する。
 	try {
-		CreateColorTexture();
+		CreateColorTextures();
 		CreateDepthTexture();
 		CreateCompositePipeline();
 
@@ -58,20 +58,9 @@ void RenderTargetManager::BeginWorldPass() {
 		throw std::logic_error("RenderTargetManager is not initialized.");
 	}
 
+	BeginColorPass(kWorldTextureIndex, true);
+
 	auto *commandList = directXCommon_->GetCommandList();
-
-	// Color Textureは、前フレームのComposite終了時にはPixel Shaderから読む状態になっている。
-	// 同じResourceへ書き込みを始める前に、RENDER_TARGET状態へ明示的に戻す必要がある。
-	D3D12_RESOURCE_BARRIER barrier{};
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Transition.pResource = colorTexture_.Get();
-	barrier.Transition.StateBefore = colorState_;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	commandList->ResourceBarrier(1, &barrier);
-
-	// 実際にGPUへ記録した状態と、CPU側で追跡する状態を必ず同時に更新する。
-	colorState_ = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
 	// RTVはカラー出力先、DSVは3D描画の前後関係を判定する深度出力先となる。
 	// どちらもRenderTargetManager専用なので、SwapChain側のViewとは混在しない。
@@ -84,25 +73,61 @@ void RenderTargetManager::BeginWorldPass() {
 	commandList->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 }
 
-void RenderTargetManager::CompositeToSwapChain() {
-	if (!initialized_ || colorState_ != D3D12_RESOURCE_STATE_RENDER_TARGET) {
-		throw std::logic_error("Composite requires a completed World pass.");
+void RenderTargetManager::BeginPostEffectPass(uint32_t textureIndex) {
+	if (!initialized_) {
+		throw std::logic_error("RenderTargetManager is not initialized.");
+	}
+
+	BeginColorPass(textureIndex, false);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE rtv = rtvHeap_->GetCPUDescriptorHandleForHeapStart();
+	rtv.ptr += static_cast<SIZE_T>(rtvDescriptorSize_) * textureIndex;
+	constexpr float clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+	directXCommon_->GetCommandList()->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
+}
+
+void RenderTargetManager::PrepareForSampling(uint32_t textureIndex) {
+	ValidateTextureIndex(textureIndex);
+	if (colorStates_[textureIndex] != D3D12_RESOURCE_STATE_RENDER_TARGET) {
+		throw std::logic_error("Only a completed render target can be prepared for sampling.");
+	}
+
+	D3D12_RESOURCE_BARRIER barrier{};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Transition.pResource = colorTextures_[textureIndex].Get();
+	barrier.Transition.StateBefore = colorStates_[textureIndex];
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	directXCommon_->GetCommandList()->ResourceBarrier(1, &barrier);
+	colorStates_[textureIndex] = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE RenderTargetManager::GetTextureSrv(uint32_t textureIndex) const {
+	if (!initialized_) {
+		throw std::logic_error("RenderTargetManager is not initialized.");
+	}
+
+	ValidateTextureIndex(textureIndex);
+
+	// 出力中のTextureを同じPassの入力として読むことはできない。
+	if (colorStates_[textureIndex] != D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE) {
+		throw std::logic_error("Render texture must be prepared for sampling before requesting its SRV.");
+	}
+
+	return srvManager_->GetGPUDescriptorHandle(colorSrvs_[textureIndex]);
+}
+
+void RenderTargetManager::CompositeToSwapChain(uint32_t sourceTextureIndex) {
+	if (!initialized_) {
+		throw std::logic_error("RenderTargetManager is not initialized.");
+	}
+
+	ValidateTextureIndex(sourceTextureIndex);
+	if (colorStates_[sourceTextureIndex] == D3D12_RESOURCE_STATE_RENDER_TARGET) {
+		PrepareForSampling(sourceTextureIndex);
 	}
 
 	auto *commandList = directXCommon_->GetCommandList();
-
-	// 直前までRTVとして書き込んでいたResourceを、そのままSRVとして読むことはできない。
-	// 全World描画の完了後、Pixel Shaderから参照できる状態へ遷移する。
-	D3D12_RESOURCE_BARRIER barrier{};
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Transition.pResource = colorTexture_.Get();
-	barrier.Transition.StateBefore = colorState_;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	commandList->ResourceBarrier(1, &barrier);
-
-	// 次フレームのBeginWorldPassは、この状態を遷移元として使用する。
-	colorState_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
 	// ここから先の出力先は表示用バックバッファとなる。
 	// この切り替え後に描かれるSprite UIとImGuiはRenderTextureを通らない。
@@ -112,7 +137,7 @@ void RenderTargetManager::CompositeToSwapChain() {
 	// Root引数0には、World描画結果を参照するSRVディスクリプタを渡す。
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	commandList->SetPipelineState(pipelineState_.Get());
-	commandList->SetGraphicsRootDescriptorTable(0, srvManager_->GetGPUDescriptorHandle(colorSrv_));
+	commandList->SetGraphicsRootDescriptorTable(0, srvManager_->GetGPUDescriptorHandle(colorSrvs_[sourceTextureIndex]));
 
 	// Vertex ShaderがSV_VertexIDから頂点を生成するため、頂点バッファの設定は不要。
 	// 3頂点の大きな三角形1枚で画面全体を覆い、継ぎ目のないコピーを行う。
@@ -123,11 +148,14 @@ void RenderTargetManager::CompositeToSwapChain() {
 void RenderTargetManager::Finalize() noexcept {
 	// SRVディスクリプタはGPU Resourceとは別にSrvManagerが管理している。
 	// Resourceを破棄する前にスロットを返却し、別Textureから再利用できる状態にする。
-	if (srvManager_ != nullptr && srvManager_->IsValid(colorSrv_)) {
-		srvManager_->Release(colorSrv_);
+	if (srvManager_ != nullptr) {
+		for (SrvHandle &handle : colorSrvs_) {
+			if (srvManager_->IsValid(handle)) {
+				srvManager_->Release(handle);
+			}
+			handle = {};
+		}
 	}
-
-	colorSrv_ = {};
 
 	// GPUオブジェクトは参照関係の上位から順に解放する。
 	// EngineCore側でWaitForGPUIdle済みなので、ここではGPU待機を行わない。
@@ -136,17 +164,20 @@ void RenderTargetManager::Finalize() noexcept {
 	dsvHeap_.Reset();
 	rtvHeap_.Reset();
 	depthTexture_.Reset();
-	colorTexture_.Reset();
+	for (auto &texture : colorTextures_) {
+		texture.Reset();
+	}
 
 	// 外部サービスは所有していないため、deleteせず参照だけを解除する。
 	shaderCompiler_ = nullptr;
 	srvManager_ = nullptr;
 	directXCommon_ = nullptr;
-	colorState_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	colorStates_.fill(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	rtvDescriptorSize_ = 0;
 	initialized_ = false;
 }
 
-void RenderTargetManager::CreateColorTexture() {
+void RenderTargetManager::CreateColorTextures() {
 	auto device = directXCommon_->GetDevice();
 
 	// ウィンドウと等倍の2D Textureを作成する。
@@ -170,42 +201,46 @@ void RenderTargetManager::CreateColorTexture() {
 	// Resource本体はTYPELESSなので、Viewで使用するsRGB形式をここに指定する。
 	D3D12_CLEAR_VALUE clearValue{};
 	clearValue.Format = kColorViewFormat;
-	for (size_t index = 0; index < 4; ++index) {
-		clearValue.Color[index] = kWorldClearColor[index];
+	for (size_t channel = 0; channel < 4; ++channel) {
+		clearValue.Color[channel] = kWorldClearColor[channel];
 	}
 
-	// 最初のフレームはComposite前の参照状態から開始する。
-	// BeginWorldPassが、この状態からRENDER_TARGET状態へのBarrierを記録する。
-	HRESULT hr = device->CreateCommittedResource(&heapProperties,
-	                                             D3D12_HEAP_FLAG_NONE,
-	                                             &resourceDesc,
-	                                             colorState_,
-	                                             &clearValue,
-	                                             IID_PPV_ARGS(&colorTexture_));
-	HResult::ThrowIfFailed(hr, "Creating the World render texture");
+	// 2枚分のRTVを同じHeapへ連続配置し、Texture番号から位置を計算する。
+	rtvHeap_ = directXCommon_->CreateDescriptorHeap(
+	    device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, kRenderTextureCount, false);
+	rtvDescriptorSize_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-	// RTVはOutput MergerへColor Textureを描画先として渡すためのCPU View。
-	// このManagerが扱うRTVは1枚だけなので、専用Heapも1要素とする。
-	rtvHeap_ = directXCommon_->CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1, false);
-	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
-	rtvDesc.Format = kColorViewFormat;
-	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-	device->CreateRenderTargetView(colorTexture_.Get(), &rtvDesc, rtvHeap_->GetCPUDescriptorHandleForHeapStart());
+	for (uint32_t index = 0; index < kRenderTextureCount; ++index) {
+		// 2枚とも最初は入力用SRV状態。各Pass開始時に必要なTextureだけをRTVへ遷移する。
+		HRESULT hr = device->CreateCommittedResource(&heapProperties,
+		                                             D3D12_HEAP_FLAG_NONE,
+		                                             &resourceDesc,
+		                                             colorStates_[index],
+		                                             &clearValue,
+		                                             IID_PPV_ARGS(&colorTextures_[index]));
+		HResult::ThrowIfFailed(hr, "Creating a Ping-Pong render texture");
 
-	// 同じTextureをCompositeのPixel Shaderから読むため、shader-visible SRVも作成する。
-	// SRVスロット自体の所有と世代管理はSrvManagerへ委譲する。
-	colorSrv_ = srvManager_->Allocate();
+		D3D12_CPU_DESCRIPTOR_HANDLE rtv = rtvHeap_->GetCPUDescriptorHandleForHeapStart();
+		rtv.ptr += static_cast<SIZE_T>(rtvDescriptorSize_) * index;
 
-	// SrvManagerのTexture作成APIへ渡すため、RenderTextureの形状をMetadataとして表現する。
-	DirectX::TexMetadata metadata{};
-	metadata.width = WinApp::kClientWidth;
-	metadata.height = WinApp::kClientHeight;
-	metadata.depth = 1;
-	metadata.arraySize = 1;
-	metadata.mipLevels = 1;
-	metadata.format = kColorViewFormat;
-	metadata.dimension = DirectX::TEX_DIMENSION_TEXTURE2D;
-	srvManager_->CreateSRVforTexture2D(colorSrv_, colorTexture_.Get(), metadata);
+		D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+		rtvDesc.Format = kColorViewFormat;
+		rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+		device->CreateRenderTargetView(colorTextures_[index].Get(), &rtvDesc, rtv);
+
+		// 各Textureを次のエフェクト、または最終Compositeから読めるようSRVも作成する。
+		colorSrvs_[index] = srvManager_->Allocate();
+
+		DirectX::TexMetadata metadata{};
+		metadata.width = WinApp::kClientWidth;
+		metadata.height = WinApp::kClientHeight;
+		metadata.depth = 1;
+		metadata.arraySize = 1;
+		metadata.mipLevels = 1;
+		metadata.format = kColorViewFormat;
+		metadata.dimension = DirectX::TEX_DIMENSION_TEXTURE2D;
+		srvManager_->CreateSRVforTexture2D(colorSrvs_[index], colorTextures_[index].Get(), metadata);
+	}
 }
 
 void RenderTargetManager::CreateDepthTexture() {
@@ -304,4 +339,43 @@ void RenderTargetManager::CreateCompositePipeline() {
 	// 完成した固定描画設定をPSOとして保持し、毎フレームはBindするだけにする。
 	hr = device->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&pipelineState_));
 	HResult::ThrowIfFailed(hr, "Creating the RenderTexture composite pipeline");
+}
+
+void RenderTargetManager::BeginColorPass(uint32_t textureIndex, bool useDepth) {
+	ValidateTextureIndex(textureIndex);
+
+	// Ping-Pongでは入力Textureと出力Textureを分ける。
+	// すでにRTV状態なら、同じTextureへのPassを二重開始した呼び出しミスとなる。
+	if (colorStates_[textureIndex] != D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE) {
+		throw std::logic_error("Render texture is already being used as an output target.");
+	}
+
+	auto *commandList = directXCommon_->GetCommandList();
+
+	// Shader入力として読んでいたTextureを、次のPassのカラー出力先へ切り替える。
+	D3D12_RESOURCE_BARRIER barrier{};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Transition.pResource = colorTextures_[textureIndex].Get();
+	barrier.Transition.StateBefore = colorStates_[textureIndex];
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	commandList->ResourceBarrier(1, &barrier);
+	colorStates_[textureIndex] = D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE rtv = rtvHeap_->GetCPUDescriptorHandleForHeapStart();
+	rtv.ptr += static_cast<SIZE_T>(rtvDescriptorSize_) * textureIndex;
+
+	// World Passだけは3D深度を使用する。全画面PostEffect PassにはDSVを設定しない。
+	if (useDepth) {
+		const D3D12_CPU_DESCRIPTOR_HANDLE dsv = dsvHeap_->GetCPUDescriptorHandleForHeapStart();
+		commandList->OMSetRenderTargets(1, &rtv, false, &dsv);
+	} else {
+		commandList->OMSetRenderTargets(1, &rtv, false, nullptr);
+	}
+}
+
+void RenderTargetManager::ValidateTextureIndex(uint32_t textureIndex) const {
+	if (textureIndex >= kRenderTextureCount) {
+		throw std::out_of_range("Render texture index is outside the Ping-Pong target range.");
+	}
 }

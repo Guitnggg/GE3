@@ -91,6 +91,9 @@
 	<Filter Include="engine\effects\particle">
 	  <UniqueIdentifier>{2C2836D0-64B9-4875-A236-A51048455710}</UniqueIdentifier>
 	</Filter>
+	<Filter Include="engine\effects\post">
+	  <UniqueIdentifier>{ACB07715-569F-4DBE-A4F3-3BF48549689E}</UniqueIdentifier>
+	</Filter>
 	<Filter Include="resource\shaders\particle">
 	  <UniqueIdentifier>{98595751-67F2-4D9F-A1C4-C7C4E437A63C}</UniqueIdentifier>
 	</Filter>
@@ -175,6 +178,9 @@
 	</ClCompile>
 	<ClCompile Include="engine\effects\particle\GPUParticleEmitter.cpp">
 	  <Filter>engine\effects\particle</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\effects\post\PostEffectManager.cpp">
+	  <Filter>engine\effects\post</Filter>
 	</ClCompile>
     <ClCompile Include="externals\imgui\imgui.cpp">
       <Filter>imgui</Filter>
@@ -345,6 +351,8 @@
 	<ClInclude Include="engine\effects\particle\GPUParticleEmitter.h">
 	  <Filter>engine\effects\particle</Filter>
 	</ClInclude>
+	<ClInclude Include="engine\effects\post\IPostEffect.h"><Filter>engine\effects\post</Filter></ClInclude>
+	<ClInclude Include="engine\effects\post\PostEffectManager.h"><Filter>engine\effects\post</Filter></ClInclude>
     <ClInclude Include="externals\imgui\imgui.h">
       <Filter>imgui</Filter>
     </ClInclude>

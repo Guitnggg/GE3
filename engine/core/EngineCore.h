@@ -24,6 +24,7 @@ class AssetManager;
 class AbstractSceneFactory;
 class DebugOverlay;
 class RenderTargetManager;
+class PostEffectManager;
 struct EngineSettings;
 
 /// <summary>
@@ -103,6 +104,7 @@ class EngineCore {
 	std::unique_ptr<DirectXCommon> dxCommon_;                  // DirectX 12の描画基盤
 	std::unique_ptr<SrvManager> srvManager_;                   // SRVディスクリプタの割り当て管理
 	std::unique_ptr<RenderTargetManager> renderTargetManager_; // World用RenderTextureと画面合成の管理
+	std::unique_ptr<PostEffectManager> postEffectManager_;     // Ping-Pong方式のEffect実行順管理
 	std::unique_ptr<TextureManager> textureManager_;           // テクスチャGPUリソースの管理
 	std::unique_ptr<ModelManager> modelManager_;               // 共有モデルの読み込みとキャッシュ
 	std::unique_ptr<SpriteCommon> spriteCommon_;               // 2D描画の共通パイプライン

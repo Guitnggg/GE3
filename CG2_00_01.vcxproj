@@ -122,6 +122,7 @@
 	<ClCompile Include="engine\effects\particle\GPUParticleSystem.cpp" />
 	<ClCompile Include="engine\effects\particle\GPUParticlePipeline.cpp" />
 	<ClCompile Include="engine\effects\particle\GPUParticleEmitter.cpp" />
+	<ClCompile Include="engine\effects\post\PostEffectManager.cpp" />
     <ClCompile Include="engine\2d\Sprite.cpp" />
     <ClCompile Include="engine\2d\SpriteCommon.cpp" />
     <ClCompile Include="engine\3d\camera\Camera.cpp" />
@@ -187,6 +188,8 @@
 	<ClInclude Include="engine\effects\particle\GPUParticleSystem.h" />
 	<ClInclude Include="engine\effects\particle\GPUParticlePipeline.h" />
 	<ClInclude Include="engine\effects\particle\GPUParticleEmitter.h" />
+	<ClInclude Include="engine\effects\post\IPostEffect.h" />
+	<ClInclude Include="engine\effects\post\PostEffectManager.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h" />
     <ClInclude Include="engine\3d\camera\Camera.h" />
 	<ClInclude Include="engine\3d\model\MeshGenerator.h" />

@@ -13,6 +13,7 @@
 #include "engine/debug/DebugOverlay.h"
 #include "engine/debug/Profiler.h"
 #include "engine/effects/particle/GPUParticlePipeline.h"
+#include "engine/effects/post/PostEffectManager.h"
 #include "engine/graphics/shader/ShaderCompiler.h"
 #include "engine/core/timing/FrameRateController.h"
 #include "engine/graphics/debug/ImGuiManager.h"
@@ -81,7 +82,7 @@ void EngineCore::Run() {
 
 void EngineCore::Initialize() {
 	if (initialized_ || winApp_ || input_ || audio_ || collisionWorld_ || dxCommon_ || srvManager_ ||
-	    renderTargetManager_ || textureManager_ ||
+	    renderTargetManager_ || postEffectManager_ || textureManager_ ||
 	    modelManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_ || gpuParticlePipeline_ ||
 	    shaderCompiler_ || assetManager_ || engineSettings_ || sceneManager_
 #ifdef _DEBUG
@@ -124,6 +125,8 @@ void EngineCore::Initialize() {
 		srvManager_->Initialize(dxCommon_.get());
 		renderTargetManager_ = std::make_unique<RenderTargetManager>();
 		renderTargetManager_->Initialize(dxCommon_.get(), srvManager_.get(), shaderCompiler_.get());
+		postEffectManager_ = std::make_unique<PostEffectManager>();
+		postEffectManager_->Initialize(dxCommon_.get(), renderTargetManager_.get(), shaderCompiler_.get());
 		textureManager_ = std::make_unique<TextureManager>();
 		textureManager_->Initialize(dxCommon_.get(), srvManager_.get());
 		modelManager_ = std::make_unique<ModelManager>();
@@ -278,8 +281,8 @@ void EngineCore::BeginDraw() {
 }
 
 void EngineCore::BeginUIDraw() {
-	// World結果を画面へコピーし、後続のSprite UIをポストエフェクト対象外にする。
-	renderTargetManager_->CompositeToSwapChain();
+	// 有効なEffectをPing-Pong実行して画面へ合成し、後続UIをEffect対象外にする。
+	postEffectManager_->Apply();
 }
 
 void EngineCore::EndDraw() {
@@ -328,6 +331,7 @@ void EngineCore::Finalize() {
 	spriteCommon_.reset();
 	modelManager_.reset();
 	textureManager_.reset();
+	postEffectManager_.reset();
 	renderTargetManager_.reset();
 	srvManager_.reset();
 	shaderCompiler_.reset();
