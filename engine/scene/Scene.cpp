@@ -43,14 +43,30 @@ void Scene::FixedUpdate() {
 	FlushDestroyedObjects();
 }
 
-void Scene::Draw() {
+void Scene::DrawWorld() {
 	if (!initialized_) {
 		throw std::logic_error("Scene is not initialized.");
 	}
-	OnDraw();
+
+	// GameObjectは既存の描画規約を維持し、ワールド描画として扱う。
+	// UI専用の要素は派生シーンのOnDrawUIで明示的に描画する。
+	OnDrawWorld();
+
 	for (const auto &gameObject : gameObjects_) {
 		gameObject->Draw();
 	}
+
+	FlushDestroyedObjects();
+}
+
+void Scene::DrawUI() {
+	if (!initialized_) {
+		throw std::logic_error("Scene is not initialized.");
+	}
+
+	// UIはワールド描画完了後に呼ばれ、将来はポストエフェクト合成後の描画先を使用する。
+	OnDrawUI();
+
 	FlushDestroyedObjects();
 }
 

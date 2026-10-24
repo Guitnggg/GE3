@@ -35,9 +35,14 @@ class IScene {
 	virtual void FixedUpdate() = 0;
 
 	/// <summary>
-	/// シーンが所有する要素を描画する。
+	/// 背景、3Dオブジェクト、パーティクルなど、画面効果の対象となる要素を描画する。
 	/// </summary>
-	virtual void Draw() = 0;
+	virtual void DrawWorld() = 0;
+
+	/// <summary>
+	/// HUDやメニューなど、画面効果の対象外となる2D要素を描画する。
+	/// </summary>
+	virtual void DrawUI() = 0;
 
 	/// <summary>
 	/// シーンが確保したリソースを解放する。

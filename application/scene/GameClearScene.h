@@ -17,7 +17,7 @@ class GameClearScene final : public Scene {
 	/// <summary>
 	/// 描画処理
 	/// </summary>
-	void OnDraw() override;
+	void OnDrawUI() override;
 };
 
 } // namespace GameApp

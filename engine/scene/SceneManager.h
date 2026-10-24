@@ -75,9 +75,14 @@ class SceneManager {
 	void FixedUpdate();
 
 	/// <summary>
-	/// 現在のシーンを描画する。
+	/// 現在のシーンのワールド要素を下層から順に描画する。
 	/// </summary>
-	void Draw();
+	void DrawWorld();
+
+	/// <summary>
+	/// 現在のシーンのUI要素を下層から順に描画する。
+	/// </summary>
+	void DrawUI();
 
 	/// <summary>
 	/// 現在および切り替え待ちのシーンを終了する。

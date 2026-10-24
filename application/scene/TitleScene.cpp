@@ -17,8 +17,9 @@ void TitleScene::OnUpdate() {
 	}
 }
 
-void TitleScene::OnDraw() {
+void TitleScene::OnDrawUI() {
 #ifdef _DEBUG
+	// 仮のタイトル表示。Sprite UI実装後は、このフック内で置き換える。
 	ImGui::Begin("Scene");
 	ImGui::TextUnformatted("TITLE");
 	ImGui::TextUnformatted("Press Enter to start");

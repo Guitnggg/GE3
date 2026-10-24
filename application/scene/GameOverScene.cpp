@@ -17,8 +17,9 @@ void GameOverScene::OnUpdate() {
 	}
 }
 
-void GameOverScene::OnDraw() {
+void GameOverScene::OnDrawUI() {
 #ifdef _DEBUG
+	// 仮の結果表示。Sprite UI実装後も同じUI描画フックを使用できる。
 	ImGui::Begin("Scene");
 	ImGui::TextUnformatted("GAME OVER");
 	ImGui::TextUnformatted("Press Enter to return to title");

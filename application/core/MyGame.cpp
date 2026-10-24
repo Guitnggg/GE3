@@ -22,8 +22,12 @@ void MyGame::OnFixedUpdate() {
 	PROFILE_SCOPE("Game FixedUpdate");
 }
 
-void MyGame::OnDraw() {
-	PROFILE_SCOPE("Game Draw");
+void MyGame::OnDrawWorld() {
+	PROFILE_SCOPE("Game Draw World");
+}
+
+void MyGame::OnDrawUI() {
+	PROFILE_SCOPE("Game Draw UI");
 }
 
 } // namespace GameApp

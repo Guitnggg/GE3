@@ -19,7 +19,8 @@ class RecordingScene final : public IScene {
 	void OnResume() override { events_.push_back(name_ + ".Resume"); }
 	void Update() override { events_.push_back(name_ + ".Update"); }
 	void FixedUpdate() override { events_.push_back(name_ + ".FixedUpdate"); }
-	void Draw() override { events_.push_back(name_ + ".Draw"); }
+	void DrawWorld() override { events_.push_back(name_ + ".DrawWorld"); }
+	void DrawUI() override { events_.push_back(name_ + ".DrawUI"); }
 	void Finalize() override { events_.push_back(name_ + ".Finalize"); }
 
   private:
@@ -32,7 +33,8 @@ class ThrowingScene final : public IScene {
 	void Initialize(const SceneContext &) override { throw std::runtime_error("Initialization failed."); }
 	void Update() override {}
 	void FixedUpdate() override {}
-	void Draw() override {}
+	void DrawWorld() override {}
+	void DrawUI() override {}
 	void Finalize() override {}
 };
 
@@ -85,8 +87,8 @@ TEST_CASE("SceneManager applies scene changes only at frame boundaries") {
 	manager.ChangeScene(std::make_unique<RecordingScene>(events, "second"));
 
 	// 予約直後は現在シーンを維持し、BeginFrameで初めて所有権を切り替える。
-	manager.Draw();
-	TestFramework::RequireEqual(events.back(), std::string("first.Draw"), "Scene changed before BeginFrame.");
+	manager.DrawWorld();
+	TestFramework::RequireEqual(events.back(), std::string("first.DrawWorld"), "Scene changed before BeginFrame.");
 	manager.BeginFrame();
 	manager.Update();
 	TestFramework::RequireEqual(events[2], std::string("second.Initialize"), "Next scene was not initialized first.");
@@ -102,12 +104,15 @@ TEST_CASE("SceneManager layer options control lower scene updates") {
 	manager.BeginFrame();
 	events.clear();
 	manager.Update();
-	manager.Draw();
+	manager.DrawWorld();
+	manager.DrawUI();
 
-	TestFramework::RequireEqual(events.size(), size_t{3}, "Unexpected layer callback count.");
+	TestFramework::RequireEqual(events.size(), size_t{5}, "Unexpected layer callback count.");
 	TestFramework::RequireEqual(events[0], std::string("overlay.Update"), "Lower scene should be paused for updates.");
-	TestFramework::RequireEqual(events[1], std::string("base.Draw"), "Base scene should draw below overlay.");
-	TestFramework::RequireEqual(events[2], std::string("overlay.Draw"), "Overlay should draw last.");
+	TestFramework::RequireEqual(events[1], std::string("base.DrawWorld"), "Base world should draw below overlay.");
+	TestFramework::RequireEqual(events[2], std::string("overlay.DrawWorld"), "Overlay world should draw last.");
+	TestFramework::RequireEqual(events[3], std::string("base.DrawUI"), "Base UI should draw below overlay.");
+	TestFramework::RequireEqual(events[4], std::string("overlay.DrawUI"), "Overlay UI should draw last.");
 	manager.Finalize();
 }
 

@@ -37,9 +37,14 @@ class Scene : public IScene {
 	void FixedUpdate() final;
 
 	/// <summary>
-	/// 描画を行うメンバ関数。
+	/// シーン固有のワールド要素と、所有するGameObjectを描画する。
 	/// </summary>
-	void Draw() final;
+	void DrawWorld() final;
+
+	/// <summary>
+	/// シーン固有のSprite UIやHUDを描画する。
+	/// </summary>
+	void DrawUI() final;
 
 	/// <summary>
 	/// オブジェクトの終了処理を行う、派生クラスでオーバーライドできない（final指定された）メンバ関数。
@@ -76,9 +81,14 @@ class Scene : public IScene {
 	virtual void OnFixedUpdate() {}
 
 	/// <summary>
-	/// 描画処理を行う仮想メソッド。
+	/// 背景、3Dオブジェクト、パーティクルなどを描画する仮想メソッド。
 	/// </summary>
-	virtual void OnDraw() {}
+	virtual void OnDrawWorld() {}
+
+	/// <summary>
+	/// Sprite UIやHUDなど、ポストエフェクト対象外の要素を描画する仮想メソッド。
+	/// </summary>
+	virtual void OnDrawUI() {}
 
 	/// <summary>
 	/// オブジェクトの最終化時に呼び出される仮想メソッド。

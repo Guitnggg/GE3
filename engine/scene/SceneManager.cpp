@@ -68,10 +68,19 @@ void SceneManager::FixedUpdate() {
 	}
 }
 
-void SceneManager::Draw() {
+void SceneManager::DrawWorld() {
 	EnsureInitialized();
+
 	for (size_t index = FindFirstDrawScene(); index < stack_.size(); ++index) {
-		stack_[index].scene->Draw();
+		stack_[index].scene->DrawWorld();
+	}
+}
+
+void SceneManager::DrawUI() {
+	EnsureInitialized();
+
+	for (size_t index = FindFirstDrawScene(); index < stack_.size(); ++index) {
+		stack_[index].scene->DrawUI();
 	}
 }
 

@@ -43,12 +43,20 @@ void EngineCore::Run() {
 
 		while (!IsEndRequest()) {
 			BeginFrame();
+
 			// 通常更新で確定した状態だけを描画へ渡す。
 			OnUpdate();
 			sceneManager_->Update();
+
 			BeginDraw();
-			OnDraw();
-			sceneManager_->Draw();
+
+			// Worldを先に描画し、その後に画面効果対象外のUIを重ねる。
+			OnDrawWorld();
+			sceneManager_->DrawWorld();
+
+			OnDrawUI();
+			sceneManager_->DrawUI();
+
 			EndDraw();
 		}
 
@@ -178,7 +186,9 @@ void EngineCore::OnUpdate() {}
 
 void EngineCore::OnFixedUpdate() {}
 
-void EngineCore::OnDraw() {}
+void EngineCore::OnDrawWorld() {}
+
+void EngineCore::OnDrawUI() {}
 
 void EngineCore::OnFinalize() {}
 

@@ -19,8 +19,9 @@ void GameScene::OnUpdate() {
 	}
 }
 
-void GameScene::OnDraw() {
+void GameScene::OnDrawUI() {
 #ifdef _DEBUG
+	// シーン遷移を確認するための仮UI。ゲーム本編の3D描画とは分離しておく。
 	ImGui::Begin("Scene");
 	ImGui::TextUnformatted("GAME");
 	ImGui::TextUnformatted("C: Clear / G: Game Over");

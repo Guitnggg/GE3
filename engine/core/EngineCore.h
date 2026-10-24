@@ -60,9 +60,14 @@ class EngineCore {
 	virtual void OnFixedUpdate();
 
 	/// <summary>
-	/// 描画可能なフレーム内で呼ばれるゲーム描画処理。
+	/// ポストエフェクト対象となるゲーム固有のワールド描画処理。
 	/// </summary>
-	virtual void OnDraw();
+	virtual void OnDrawWorld();
+
+	/// <summary>
+	/// ポストエフェクト対象外となるゲーム固有のUI描画処理。
+	/// </summary>
+	virtual void OnDrawUI();
 
 	/// <summary>
 	/// エンジン終了前に一度だけ呼ばれるゲーム終了処理。

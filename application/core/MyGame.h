@@ -32,9 +32,14 @@ class MyGame : public EngineCore {
 	void OnFixedUpdate() override;
 
 	/// <summary>
-	/// 空のフレームとデバッグUIを描画する。
+	/// ゲーム固有のワールド要素を描画する。
 	/// </summary>
-	void OnDraw() override;
+	void OnDrawWorld() override;
+
+	/// <summary>
+	/// ゲーム固有のUI要素を描画する。
+	/// </summary>
+	void OnDrawUI() override;
 };
 
 } // namespace GameApp
