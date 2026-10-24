@@ -13,11 +13,13 @@ class Object3dCommon;
 class SpriteCommon;
 class TextureManager;
 class Time;
+class SceneManager;
 
 /// <summary>
 /// シーンへ貸し出すエンジンサービスの非所有参照をひとまとめにする。
 /// </summary>
 struct SceneContext {
+	SceneManager *sceneManager = nullptr;               // 安全なシーン切り替えを予約する窓口
 	Audio *audio = nullptr;                             // 音声の読み込みと再生を提供する非所有参照
 	AssetManager *assets = nullptr;                     // エンジン資産を統一して取得する非所有参照
 	CollisionWorld *collisionWorld = nullptr;           // Colliderの登録と衝突判定を提供する非所有参照

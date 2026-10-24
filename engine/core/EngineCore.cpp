@@ -18,6 +18,7 @@
 #include "engine/input/Input.h"
 #include "engine/settings/EngineSettings.h"
 #include "engine/scene/IScene.h"
+#include "engine/scene/AbstractSceneFactory.h"
 #include "engine/scene/SceneContext.h"
 #include "engine/scene/SceneManager.h"
 #include "engine/core/timing/Time.h"
@@ -202,6 +203,44 @@ void EngineCore::SetInitialScene(std::unique_ptr<IScene> initialScene) {
 	context.imguiManager = imguiManager_.get();
 #endif
 	sceneManager_->Initialize(context, std::move(initialScene));
+	sceneInitialized_ = true;
+}
+
+void EngineCore::SetSceneFactory(std::unique_ptr<AbstractSceneFactory> sceneFactory) {
+	// SceneManager初期化後の差し替えは、実行中シーンとの対応が崩れるため許可しない。
+	if (!initialized_ || sceneInitialized_) {
+		throw std::logic_error("Scene factory can only be set after engine initialization and before the initial scene.");
+	}
+
+	sceneManager_->SetSceneFactory(std::move(sceneFactory));
+}
+
+void EngineCore::SetInitialScene(std::string_view initialSceneId) {
+	if (!initialized_ || sceneInitialized_) {
+		throw std::logic_error("Initial scene can only be set once after engine initialization.");
+	}
+
+	// 各シーンへ貸し出すサービスを一つのContextにまとめる。
+	// 所有権はEngineCoreが保持し、シーンは実行期間中だけ参照する。
+	SceneContext context{};
+	context.audio = audio_.get();
+	context.assets = assetManager_.get();
+	context.collisionWorld = collisionWorld_.get();
+	context.directXCommon = dxCommon_.get();
+	context.input = input_.get();
+	context.textureManager = textureManager_.get();
+	context.modelManager = modelManager_.get();
+	context.spriteCommon = spriteCommon_.get();
+	context.object3dCommon = object3dCommon_.get();
+	context.time = time_.get();
+	context.frameRateController = frameRateController_.get();
+	context.gpuParticlePipeline = gpuParticlePipeline_.get();
+#ifdef _DEBUG
+	context.imguiManager = imguiManager_.get();
+#endif
+
+	// Factoryによる生成と初期化はSceneManagerへ一任する。
+	sceneManager_->Initialize(context, initialSceneId);
 	sceneInitialized_ = true;
 }
 

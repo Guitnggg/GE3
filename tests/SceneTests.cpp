@@ -2,6 +2,7 @@
 
 #include "engine/scene/SceneManager.h"
 #include "engine/scene/Scene.h"
+#include "engine/scene/AbstractSceneFactory.h"
 
 #include <memory>
 #include <string>
@@ -33,6 +34,18 @@ class ThrowingScene final : public IScene {
 	void FixedUpdate() override {}
 	void Draw() override {}
 	void Finalize() override {}
+};
+
+class RecordingSceneFactory final : public AbstractSceneFactory {
+  public:
+	explicit RecordingSceneFactory(std::vector<std::string> &events) : events_(events) {}
+
+	std::unique_ptr<IScene> CreateScene(std::string_view sceneId) override {
+		return std::make_unique<RecordingScene>(events_, std::string(sceneId));
+	}
+
+  private:
+	std::vector<std::string> &events_;
 };
 
 class ExternalCounterComponent final : public Component {
@@ -122,4 +135,35 @@ TEST_CASE("Scene stops a GameObject immediately after a fixed-update destroy req
 	scene.FixedUpdate();
 	TestFramework::RequireEqual(componentFixedUpdates, 0, "Destroyed GameObject survived into the next fixed step.");
 	scene.Finalize();
+}
+
+TEST_CASE("SceneManager creates initial and replacement scenes through its factory") {
+	std::vector<std::string> events;
+	SceneManager manager;
+	manager.SetSceneFactory(std::make_unique<RecordingSceneFactory>(events));
+	manager.Initialize({}, "TITLE");
+	manager.ChangeScene("GAME");
+	manager.BeginFrame();
+
+	TestFramework::RequireEqual(events[0], std::string("TITLE.Initialize"), "Factory did not create title scene.");
+	TestFramework::RequireEqual(events[1], std::string("GAME.Initialize"), "Factory did not create game scene.");
+	TestFramework::RequireEqual(events[2], std::string("TITLE.Finalize"), "Old scene was not finalized.");
+	manager.Finalize();
+}
+
+TEST_CASE("SceneManager exposes itself through SceneContext") {
+	class ContextScene final : public Scene {
+	  public:
+		SceneManager *manager = nullptr;
+
+	  private:
+		void OnInitialize() override { manager = GetContext().sceneManager; }
+	};
+
+	auto scene = std::make_unique<ContextScene>();
+	ContextScene *scenePointer = scene.get();
+	SceneManager manager;
+	manager.Initialize({}, std::move(scene));
+	TestFramework::Require(scenePointer->manager == &manager, "SceneContext did not expose its owning SceneManager.");
+	manager.Finalize();
 }

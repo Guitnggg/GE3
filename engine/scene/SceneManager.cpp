@@ -1,5 +1,6 @@
 #include "engine/scene/SceneManager.h"
 
+#include "engine/scene/AbstractSceneFactory.h"
 #include "engine/scene/IScene.h"
 
 #include <stdexcept>
@@ -13,11 +14,38 @@ void SceneManager::Initialize(const SceneContext &context, std::unique_ptr<IScen
 	if (initialized_ || !initialScene) {
 		throw std::logic_error("SceneManager initialization state or initial scene is invalid.");
 	}
-	// 共通機能を保持し、所有権を受け取った最初のシーンを開始する
+
+	// SceneContextへ自身を設定し、各シーンから遅延切り替えを要求できるようにする。
+	// SceneManagerが所有者であり、context内のポインターは非所有参照となる。
 	context_ = context;
+	context_.sceneManager = this;
+
+	// 初期化が成功してからスタックへ所有権を移し、半端なシーンを残さない。
 	initialScene->Initialize(context_);
 	stack_.push_back({std::move(initialScene), {false, false}});
 	initialized_ = true;
+}
+
+void SceneManager::SetSceneFactory(std::unique_ptr<AbstractSceneFactory> sceneFactory) {
+	if (initialized_) {
+		throw std::logic_error("Scene factory must be set before SceneManager initialization.");
+	}
+
+	if (!sceneFactory) {
+		throw std::invalid_argument("Scene factory must not be null.");
+	}
+
+	// FactoryもSceneManagerが所有し、生成機能の寿命を実行期間と一致させる。
+	sceneFactory_ = std::move(sceneFactory);
+}
+
+void SceneManager::Initialize(const SceneContext &context, std::string_view initialSceneId) {
+	if (!sceneFactory_) {
+		throw std::logic_error("Scene factory must be set before identifier based initialization.");
+	}
+
+	// ゲーム側のIDを具象シーンへ変換し、通常の初期化経路へ合流させる。
+	Initialize(context, sceneFactory_->CreateScene(initialSceneId));
 }
 
 void SceneManager::Update() {
@@ -54,6 +82,17 @@ void SceneManager::ChangeScene(std::unique_ptr<IScene> nextScene) {
 	}
 	EnsureInitialized();
 	pendingOperations_.push_back({OperationType::Replace, std::move(nextScene), {false, false}});
+}
+
+void SceneManager::ChangeScene(std::string_view nextSceneId) {
+	EnsureInitialized();
+
+	if (!sceneFactory_) {
+		throw std::logic_error("Scene factory is not set.");
+	}
+
+	// ここでは生成と予約だけを行い、現在シーンの破棄はBeginFrameまで遅延する。
+	ChangeScene(sceneFactory_->CreateScene(nextSceneId));
 }
 
 void SceneManager::PushScene(std::unique_ptr<IScene> scene, LayerOptions options) {
@@ -153,11 +192,16 @@ void SceneManager::EnsureInitialized() const {
 }
 
 void SceneManager::Finalize() {
+	// 未適用の操作もシーンを所有しているため、最初にすべて破棄する。
 	pendingOperations_.clear();
+
+	// 上に積まれたシーンから終了し、依存関係を積み上げと逆順に解消する。
 	for (auto it = stack_.rbegin(); it != stack_.rend(); ++it) {
 		it->scene->Finalize();
 	}
+
 	stack_.clear();
 	context_ = {};
+	sceneFactory_.reset();
 	initialized_ = false;
 }

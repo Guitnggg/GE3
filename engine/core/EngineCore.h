@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string_view>
 
 class DirectXCommon;
 class CollisionWorld;
@@ -20,6 +21,7 @@ class Time;
 class WinApp;
 class Audio;
 class AssetManager;
+class AbstractSceneFactory;
 class DebugOverlay;
 struct EngineSettings;
 
@@ -71,6 +73,16 @@ class EngineCore {
 	/// 最初のシーンを登録する。OnInitializeから一度だけ呼び出す。
 	/// </summary>
 	void SetInitialScene(std::unique_ptr<IScene> initialScene);
+
+	/// <summary>
+	/// ゲーム固有のシーンファクトリーを登録する。
+	/// </summary>
+	void SetSceneFactory(std::unique_ptr<AbstractSceneFactory> sceneFactory);
+
+	/// <summary>
+	/// 登録済みファクトリーを使用して最初のシーンを設定する。
+	/// </summary>
+	void SetInitialScene(std::string_view initialSceneId);
 
 	/// <summary>
 	/// 実行中のシーン切り替えに使用するSceneManagerを取得する。

@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <deque>
 #include <memory>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -49,6 +50,16 @@ class SceneManager {
 	void Initialize(const SceneContext &context, std::unique_ptr<IScene> initialScene);
 
 	/// <summary>
+	/// 識別子からシーンを生成するファクトリーの所有権を受け取る。
+	/// </summary>
+	void SetSceneFactory(std::unique_ptr<class AbstractSceneFactory> sceneFactory);
+
+	/// <summary>
+	/// 登録済みファクトリーで最初のシーンを生成して初期化する。
+	/// </summary>
+	void Initialize(const SceneContext &context, std::string_view initialSceneId);
+
+	/// <summary>
 	/// フレーム境界で、予約されているシーン操作を適用する。
 	/// </summary>
 	void BeginFrame();
@@ -77,6 +88,11 @@ class SceneManager {
 	/// 次のUpdate開始時に切り替えるシーンを予約する。
 	/// </summary>
 	void ChangeScene(std::unique_ptr<IScene> nextScene);
+
+	/// <summary>
+	/// 識別子に対応するシーンへの切り替えを予約する。
+	/// </summary>
+	void ChangeScene(std::string_view nextSceneId);
 
 	/// <summary>
 	/// 現在のシーンを一時停止し、その上へ新しいシーンを積む。
@@ -189,6 +205,7 @@ class SceneManager {
 	void EnsureInitialized() const;
 
 	SceneContext context_{};                         // 全シーンへ渡すエンジン機能
+	std::unique_ptr<class AbstractSceneFactory> sceneFactory_; // ゲーム固有シーンの生成機能
 	std::vector<SceneEntry> stack_;                  // 下層から上層へ並ぶ実行中シーン
 	std::deque<PendingOperation> pendingOperations_; // 適用待ちの安全なシーン操作
 	bool initialized_ = false;                       // 初期シーンを開始済みか

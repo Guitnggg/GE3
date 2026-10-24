@@ -107,6 +107,11 @@
 	<ClCompile Include="engine\object\TransformNode.cpp" />
     <ClCompile Include="engine\core\EngineCore.cpp" />
     <ClCompile Include="application\core\MyGame.cpp" />
+    <ClCompile Include="application\scene\SceneFactory.cpp" />
+    <ClCompile Include="application\scene\TitleScene.cpp" />
+    <ClCompile Include="application\scene\GameScene.cpp" />
+    <ClCompile Include="application\scene\GameClearScene.cpp" />
+    <ClCompile Include="application\scene\GameOverScene.cpp" />
     <ClCompile Include="main.cpp" />
 	<ClCompile Include="engine\audio\Audio.cpp" />
     <ClCompile Include="engine\collision\Collision.cpp" />
@@ -164,6 +169,12 @@
 	<ClInclude Include="engine\object\TransformNode.h" />
     <ClInclude Include="engine\core\EngineCore.h" />
     <ClInclude Include="application\core\MyGame.h" />
+    <ClInclude Include="application\scene\SceneFactory.h" />
+    <ClInclude Include="application\scene\SceneIds.h" />
+    <ClInclude Include="application\scene\TitleScene.h" />
+    <ClInclude Include="application\scene\GameScene.h" />
+    <ClInclude Include="application\scene\GameClearScene.h" />
+    <ClInclude Include="application\scene\GameOverScene.h" />
     <ClInclude Include="engine\2d\Sprite.h" />
 	<ClInclude Include="engine\audio\Audio.h" />
     <ClInclude Include="engine\collision\Collision.h" />
@@ -194,6 +205,7 @@
 	<ClInclude Include="engine\input\MouseInput.h" />
 	<ClInclude Include="engine\input\GamepadInput.h" />
 	<ClInclude Include="engine\scene\IScene.h" />
+	<ClInclude Include="engine\scene\AbstractSceneFactory.h" />
 	<ClInclude Include="engine\scene\SceneContext.h" />
 	<ClInclude Include="engine\scene\SceneManager.h" />
 	<ClInclude Include="engine\scene\Scene.h" />
