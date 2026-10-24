@@ -10,6 +10,8 @@ namespace {
 class InitialScene final : public Scene {};
 } // namespace
 
+namespace GameApp {
+
 void MyGame::OnInitialize() {
 	SetInitialScene(std::make_unique<InitialScene>());
 }
@@ -22,3 +24,5 @@ void MyGame::OnFixedUpdate() {
 void MyGame::OnDraw() {
 	PROFILE_SCOPE("Game Draw");
 }
+
+} // namespace GameApp

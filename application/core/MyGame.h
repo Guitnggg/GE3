@@ -1,6 +1,10 @@
 #pragma once
 
+#include <Windows.h>
+
 #include "engine/core/EngineCore.h"
+
+namespace GameApp {
 
 /// <summary>
 /// EngineCoreのライフサイクルへ接続する、最小構成のアプリケーション実装。
@@ -32,3 +36,5 @@ class MyGame : public EngineCore {
 	/// </summary>
 	void OnDraw() override;
 };
+
+} // namespace GameApp

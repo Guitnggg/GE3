@@ -134,9 +134,7 @@
     <ClCompile Include="application\core\MyGame.cpp">
       <Filter>application\core</Filter>
     </ClCompile>
-    <ClCompile Include="application\main.cpp">
-      <Filter>application</Filter>
-    </ClCompile>
+    <ClCompile Include="main.cpp" />
 	<ClCompile Include="engine\audio\Audio.cpp">
 	  <Filter>engine\audio</Filter>
 	</ClCompile>
