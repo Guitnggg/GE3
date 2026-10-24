@@ -149,6 +149,12 @@ class DirectXCommon {
 	void PreDraw();
 
 	/// <summary>
+	/// 現在フレームのSwapChainバックバッファと共有深度バッファを描画先へ設定する。
+	/// RenderTextureの合成後、UI描画先を画面へ戻すために使用する。
+	/// </summary>
+	void SetSwapChainRenderTarget();
+
+	/// <summary>
 	/// 1フレーム分の描画後処理を行う
 	/// </summary>
 	void PostDraw();

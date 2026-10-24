@@ -5,6 +5,7 @@
 #include "engine/3D/model/ModelManager.h"
 #include "engine/graphics/resource/SrvManager.h"
 #include "engine/graphics/resource/TextureManager.h"
+#include "engine/graphics/render/RenderTargetManager.h"
 #include "engine/audio/Audio.h"
 #include "engine/assets/AssetManager.h"
 #include "engine/collision/CollisionWorld.h"
@@ -54,6 +55,8 @@ void EngineCore::Run() {
 			OnDrawWorld();
 			sceneManager_->DrawWorld();
 
+			BeginUIDraw();
+
 			OnDrawUI();
 			sceneManager_->DrawUI();
 
@@ -77,7 +80,8 @@ void EngineCore::Run() {
 }
 
 void EngineCore::Initialize() {
-	if (initialized_ || winApp_ || input_ || audio_ || collisionWorld_ || dxCommon_ || srvManager_ || textureManager_ ||
+	if (initialized_ || winApp_ || input_ || audio_ || collisionWorld_ || dxCommon_ || srvManager_ ||
+	    renderTargetManager_ || textureManager_ ||
 	    modelManager_ || spriteCommon_ || object3dCommon_ || time_ || frameRateController_ || gpuParticlePipeline_ ||
 	    shaderCompiler_ || assetManager_ || engineSettings_ || sceneManager_
 #ifdef _DEBUG
@@ -118,6 +122,8 @@ void EngineCore::Initialize() {
 		shaderCompiler_->Initialize();
 		srvManager_ = std::make_unique<SrvManager>();
 		srvManager_->Initialize(dxCommon_.get());
+		renderTargetManager_ = std::make_unique<RenderTargetManager>();
+		renderTargetManager_->Initialize(dxCommon_.get(), srvManager_.get(), shaderCompiler_.get());
 		textureManager_ = std::make_unique<TextureManager>();
 		textureManager_->Initialize(dxCommon_.get(), srvManager_.get());
 		modelManager_ = std::make_unique<ModelManager>();
@@ -266,8 +272,14 @@ bool EngineCore::IsEndRequest() {
 }
 
 void EngineCore::BeginDraw() {
-	// バックバッファを描画可能な状態にし、描画に必要な状態を設定する
+	// フレームのコマンド記録を開始した後、World専用RenderTextureへ描画先を切り替える。
 	dxCommon_->PreDraw();
+	renderTargetManager_->BeginWorldPass();
+}
+
+void EngineCore::BeginUIDraw() {
+	// World結果を画面へコピーし、後続のSprite UIをポストエフェクト対象外にする。
+	renderTargetManager_->CompositeToSwapChain();
 }
 
 void EngineCore::EndDraw() {
@@ -314,10 +326,11 @@ void EngineCore::Finalize() {
 	gpuParticlePipeline_.reset();
 	object3dCommon_.reset();
 	spriteCommon_.reset();
-	shaderCompiler_.reset();
 	modelManager_.reset();
 	textureManager_.reset();
+	renderTargetManager_.reset();
 	srvManager_.reset();
+	shaderCompiler_.reset();
 	audio_.reset();
 	collisionWorld_.reset();
 	if (input_) {

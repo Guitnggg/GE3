@@ -37,6 +37,12 @@
 	<Filter Include="engine\graphics\material">
 	  <UniqueIdentifier>{7B671F07-B02C-4097-A98D-38385F5D2CA8}</UniqueIdentifier>
 	</Filter>
+	<Filter Include="engine\graphics\render">
+	  <UniqueIdentifier>{6B3E4EB0-78E5-4D79-A867-B87639506381}</UniqueIdentifier>
+	</Filter>
+	<Filter Include="resource\shaders\post">
+	  <UniqueIdentifier>{30CC638F-D3A5-467B-83CA-99EEB6D26A43}</UniqueIdentifier>
+	</Filter>
 	<Filter Include="engine\settings">
 	  <UniqueIdentifier>{E81C2801-45B8-4214-94C4-F2895558946B}</UniqueIdentifier>
 	</Filter>
@@ -124,6 +130,9 @@
 	</ClCompile>
 	<ClCompile Include="engine\graphics\material\MaterialInstance.cpp">
 	  <Filter>engine\graphics\material</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\graphics\render\RenderTargetManager.cpp">
+	  <Filter>engine\graphics\render</Filter>
 	</ClCompile>
 	<ClCompile Include="engine\settings\EngineSettings.cpp"><Filter>engine\settings</Filter></ClCompile>
 	<ClCompile Include="engine\settings\SettingsStore.cpp"><Filter>engine\settings</Filter></ClCompile>
@@ -285,6 +294,9 @@
 	</ClInclude>
 	<ClInclude Include="engine\graphics\material\MaterialInstance.h">
 	  <Filter>engine\graphics\material</Filter>
+	</ClInclude>
+	<ClInclude Include="engine\graphics\render\RenderTargetManager.h">
+	  <Filter>engine\graphics\render</Filter>
 	</ClInclude>
 	<ClInclude Include="engine\settings\EngineSettings.h"><Filter>engine\settings</Filter></ClInclude>
 	<ClInclude Include="engine\settings\SettingsStore.h"><Filter>engine\settings</Filter></ClInclude>
@@ -485,6 +497,8 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
+	<None Include="resource\shaders\post\Fullscreen.VS.hlsl"><Filter>resource\shaders\post</Filter></None>
+	<None Include="resource\shaders\post\Copy.PS.hlsl"><Filter>resource\shaders\post</Filter></None>
     <None Include="resource\shaders\Object3d.hlsli">
       <Filter>リソース ファイル</Filter>
     </None>

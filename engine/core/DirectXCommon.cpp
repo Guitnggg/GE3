@@ -340,6 +340,17 @@ void DirectXCommon::PreDraw() {
 	commandList->RSSetScissorRects(1, &scissorRect);
 }
 
+void DirectXCommon::SetSwapChainRenderTarget() {
+	if (!frameInProgress_) {
+		throw std::logic_error("SwapChain render target requires an active frame.");
+	}
+
+	// バックバッファ自体はPreDrawでRENDER_TARGET状態へ遷移済み。
+	// ここではRenderTextureから戻るため、RTVとDSVの再設定だけを行う。
+	const D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	commandList->OMSetRenderTargets(1, &rtvHandles[currentFrameIndex_], false, &dsvHandle);
+}
+
 // 描画後に画面表示、GPU同期、次フレーム準備を行う
 void DirectXCommon::PostDraw() {
 	if (!frameInProgress_) {
