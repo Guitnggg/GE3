@@ -3,10 +3,16 @@
 #include "application/scene/SceneFactory.h"
 #include "application/scene/SceneIds.h"
 #include "engine/debug/Profiler.h"
+#include "engine/effects/post/PostEffectManager.h"
+#include "engine/effects/post/VignettingEffect.h"
 
 namespace GameApp {
 
 void MyGame::OnInitialize() {
+	// ゲームで使用するEffectを登録順に追加する。
+	// PostEffectManagerは登録されたEffectの所有権を受け取り、同じ順番でPing-Pong実行する。
+	postEffectManager_->AddEffect(std::make_unique<VignettingEffect>());
+
 	// エンジンはゲーム固有のクラスを知らないため、生成処理をFactoryとして渡す。
 	SetSceneFactory(std::make_unique<SceneFactory>());
 

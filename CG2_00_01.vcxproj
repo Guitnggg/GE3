@@ -123,6 +123,7 @@
 	<ClCompile Include="engine\effects\particle\GPUParticlePipeline.cpp" />
 	<ClCompile Include="engine\effects\particle\GPUParticleEmitter.cpp" />
 	<ClCompile Include="engine\effects\post\PostEffectManager.cpp" />
+	<ClCompile Include="engine\effects\post\VignettingEffect.cpp" />
     <ClCompile Include="engine\2d\Sprite.cpp" />
     <ClCompile Include="engine\2d\SpriteCommon.cpp" />
     <ClCompile Include="engine\3d\camera\Camera.cpp" />
@@ -190,6 +191,7 @@
 	<ClInclude Include="engine\effects\particle\GPUParticleEmitter.h" />
 	<ClInclude Include="engine\effects\post\IPostEffect.h" />
 	<ClInclude Include="engine\effects\post\PostEffectManager.h" />
+	<ClInclude Include="engine\effects\post\VignettingEffect.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h" />
     <ClInclude Include="engine\3d\camera\Camera.h" />
 	<ClInclude Include="engine\3d\model\MeshGenerator.h" />
@@ -241,6 +243,7 @@
   <ItemGroup>
     <None Include="resource\shaders\post\Fullscreen.VS.hlsl" />
     <None Include="resource\shaders\post\Copy.PS.hlsl" />
+    <None Include="resource\shaders\post\Vignetting.PS.hlsl" />
     <Text Include="externals\imgui\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>

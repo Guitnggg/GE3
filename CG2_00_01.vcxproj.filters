@@ -182,6 +182,9 @@
 	<ClCompile Include="engine\effects\post\PostEffectManager.cpp">
 	  <Filter>engine\effects\post</Filter>
 	</ClCompile>
+	<ClCompile Include="engine\effects\post\VignettingEffect.cpp">
+	  <Filter>engine\effects\post</Filter>
+	</ClCompile>
     <ClCompile Include="externals\imgui\imgui.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
@@ -353,6 +356,7 @@
 	</ClInclude>
 	<ClInclude Include="engine\effects\post\IPostEffect.h"><Filter>engine\effects\post</Filter></ClInclude>
 	<ClInclude Include="engine\effects\post\PostEffectManager.h"><Filter>engine\effects\post</Filter></ClInclude>
+	<ClInclude Include="engine\effects\post\VignettingEffect.h"><Filter>engine\effects\post</Filter></ClInclude>
     <ClInclude Include="externals\imgui\imgui.h">
       <Filter>imgui</Filter>
     </ClInclude>
@@ -507,6 +511,7 @@
   <ItemGroup>
 	<None Include="resource\shaders\post\Fullscreen.VS.hlsl"><Filter>resource\shaders\post</Filter></None>
 	<None Include="resource\shaders\post\Copy.PS.hlsl"><Filter>resource\shaders\post</Filter></None>
+	<None Include="resource\shaders\post\Vignetting.PS.hlsl"><Filter>resource\shaders\post</Filter></None>
     <None Include="resource\shaders\Object3d.hlsli">
       <Filter>リソース ファイル</Filter>
     </None>

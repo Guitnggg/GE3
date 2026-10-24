@@ -78,12 +78,10 @@ void RenderTargetManager::BeginPostEffectPass(uint32_t textureIndex) {
 		throw std::logic_error("RenderTargetManager is not initialized.");
 	}
 
+	// PostEffectはFullscreen三角形で出力先の全Pixelを上書きする契約なので、
+	// Color Clearは不要。Resource作成時の最適化Clear値と異なる色でClearすると、
+	// Debug LayerのCLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE警告も発生する。
 	BeginColorPass(textureIndex, false);
-
-	D3D12_CPU_DESCRIPTOR_HANDLE rtv = rtvHeap_->GetCPUDescriptorHandleForHeapStart();
-	rtv.ptr += static_cast<SIZE_T>(rtvDescriptorSize_) * textureIndex;
-	constexpr float clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
-	directXCommon_->GetCommandList()->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
 }
 
 void RenderTargetManager::PrepareForSampling(uint32_t textureIndex) {
