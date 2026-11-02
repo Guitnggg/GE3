@@ -28,8 +28,27 @@ class VignettingEffect final : public IPostEffect {
 	/// </summary>
 	void Draw(D3D12_GPU_DESCRIPTOR_HANDLE sourceTexture) override;
 
+	/// <summary>
+	/// 有効状態、Intensity、Powerを実行中に調整するImGui UIを構築する。
+	/// </summary>
+	void DrawDebugUI() override;
+
+	/// <summary>
+	/// このEffectの有効状態を設定する。
+	/// </summary>
+	/// <param name="enabled">有効にする場合はtrue、無効にする場合はfalse</param>
 	void SetEnabled(bool enabled) { enabled_ = enabled; }
+
+	/// <summary>
+	/// このEffectのIntensityを設定する。
+	/// </summary>
+	/// <param name="intensity">Intensityの値</param>
 	void SetIntensity(float intensity);
+
+	/// <summary>
+	/// このEffectのPowerを設定する。
+	/// </summary>
+	/// <param name="power">Powerの値</param>
 	void SetPower(float power);
 
 	[[nodiscard]] float GetIntensity() const { return parameters_.intensity; }

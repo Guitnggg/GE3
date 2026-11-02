@@ -287,6 +287,10 @@ void EngineCore::BeginUIDraw() {
 
 void EngineCore::EndDraw() {
 #ifdef _DEBUG
+	// Effectの調整結果は次フレームのApplyから反映される。
+	// ImGui構築はGPUのPostEffect描画完了後でも、同じImGui Frame内なら問題ない。
+	postEffectManager_->DrawDebugUI();
+
 	debugOverlay_->Draw();
 	Profiler::Get().EndFrame();
 	// UI構築を確定してから、ゲーム画面の手前にImGuiを描画する

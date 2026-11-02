@@ -3,6 +3,10 @@
 #include "engine/effects/post/IPostEffect.h"
 #include "engine/graphics/render/RenderTargetManager.h"
 
+#ifdef _DEBUG
+#include "externals/imgui/imgui.h"
+#endif
+
 #include <stdexcept>
 
 void PostEffectManager::Initialize(DirectXCommon *directXCommon,
@@ -61,6 +65,30 @@ void PostEffectManager::Apply() {
 
 	// Effectが0個なら0番、奇数個なら1番、偶数個なら0番が最終結果となる。
 	renderTargetManager_->CompositeToSwapChain(sourceIndex);
+}
+
+void PostEffectManager::DrawDebugUI() {
+#ifdef _DEBUG
+	if (!initialized_) {
+		throw std::logic_error("PostEffectManager is not initialized.");
+	}
+
+	// Effectごとに別Windowを作らず、登録順を確認できる1つの調整画面へまとめる。
+	ImGui::SetNextWindowBgAlpha(0.85f);
+	if (ImGui::Begin("Post Effects")) {
+		if (effects_.empty()) {
+			ImGui::TextDisabled("No post effects are registered.");
+		}
+
+		for (const auto &effect : effects_) {
+			// Effect InstanceをIDに含め、将来同じ種類を複数登録してもWidget IDが衝突しないようにする。
+			ImGui::PushID(effect.get());
+			effect->DrawDebugUI();
+			ImGui::PopID();
+		}
+	}
+	ImGui::End();
+#endif
 }
 
 void PostEffectManager::Finalize() noexcept {

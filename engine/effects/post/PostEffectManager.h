@@ -33,6 +33,11 @@ class PostEffectManager final {
 	void Apply();
 
 	/// <summary>
+	/// 登録されたEffectの調整UIを1つのImGui Windowへまとめて表示する。
+	/// </summary>
+	void DrawDebugUI();
+
+	/// <summary>
 	/// 登録したエフェクトと外部サービスへの参照を解放する。
 	/// </summary>
 	void Finalize() noexcept;

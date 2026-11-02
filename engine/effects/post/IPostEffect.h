@@ -27,4 +27,10 @@ class IPostEffect {
 	/// sourceTextureを入力として、現在設定済みのRTVへ全画面描画する。
 	/// </summary>
 	virtual void Draw(D3D12_GPU_DESCRIPTOR_HANDLE sourceTexture) = 0;
+
+	/// <summary>
+	/// Effect固有の有効状態とパラメータをImGuiへ構築する。
+	/// Releaseビルドでは空実装のまま使用できる。
+	/// </summary>
+	virtual void DrawDebugUI() {}
 };

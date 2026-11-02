@@ -5,6 +5,10 @@
 #include "engine/core/diagnostics/Logger.h"
 #include "engine/graphics/shader/ShaderCompiler.h"
 
+#ifdef _DEBUG
+#include "externals/imgui/imgui.h"
+#endif
+
 #include <algorithm>
 #include <cstring>
 #include <stdexcept>
@@ -58,6 +62,30 @@ void VignettingEffect::Draw(D3D12_GPU_DESCRIPTOR_HANDLE sourceTexture) {
 	// Fullscreen.VSはSV_VertexIDから頂点を生成するため、Vertex Bufferは使用しない。
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandList->DrawInstanced(3, 1, 0, 0);
+}
+
+void VignettingEffect::DrawDebugUI() {
+#ifdef _DEBUG
+	// Effect名をHeaderにすることで、登録数が増えても折りたたんで一覧できる。
+	if (!ImGui::CollapsingHeader("Vignetting", ImGuiTreeNodeFlags_DefaultOpen)) {
+		return;
+	}
+
+	ImGui::Checkbox("Enabled", &enabled_);
+
+	// 無効中も現在値は確認できるが、誤って設定だけ変更しないよう操作を止める。
+	ImGui::BeginDisabled(!enabled_);
+	ImGui::SliderFloat("Intensity", &parameters_.intensity, 0.001f, 32.0f, "%.3f");
+	ImGui::SliderFloat("Power", &parameters_.power, 0.001f, 4.0f, "%.3f");
+
+	if (ImGui::Button("Reset")) {
+		// Parametersの既定メンバ値へ戻し、Effectの有効状態は維持する。
+		parameters_ = Parameters{};
+	}
+	ImGui::EndDisabled();
+
+	ImGui::Spacing();
+#endif
 }
 
 void VignettingEffect::SetIntensity(float intensity) {
