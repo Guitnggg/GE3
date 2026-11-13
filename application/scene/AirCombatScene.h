@@ -5,6 +5,7 @@
 #include "application/combat/LockOnSystem.h"
 #include "application/controller/EnemyController.h"
 #include "application/controller/PlayerController.h"
+#include "application/editor/GameEditor.h"
 #include "application/ui/CombatHud.h"
 #include "application/weapon/MissileSystem.h"
 #include "engine/scene/Scene.h"
@@ -61,6 +62,7 @@ class AirCombatScene final : public Scene {
 
 	CombatCamera camera_;
 	CombatHud hud_;
+	GameEditor editor_; // Debugビルドでゲーム全体を実行中編集する統合ツール
 
 	// ===== シーン状態 =====
 

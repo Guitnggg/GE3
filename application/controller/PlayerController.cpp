@@ -10,6 +10,10 @@
 // 入力を機体の姿勢、速度、位置へ順番に反映する
 void PlayerController::Update(Fighter& fighter, Input& input, float deltaTime) const {
     constexpr float turnSpeed = 1.15f;
+    constexpr float mouseRollSensitivity = 0.012f;
+    constexpr LONG maxMouseDelta = 50;
+    constexpr uint32_t leftMouseButton = 0;
+    constexpr uint32_t rightMouseButton = 1;
 
     // 機首方向を操作する
     if (input.PushKey(DIK_A)) {
@@ -25,23 +29,21 @@ void PlayerController::Update(Fighter& fighter, Input& input, float deltaTime) c
         fighter.pitch_ -= turnSpeed * 0.75f * deltaTime;
     }
 
-    // ロール操作する
-    if (input.PushKey(DIK_Q)) {
-        fighter.roll_ -= 1.7f * deltaTime;
-    }
-    if (input.PushKey(DIK_E)) {
-        fighter.roll_ += 1.7f * deltaTime;
-    }
+    // マウスの横移動量を機体のロールへ反映する。
+    // 極端な入力値は制限し、ウィンドウ切り替え直後などの急回転を防ぐ。
+    const LONG mouseDeltaX = std::clamp(input.GetMouseDeltaX(), -maxMouseDelta, maxMouseDelta);
+    fighter.roll_ += static_cast<float>(mouseDeltaX) * mouseRollSensitivity;
 
-    // 入力を離したロールは徐々に水平へ戻し、ピッチは反転しない範囲へ制限する。
+    // マウスを止めたロールは徐々に水平へ戻し、姿勢は操作可能な範囲へ制限する。
     fighter.roll_ *= std::pow(0.18f, deltaTime);
+    fighter.roll_ = std::clamp(fighter.roll_, -1.15f, 1.15f);
     fighter.pitch_ = std::clamp(fighter.pitch_, -1.15f, 1.15f);
 
-    // スロットル操作を許容速度内へ収める。
-    if (input.PushKey(DIK_LSHIFT) || input.PushKey(DIK_RSHIFT)) {
+    // 左クリックで加速、右クリックで減速する。
+    if (input.PushMouseButton(leftMouseButton)) {
         fighter.speed_ += 30.0f * deltaTime;
     }
-    if (input.PushKey(DIK_LCONTROL) || input.PushKey(DIK_RCONTROL)) {
+    if (input.PushMouseButton(rightMouseButton)) {
         fighter.speed_ -= 30.0f * deltaTime;
     }
     fighter.speed_ = std::clamp(fighter.speed_, 25.0f, 95.0f);

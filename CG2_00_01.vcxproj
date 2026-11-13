@@ -97,6 +97,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
 	<ClCompile Include="application\scene\AirCombatScene.cpp" />
+	<ClCompile Include="application\editor\GameEditor.cpp" />
 	<ClCompile Include="application\camera\CombatCamera.cpp" />
 	<ClCompile Include="application\ui\CombatHud.cpp" />
 	<ClCompile Include="application\actor\Fighter.cpp" />
@@ -164,6 +165,7 @@
   </ItemGroup>
   <ItemGroup>
 	<ClInclude Include="application\scene\AirCombatScene.h" />
+	<ClInclude Include="application\editor\GameEditor.h" />
 	<ClInclude Include="application\camera\CombatCamera.h" />
 	<ClInclude Include="application\ui\CombatHud.h" />
 	<ClInclude Include="application\actor\Fighter.h" />

@@ -63,11 +63,12 @@ void CombatHud::Draw(const Fighter &player, const Fighter &enemy, bool lockedOn,
 	}
 
 #ifdef _DEBUG
-	ImGui::SetNextWindowPos({18.0f, 18.0f}, ImGuiCond_Once);
+	// 右上角を基準に、画面端から少し余白を空けて初期配置する。
+	ImGui::SetNextWindowPos({kScreenWidth - 18.0f, 18.0f}, ImGuiCond_Once, {1.0f, 0.0f});
 	ImGui::SetNextWindowBgAlpha(0.72f);
 	if (ImGui::Begin("AIR COMBAT PROTOTYPE")) {
-		ImGui::Text("W/S: pitch   A/D: yaw   Q/E: roll");
-		ImGui::Text("Shift/Ctrl: throttle   Space: missile");
+		ImGui::Text("W/S: pitch   A/D: yaw   Mouse X: roll");
+		ImGui::Text("LMB/RMB: accelerate/decelerate   Space: missile");
 		ImGui::Separator();
 		ImGui::Text("PLAYER  HP %d/3   SPEED %.0f", player.GetHealth(), player.GetSpeed());
 		ImGui::Text("ENEMY   HP %d/3   RANGE %.0f", std::max(enemy.GetHealth(), 0), Length(Subtract(enemy.GetPosition(), player.GetPosition())));

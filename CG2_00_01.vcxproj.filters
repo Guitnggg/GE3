@@ -28,6 +28,7 @@
     <Filter Include="application\controller"><UniqueIdentifier>{84142A5E-41E6-466B-A7A8-D0FA7B76EB5D}</UniqueIdentifier></Filter>
     <Filter Include="application\effect"><UniqueIdentifier>{4182776E-4564-42C9-9285-AB2FA2A83E52}</UniqueIdentifier></Filter>
     <Filter Include="application\scene"><UniqueIdentifier>{7C1A360E-C8BD-4437-BE72-6CA710C53BF7}</UniqueIdentifier></Filter>
+	<Filter Include="application\editor"><UniqueIdentifier>{4E1F04F3-56CD-4BD6-9D5E-43D3CCB4D7B7}</UniqueIdentifier></Filter>
     <Filter Include="application\ui"><UniqueIdentifier>{8C627FC8-A283-47DD-B4F9-98F737351F3B}</UniqueIdentifier></Filter>
     <Filter Include="application\weapon"><UniqueIdentifier>{F2FA4C9B-41D8-4301-A383-6E586E8A0908}</UniqueIdentifier></Filter>
     <Filter Include="engine">
@@ -114,6 +115,7 @@
   </ItemGroup>
   <ItemGroup>
 	<ClCompile Include="application\scene\AirCombatScene.cpp"><Filter>application\scene</Filter></ClCompile>
+	<ClCompile Include="application\editor\GameEditor.cpp"><Filter>application\editor</Filter></ClCompile>
 	<ClCompile Include="application\camera\CombatCamera.cpp"><Filter>application\camera</Filter></ClCompile>
 	<ClCompile Include="application\ui\CombatHud.cpp"><Filter>application\ui</Filter></ClCompile>
 	<ClCompile Include="application\actor\Fighter.cpp"><Filter>application\actor</Filter></ClCompile>
@@ -287,6 +289,7 @@
   </ItemGroup>
   <ItemGroup>
 	<ClInclude Include="application\scene\AirCombatScene.h"><Filter>application\scene</Filter></ClInclude>
+	<ClInclude Include="application\editor\GameEditor.h"><Filter>application\editor</Filter></ClInclude>
 	<ClInclude Include="application\camera\CombatCamera.h"><Filter>application\camera</Filter></ClInclude>
 	<ClInclude Include="application\ui\CombatHud.h"><Filter>application\ui</Filter></ClInclude>
 	<ClInclude Include="application\actor\Fighter.h"><Filter>application\actor</Filter></ClInclude>

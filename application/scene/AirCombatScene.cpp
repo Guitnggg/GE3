@@ -74,6 +74,10 @@ void AirCombatScene::OnDraw() {
 	enemy_.Draw();
 	missiles_.Draw(camera_.GetCamera(), GetContext().time->GetDeltaTime());
 	hud_.Draw(player_, enemy_, lockedOn_, battleEnded_);
+	if (editor_.Draw(player_, enemy_, missiles_, *GetContext().time, lockedOn_, battleEnded_)) {
+		ResetBattle();
+	}
+	battleEnded_ = battleEnded_ || !player_.IsAlive() || !enemy_.IsAlive();
 }
 
 //===============

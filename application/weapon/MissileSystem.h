@@ -11,6 +11,7 @@ class Camera;
 class Fighter;
 class Input;
 class Model;
+class GameEditor;
 struct SceneContext;
 
 /// <summary>
@@ -45,6 +46,7 @@ class MissileSystem final {
 	void Draw(const Camera &camera, float deltaTime);
 
   private:
+	friend class GameEditor;
 	/// <summary>
 	/// 指定した機体の前方からミサイルを生成する
 	/// </summary>

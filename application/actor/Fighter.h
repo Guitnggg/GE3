@@ -12,6 +12,7 @@ class Object3dCommon;
 class TextureManager;
 class PlayerController;
 class EnemyController;
+class GameEditor;
 
 /// <summary>
 /// プレイヤー機と敵機で共有する、機体の状態と表示処理を管理するクラス
@@ -61,6 +62,7 @@ class Fighter final {
 	// コントローラーだけが飛行状態を直接更新できるようにする。
 	friend class PlayerController;
 	friend class EnemyController;
+	friend class GameEditor;
 
 	// ===== 表示データ =====
 

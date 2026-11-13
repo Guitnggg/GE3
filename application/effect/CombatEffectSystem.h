@@ -32,12 +32,18 @@ class CombatEffectSystem final {
 	/// </summary>
 	void EmitExplosion(const Vector3 &position);
 
+	/// <summary>撃墜時専用の大規模な多層爆発を発生させる</summary>
+	void EmitDestruction(const Vector3 &position);
+
 	/// <summary>
 	/// パーティクルを更新して描画する
 	/// </summary>
 	void UpdateAndDraw(const Camera &camera, float deltaTime);
 
   private:
-	GPUParticleSystem particles_; // GPUで更新・描画するパーティクル群
+	GPUParticleSystem trailParticles_; // ミサイル航跡と通常命中の粒子群
+	GPUParticleSystem fireParticles_;  // 爆発中心の火球と閃光
+	GPUParticleSystem sparkParticles_; // 高速で飛散する火花
+	GPUParticleSystem smokeParticles_; // 撃墜後に長く残る煙
 	uint32_t seed_ = 1;           // 放出ごとに変化させる乱数シード
 };

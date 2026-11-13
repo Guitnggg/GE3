@@ -79,8 +79,12 @@ bool MissileSystem::Update(Input &input, Fighter &player, Fighter &enemy, bool l
 		        SpatialMath::Subtract(target.GetPosition(), missile->GetPosition())) < 5.5f) {
 			target.ApplyDamage(Damage{1});
 			missile->Expire();
-			effects_.EmitExplosion(target.GetPosition());
-			battleEnded |= !target.IsAlive();
+			if (target.IsAlive()) {
+				effects_.EmitExplosion(target.GetPosition());
+			} else {
+				effects_.EmitDestruction(target.GetPosition());
+				battleEnded = true;
+			}
 		}
 	}
 
